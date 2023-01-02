@@ -328,7 +328,7 @@ says that I am starting to print an object with this id. The second says I am fi
 (defslimefun init-presentation-streams ()
   (monkey-patch-stream-printing)
   ;; FIXME: import/use swank-repl to avoid package qualifier.
-  (setq swank-repl:*send-repl-results-function*
+  (setq lsp-backend/contrib/repl:*send-repl-results-function*
 	'present-repl-results-via-presentation-streams))
 
 (provide :swank-presentation-streams)

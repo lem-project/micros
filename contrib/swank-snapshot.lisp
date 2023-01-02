@@ -1,9 +1,9 @@
 
-(defpackage swank-snapshot
+(defpackage :lsp-backend/contrib/snapshot
   (:use cl)
   (:export restore-snapshot save-snapshot background-save-snapshot)
   (:import-from swank defslimefun))
-(in-package swank-snapshot)
+(in-package :lsp-backend/contrib/snapshot)
 
 (defslimefun save-snapshot (image-file)
   (lsp-backend/backend:save-image image-file 
@@ -52,7 +52,7 @@
 	 (stream (make-fd-stream fd nil))
 	 (connection (make-connection nil stream style)))
     (let ((*emacs-connection* connection))
-      (when repl (swank-repl:create-repl nil))
+      (when repl (lsp-backend/contrib/repl:create-repl nil))
       (background-message "~A" "Lisp image restored"))
     (serve-requests connection)
     (simple-repl)))

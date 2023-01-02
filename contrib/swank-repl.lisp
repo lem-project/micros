@@ -3,7 +3,7 @@
 ;; License: public domain
 (in-package :lsp-backend)
 
-(defpackage swank-repl
+(defpackage :lsp-backend/contrib/repl
   (:use cl lsp-backend/backend)
   (:export *send-repl-results-function*)
   (:import-from
@@ -70,7 +70,7 @@
    *dedicated-output-stream-port*
    *globally-redirect-io*))
 
-(in-package swank-repl)
+(in-package :lsp-backend/contrib/repl)
 
 (defvar *use-dedicated-output-stream* nil
   "When T swank will attempt to create a second connection to Emacs

@@ -241,6 +241,6 @@ The secondary value indicates the absence of an entry."
 
 (defslimefun init-presentations ()
   ;; FIXME: import/use swank-repl to avoid package qualifier.
-  (setq swank-repl:*send-repl-results-function* 'present-repl-results))
+  (setq lsp-backend/contrib/repl:*send-repl-results-function* 'present-repl-results))
 
 (provide :swank-presentations)

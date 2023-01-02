@@ -7,7 +7,7 @@
 
 (in-package :lsp-backend)
 
-(defpackage :swank-buffer-streams
+(defpackage :lsp-backend/contrib/buffer-streams
   (:use :cl)
   (:import-from :swank
                 defslimefun
@@ -25,7 +25,7 @@
                 *event-hook*)
   (:export make-buffer-output-stream))
 
-(in-package :swank-buffer-streams)
+(in-package :lsp-backend/contrib/buffer-streams)
 
 (defun get-temporary-identifier ()
   (intern (symbol-name (gensym "BUFFER"))

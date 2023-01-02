@@ -21,16 +21,16 @@
 	       with-top-level-restart
 	       with-slime-interrupts
 	       )))
-    (eval `(defpackage #:swank-api
+    (eval `(defpackage :lsp-backend/contrib/swank-api
 	     (:use)
 	     (:import-from #:lsp-backend . ,api)
 	     (:export . ,api)))))
 
-(defpackage :swank-mrepl
-  (:use :cl :swank-api)
+(defpackage :lsp-backend/contrib/mrepl
+  (:use :cl :lsp-backend/contrib/swank-api)
   (:export #:create-mrepl))
 
-(in-package :swank-mrepl)
+(in-package :lsp-backend/contrib/mrepl)
 
 (defclass listener-channel (channel)
   ((remote :initarg :remote)

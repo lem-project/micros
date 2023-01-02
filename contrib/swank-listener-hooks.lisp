@@ -72,7 +72,7 @@
 (defun %listener-eval (string)
   (clear-user-input)
   (with-buffer-syntax ()
-    (swank-repl::track-package
+    (lsp-backend/contrib/repl::track-package
      (lambda ()
        (let ((*slime-repl-suppress-output* :unset)
 	     (*slime-repl-advance-history* :unset))
@@ -83,9 +83,9 @@
 		   /// //  // /  / values))
 	   (setq +++ ++  ++ +  + last-form)
 	   (unless (eq *slime-repl-suppress-output* t)
-	     (funcall swank-repl::*send-repl-results-function* values)))))))
+	     (funcall lsp-backend/contrib/repl::*send-repl-results-function* values)))))))
   nil)
 
-(setq swank-repl::*listener-eval-function* '%listener-eval)
+(setq lsp-backend/contrib/repl::*listener-eval-function* '%listener-eval)
 
 (provide :swank-listener-hooks)

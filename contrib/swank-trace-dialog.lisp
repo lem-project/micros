@@ -1,4 +1,4 @@
-(defpackage :swank-trace-dialog
+(defpackage :lsp-backend/contrib/trace-dialog
   (:use :cl)
   (:import-from :lsp-backend :defslimefun :from-string :to-string)
   (:export #:clear-trace-tree
@@ -22,7 +22,7 @@
            #:find-trace-part
            #:find-trace))
 
-(in-package :swank-trace-dialog)
+(in-package :lsp-backend/contrib/trace-dialog)
 
 (defparameter *record-backtrace* nil
   "Record a backtrace of the last 20 calls for each trace.

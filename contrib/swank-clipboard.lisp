@@ -3,12 +3,12 @@
 ;; Written by Helmut Eller in 2008.
 ;; License: Public Domain
 
-(defpackage :swank-clipboard
+(defpackage :lsp-backend/contrib/clipboard
   (:use :cl)
   (:import-from :lsp-backend :defslimefun :with-buffer-syntax :dcase)
   (:export :add :delete-entry :entries :entry-to-ref :ref))
 
-(in-package :swank-clipboard)
+(in-package :lsp-backend/contrib/clipboard)
 
 (defstruct clipboard entries (counter 0))
 

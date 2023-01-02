@@ -5,7 +5,7 @@
 ;;
 ;; License: Public Domain
 
-(defpackage swank-macrostep
+(defpackage :lsp-backend/contrib/macrostep
   (:use cl :lsp-backend)
   (:import-from :lsp-backend
 		#:*macroexpand-printer-bindings*
@@ -19,7 +19,7 @@
   (:export #:macrostep-expand-1
            #:macro-form-p))
 
-(in-package #:swank-macrostep)
+(in-package :lsp-backend/contrib/macrostep)
 
 (defslimefun macrostep-expand-1 (string compiler-macros? context)
   (with-buffer-syntax ()
