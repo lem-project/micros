@@ -10,9 +10,6 @@
 
 (in-package :lsp-backend)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (swank-require :swank-presentations))
-
 ;; This file contains a mechanism for printing to the slime repl so
 ;; that the printed result remembers what object it is associated
 ;; with.  This extends the recording of REPL results.

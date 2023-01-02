@@ -9,9 +9,6 @@
 
 (in-package :lsp-backend)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (swank-require :swank-c-p-c))
-
 ;;;; Utilities
 
 (defun compose (&rest functions)

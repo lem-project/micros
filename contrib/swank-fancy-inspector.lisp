@@ -6,9 +6,6 @@
 
 (in-package :lsp-backend)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (swank-require :swank-util))
-
 (defmethod emacs-inspect ((symbol symbol))
   (let ((package (symbol-package symbol)))
     (multiple-value-bind (_symbol status)

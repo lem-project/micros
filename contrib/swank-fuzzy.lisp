@@ -10,10 +10,6 @@
 
 (in-package :lsp-backend)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (swank-require :swank-util)
-  (swank-require :swank-c-p-c))
-
 (defvar *fuzzy-duplicate-symbol-filter* :nearest-package
   "Specifies how fuzzy-matching handles \"duplicate\" symbols.
 Possible values are :NEAREST-PACKAGE, :HOME-PACKAGE, :ALL, or a custom

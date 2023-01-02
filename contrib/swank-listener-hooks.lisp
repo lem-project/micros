@@ -8,9 +8,6 @@
 
 (in-package :lsp-backend)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (swank-require :swank-repl))
-
 (defvar *slime-repl-advance-history* nil
   "In the dynamic scope of a single form typed at the repl, is set to nil to
    prevent the repl from advancing the history - * ** *** etc.")

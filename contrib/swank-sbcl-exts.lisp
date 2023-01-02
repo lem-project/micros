@@ -7,9 +7,6 @@
 
 (in-package :lsp-backend)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (swank-require :swank-arglists))
-
 ;; We need to do this so users can place `slime-sbcl-exts' into their
 ;; ~/.emacs, and still use any implementation they want.
 #+sbcl

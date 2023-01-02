@@ -12,9 +12,6 @@
 
 (in-package :lsp-backend)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (swank-require :swank-util))
-
 (defslimefun completions (string default-package-name)
   "Return a list of completions for a symbol designator STRING.  
 
