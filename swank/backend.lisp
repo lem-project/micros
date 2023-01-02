@@ -15,6 +15,8 @@
 
 ;;;; Metacode
 
+(declaim (special lsp-backend:*communication-style*))
+
 (defparameter *debug-swank-backend* nil
   "If this is true, backends should not catch errors but enter the
 debugger where appropriate. Also, they should not perform backtrace

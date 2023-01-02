@@ -26,6 +26,9 @@
                    (sb-c::insert-step-conditions 0)
                    (sb-c::insert-debug-catch 0)))
 
+(declaim (special lsp-backend:*communication-style*
+                  lsp-backend:*swank-debugger-condition*))
+
 ;;; backwards compability tests
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

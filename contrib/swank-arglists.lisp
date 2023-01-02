@@ -138,6 +138,13 @@ Otherwise NIL is returned."
   (defparameter +lambda-list-keywords+
     '(&provided &required &optional &rest &key &any)))
 
+;; muffle warnings about using accessors prior to the definition of struct
+(declaim (notinline keyword-arg.keyword
+                    keyword-arg.arg-name
+                    keyword-arg.default-arg
+                    optional-arg.arg-name
+                    optional-arg.default-arg))
+
 (defmacro do-decoded-arglist (decoded-arglist &body clauses)
   (assert (loop for clause in clauses
 		thereis (member (car clause) +lambda-list-keywords+)))
