@@ -100,22 +100,22 @@ The portable code calls this function at startup."
 
 (defun import-to-swank-mop (symbol-list)
   (dolist (sym symbol-list)
-    (let* ((swank-mop-sym (find-symbol (symbol-name sym) :swank-mop)))
+    (let* ((swank-mop-sym (find-symbol (symbol-name sym) :lsp-backend/mop)))
       (when swank-mop-sym
-        (unintern swank-mop-sym :swank-mop))
-      (import sym :swank-mop)
-      (export sym :swank-mop))))
+        (unintern swank-mop-sym :lsp-backend/mop))
+      (import sym :lsp-backend/mop)
+      (export sym :lsp-backend/mop))))
 
 (defun import-swank-mop-symbols (package except)
-  "Import the mop symbols from PACKAGE to SWANK-MOP.
+  "Import the mop symbols from PACKAGE to lsp-backend/mop.
 EXCEPT is a list of symbol names which should be ignored."
-  (do-symbols (s :swank-mop)
+  (do-symbols (s :lsp-backend/mop)
     (unless (member s except :test #'string=)
       (let ((real-symbol (find-symbol (string s) package)))
         (assert real-symbol () "Symbol ~A not found in package ~A" s package)
-        (unintern s :swank-mop)
-        (import real-symbol :swank-mop)
-        (export real-symbol :swank-mop)))))
+        (unintern s :lsp-backend/mop)
+        (import real-symbol :lsp-backend/mop)
+        (export real-symbol :lsp-backend/mop)))))
 
 (definterface gray-package-name ()
   "Return a package-name that contains the Gray stream symbols.

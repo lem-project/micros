@@ -78,8 +78,7 @@
   (:use cl)
   (:export match))
 
-;; FIXME: rename to sawnk/mop
-(defpackage swank-mop
+(defpackage lsp-backend/mop
   (:use)
   (:export
    ;; classes

@@ -3537,9 +3537,9 @@ The server port is written to PORT-FILE-NAME."
   (let ((symbol (parse-symbol symbol-name *buffer-package*)))
     (ecase type
       (:subclasses
-       (mop-helper symbol #'swank-mop:class-direct-subclasses))
+       (mop-helper symbol #'lsp-backend/mop:class-direct-subclasses))
       (:superclasses 
-       (mop-helper symbol #'swank-mop:class-direct-superclasses)))))
+       (mop-helper symbol #'lsp-backend/mop:class-direct-superclasses)))))
 
 
 ;;;; Automatically synchronized state

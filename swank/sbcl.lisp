@@ -52,11 +52,11 @@
             (fboundp sym)
             (funcall sym :setf :inverse ()))))))
 
-;;; swank-mop
+;;; lsp-backend/mop
 
 (import-swank-mop-symbols :sb-mop '(:slot-definition-documentation))
 
-(defun swank-mop:slot-definition-documentation (slot)
+(defun lsp-backend/mop:slot-definition-documentation (slot)
   (sb-pcl::documentation slot t))
 
 ;; stream support
