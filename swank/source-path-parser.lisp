@@ -23,7 +23,7 @@
 
 ;;; Taken from swank-cmucl.lisp, by Helmut Eller
 
-(defpackage swank/source-path-parser
+(defpackage lsp-backend/source-path-parser
   (:use cl)
   (:export
    read-source-form
@@ -35,7 +35,7 @@
    sexp-ref)
   (:shadow ignore-errors))
 
-(in-package swank/source-path-parser)
+(in-package lsp-backend/source-path-parser)
 
 ;; Some test to ensure the required conformance
 (let ((rt (copy-readtable nil)))
