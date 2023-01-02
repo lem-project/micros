@@ -1,7 +1,6 @@
 (defsystem "lsp-backend"
   :serial t
-  :components ((:file "swank-loader")
-               (:file "packages")
+  :components ((:file "packages")
                (:module "sbcl"
                 :pathname "swank"
                 :components ((:file "backend")
