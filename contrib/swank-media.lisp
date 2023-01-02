@@ -5,7 +5,7 @@
 ;; Licence: GPLv2 or later
 ;;
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 ;; this file is empty of functionality.  The slime-media contrib
 ;; allows swank to return messages other than :write-string as repl

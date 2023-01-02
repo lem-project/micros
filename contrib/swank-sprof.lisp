@@ -5,7 +5,7 @@
 ;; License: MIT
 ;;
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 #+sbcl
 (eval-when (:compile-toplevel :load-toplevel :execute)

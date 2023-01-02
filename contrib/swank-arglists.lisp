@@ -7,7 +7,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (swank-require :swank-c-p-c))
@@ -1119,7 +1119,7 @@ If the arglist is not available, return :NOT-AVAILABLE."))
 ;;; We work on a RAW-FORM, or BUFFER-FORM, which represent the form at
 ;;; user's point in Emacs. A RAW-FORM looks like
 ;;;
-;;;       ("FOO" ("BAR" ...) "QUUX" ("ZURP" SWANK::%CURSOR-MARKER%))
+;;;       ("FOO" ("BAR" ...) "QUUX" ("ZURP" LSP-BACKEND::%CURSOR-MARKER%))
 ;;;
 ;;; The expression before the cursor marker is the expression where
 ;;; user's cursor points at. An explicit marker is necessary to
@@ -1572,7 +1572,7 @@ datum for subsequent logics to rely on."
 
 (defun test-print-arglist ()
   (flet ((test (arglist &rest strings)
-           (let* ((*package* (find-package :swank))
+           (let* ((*package* (find-package :lsp-backend))
                   (actual (decoded-arglist-to-string
                            (decode-arglist arglist)
                            :print-right-margin 1000)))

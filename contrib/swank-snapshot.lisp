@@ -7,27 +7,27 @@
 
 (defslimefun save-snapshot (image-file)
   (lsp-backend/backend:save-image image-file 
-			    (let ((c swank::*emacs-connection*))
+			    (let ((c lsp-backend::*emacs-connection*))
 			      (lambda () (resurrect c))))
   (format nil "Dumped lisp to ~A" image-file))
 
 (defslimefun restore-snapshot (image-file)
-  (let* ((conn swank::*emacs-connection*)
-	 (stream (swank::connection.socket-io conn))
+  (let* ((conn lsp-backend::*emacs-connection*)
+	 (stream (lsp-backend::connection.socket-io conn))
 	 (clone (lsp-backend/backend:dup (lsp-backend/backend:socket-fd stream)))
-	 (style (swank::connection.communication-style conn))
-	 (repl (if (swank::connection.user-io conn) t))
+	 (style (lsp-backend::connection.communication-style conn))
+	 (repl (if (lsp-backend::connection.user-io conn) t))
 	 (args (list "--swank-fd" (format nil "~d" clone)
 		     "--swank-style" (format nil "~s" style)
 		     "--swank-repl" (format nil "~s" repl))))
-    (swank::close-connection conn nil nil)
+    (lsp-backend::close-connection conn nil nil)
     (lsp-backend/backend:exec-image image-file args)))
 
 (defslimefun background-save-snapshot (image-file)
-  (let ((connection swank::*emacs-connection*))
+  (let ((connection lsp-backend::*emacs-connection*))
     (flet ((complete (success)
-	     (let ((swank::*emacs-connection* connection))
-	       (swank::background-message
+	     (let ((lsp-backend::*emacs-connection* connection))
+	       (lsp-backend::background-message
 		"Dumping lisp image ~A ~:[failed!~;succeeded.~]" 
 		image-file success)))
 	   (awaken ()
@@ -37,7 +37,7 @@
 					   :completion-function #'complete)
       (format nil "Started dumping lisp to ~A..." image-file))))
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (defun swank-snapshot::resurrect (old-connection)
   (setq *log-output* nil)

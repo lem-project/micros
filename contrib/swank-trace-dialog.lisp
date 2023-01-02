@@ -1,6 +1,6 @@
 (defpackage :swank-trace-dialog
   (:use :cl)
-  (:import-from :swank :defslimefun :from-string :to-string)
+  (:import-from :lsp-backend :defslimefun :from-string :to-string)
   (:export #:clear-trace-tree
            #:dialog-toggle-trace
            #:dialog-trace
@@ -83,7 +83,7 @@ program.")
          (l (and trace
                  (ecase type
                    (:arg (args-of trace))
-                   (:retval (swank::ensure-list (retlist-of trace)))))))
+                   (:retval (lsp-backend::ensure-list (retlist-of trace)))))))
     (values (nth part-id l)
             (< part-id (length l)))))
 
@@ -92,7 +92,7 @@ program.")
    #'(lambda ()
        (loop for i from 0
              for frame in (lsp-backend/backend:compute-backtrace 0 20)
-             collect (list i (swank::frame-to-string frame))))))
+             collect (list i (lsp-backend::frame-to-string frame))))))
 
 (defun current-trace ()
   (gethash (lsp-backend/backend:current-thread) *current-trace-by-thread*))
@@ -149,7 +149,7 @@ program.")
 
 (defparameter *dialog-trace-follows-trace* nil)
 
-(setq swank:*after-toggle-trace-hook*
+(setq lsp-backend:*after-toggle-trace-hook*
       #'(lambda (spec traced-p)
           (when *dialog-trace-follows-trace*
             (cond (traced-p
@@ -185,10 +185,10 @@ program.")
     ,(spec-of trace)
     ,(loop for arg in (args-of trace)
            for i from 0
-           collect (list i (swank::to-line arg)))
-    ,(loop for retval in (swank::ensure-list (retlist-of trace))
+           collect (list i (lsp-backend::to-line arg)))
+    ,(loop for retval in (lsp-backend::ensure-list (retlist-of trace))
            for i from 0
-           collect (list i (swank::to-line retval)))))
+           collect (list i (lsp-backend::to-line retval)))))
 
 (defslimefun report-partial-tree (key)
   (unless (equal key *visitor-key*)
@@ -220,15 +220,15 @@ program.")
     key)))
 
 (defslimefun report-trace-detail (trace-id)
-  (swank::call-with-bindings
-   swank::*inspector-printer-bindings*
+  (lsp-backend::call-with-bindings
+   lsp-backend::*inspector-printer-bindings*
    #'(lambda ()
        (let ((trace (find-trace trace-id)))
          (when trace
            (append
             (describe-trace-for-emacs trace)
             (list (backtrace-of trace)
-                  (swank::to-line trace))))))))
+                  (lsp-backend::to-line trace))))))))
 
 (defslimefun report-specs ()
   (sort (copy-list *traced-specs*)
@@ -247,18 +247,18 @@ program.")
    #'(lambda () (setf (fill-pointer *traces*) 0)))
   nil)
 
-;; HACK: `swank::*inspector-history*' is unbound by default and needs
-;; a reset in that case so that it won't error `swank::inspect-object'
+;; HACK: `lsp-backend::*inspector-history*' is unbound by default and needs
+;; a reset in that case so that it won't error `lsp-backend::inspect-object'
 ;; before any other object is inspected in the slime session.
 ;;
-(unless (boundp 'swank::*inspector-history*)
-  (swank::reset-inspector))
+(unless (boundp 'lsp-backend::*inspector-history*)
+  (lsp-backend::reset-inspector))
 
 (defslimefun inspect-trace-part (trace-id part-id type)
   (multiple-value-bind (obj found)
       (find-trace-part trace-id part-id type)
     (if found
-        (swank::inspect-object obj)
+        (lsp-backend::inspect-object obj)
         (error "No object found with ~a, ~a and ~a" trace-id part-id type))))
 
 (provide :swank-trace-dialog)

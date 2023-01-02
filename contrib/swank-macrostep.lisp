@@ -6,8 +6,8 @@
 ;; License: Public Domain
 
 (defpackage swank-macrostep
-  (:use cl swank)
-  (:import-from swank
+  (:use cl :lsp-backend)
+  (:import-from :lsp-backend
 		#:*macroexpand-printer-bindings*
                 #:with-buffer-syntax
 		#:with-bindings

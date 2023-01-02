@@ -2,7 +2,7 @@
 ;;
 ;; License: public domain
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (defmacro do-symbols* ((var &optional (package '*package*) result-form)
                        &body body)

@@ -5,7 +5,7 @@
 
 (defpackage :swank-clipboard
   (:use :cl)
-  (:import-from :swank :defslimefun :with-buffer-syntax :dcase)
+  (:import-from :lsp-backend :defslimefun :with-buffer-syntax :dcase)
   (:export :add :delete-entry :entries :entry-to-ref :ref))
 
 (in-package :swank-clipboard)
@@ -20,7 +20,7 @@
 		  (with-buffer-syntax (package)
 		    (eval (read-from-string string))))
 		 ((:inspector part) 
-		  (swank:inspector-nth-part part))
+		  (lsp-backend:inspector-nth-part part))
 		 ((:sldb frame var)
 		  (lsp-backend/backend:frame-var-value frame var)))))
     (clipboard-add value)

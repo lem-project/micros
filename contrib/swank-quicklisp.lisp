@@ -4,7 +4,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (defslimefun list-quicklisp-systems ()
   "Returns the Quicklisp systems list."

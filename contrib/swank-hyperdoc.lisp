@@ -1,4 +1,4 @@
-(in-package :swank)
+(in-package :lsp-backend)
 
 (defslimefun hyperdoc (string)
   (let ((hyperdoc-package (find-package :hyperdoc)))

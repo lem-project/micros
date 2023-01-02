@@ -10,7 +10,7 @@
 ;;; them separately for each Lisp implementation. These extensions are
 ;;; available to us here via the `lsp-backend/backend' package.
 
-(in-package :swank)
+(in-package :lsp-backend)
 ;;;; Top-level variables, constants, macros
 
 (defconstant cl-package (find-package :cl)
@@ -767,7 +767,7 @@ e.g.: (restart-loop (http-request url) (use-value (new) (setq url new)))"
         (:spawn (initialize-multiprocessing
                  (lambda ()
                    (start-sentinel)
-                   (spawn #'serve-loop :name (format nil "Swank ~s" port)))))
+                   (spawn #'serve-loop :name (format nil "lsp-backend ~s" port)))))
         ((:fd-handler :sigio)
          (note)
          (add-fd-handler socket #'serve))
@@ -922,7 +922,7 @@ The processing is done in the extent of the toplevel restart."
 (defun close-connection% (c condition backtrace)
   (let ((*debugger-hook* nil))
     (log-event "close-connection: ~a ...~%" condition)
-    (format *log-output* "~&;; swank:close-connection: ~A~%"
+    (format *log-output* "~&;; lsp-backend:close-connection: ~A~%"
             (escape-non-ascii (safe-condition-message condition)))
     (stop-serving-requests c)
     (close (connection.socket-io c))
@@ -3743,10 +3743,10 @@ Collisions are caused because package information is ignored."
 (defun make-output-function-for-target (connection target)
   "Create a function to send user output to a specific TARGET in Emacs."
   (lambda (string)
-    (swank::with-connection (connection)
+    (lsp-backend::with-connection (connection)
       (with-simple-restart
           (abort "Abort sending output to Emacs.")
-        (swank::send-to-emacs `(:write-string ,string ,target))))))
+        (lsp-backend::send-to-emacs `(:write-string ,string ,target))))))
 
 (defun make-output-stream-for-target (connection target)
   "Create a stream that sends output to a specific TARGET in Emacs."
@@ -3784,7 +3784,7 @@ Collisions are caused because package information is ignored."
 
 
 (defun before-init (version load-path)
-  (pushnew :swank *features*)
+  (pushnew :lsp-backend *features*)
   (setq *swank-wire-protocol-version* version)
   (setq *load-path* load-path))
 

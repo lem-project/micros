@@ -278,7 +278,7 @@ If LOAD is true, load the fasl file."
                         quiet)
   (with-compilation-unit ()
     (compile-files (src-files *swank-files* src-dir) fasl-dir t quiet))
-  (funcall (q "swank::before-init")
+  (funcall (q "lsp-backend::before-init")
            (slime-version-string)
            (list (contrib-dir fasl-dir)
                  (contrib-dir src-dir))))
@@ -311,8 +311,8 @@ If LOAD is true, load the fasl file."
   (when (#-clisp probe-file
          #+clisp ext:probe-directory
          (contrib-dir *source-directory*))
-    (eval `(pushnew 'compile-contribs ,(q "swank::*after-init-hook*"))))
-  (funcall (q "swank::init")))
+    (eval `(pushnew 'compile-contribs ,(q "lsp-backend::*after-init-hook*"))))
+  (funcall (q "lsp-backend::init")))
 
 (defun list-swank-packages ()
   (remove-if-not (lambda (package)
@@ -344,9 +344,9 @@ If SETUP is true, load user init files and initialize some
 global variabes in SWANK."
   (when from-emacs
     (setf *started-from-emacs* t))
-  (when (and delete (find-package :swank))
+  (when (and delete (find-package :lsp-backend))
     (delete-packages (list-swank-packages)))
-  (cond ((or (not (find-package :swank)) reload)
+  (cond ((or (not (find-package :lsp-backend)) reload)
          (load-swank :quiet quiet))
         (t
          (warn "Not reloading SWANK.  Package already exists.")))

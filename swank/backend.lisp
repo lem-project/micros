@@ -478,7 +478,7 @@ This is used to resolve filenames without directory component."
   (funcall fn))
 
 (definterface default-readtable-alist ()
-  "Return a suitable initial value for SWANK:*READTABLE-ALIST*."
+  "Return a suitable initial value for lsp-backend:*READTABLE-ALIST*."
   '())
 
 
@@ -1391,7 +1391,7 @@ Return :interrupt if an interrupt occurs while waiting."
    nil
    (lambda ()
      (error "~s not implemented. Check if ~s = ~s is supported by the implementation."
-            'wait-for-input 'swank:*communication-style* swank:*communication-style*))))
+            'wait-for-input 'lsp-backend:*communication-style* lsp-backend:*communication-style*))))
 
 
 ;;;;  Locks

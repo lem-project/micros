@@ -131,7 +131,7 @@
    compute-applicable-methods-using-classes
    finalize-inheritance))
 
-(defpackage swank
+(defpackage lsp-backend
   (:use cl lsp-backend/backend lsp-backend/match lsp-backend/rpc)
   (:export #:startup-multiprocessing
            #:start-server

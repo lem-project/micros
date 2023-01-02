@@ -14,7 +14,7 @@
  :reload nil         ; reload SWANK, even if the SWANK package already exists
  :load-contribs nil) ; load all contribs
 
-(swank:create-server :port 4005
+(lsp-backend:create-server :port 4005
                      ;; if non-nil the connection won't be closed
                      ;; after connecting
                      :dont-close nil)

@@ -1,5 +1,5 @@
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (defslimefun package= (string1 string2)
   (let* ((pkg1 (guess-package string1))

@@ -2,7 +2,7 @@
 ;;
 ;; Licence: public domain
 
-(in-package :swank)
+(in-package :lsp-backend)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (let ((api '(
 	       *emacs-connection*
@@ -23,7 +23,7 @@
 	       )))
     (eval `(defpackage #:swank-api
 	     (:use)
-	     (:import-from #:swank . ,api)
+	     (:import-from #:lsp-backend . ,api)
 	     (:export . ,api)))))
 
 (defpackage :swank-mrepl

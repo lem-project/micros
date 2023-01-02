@@ -1,13 +1,13 @@
 ;;; swank-repl.lisp --- Server side part of the Lisp listener.
 ;;
 ;; License: public domain
-(in-package swank)
+(in-package :lsp-backend)
 
 (defpackage swank-repl
   (:use cl lsp-backend/backend)
   (:export *send-repl-results-function*)
   (:import-from
-   swank
+   :lsp-backend
 
    *default-worker-thread-bindings*
 
@@ -110,7 +110,7 @@ DEDICATED-OUTPUT INPUT OUTPUT IO REPL-RESULTS"
          (out (or dedicated-output
                   (make-output-stream (make-output-function connection))))
          (io (make-two-way-stream in out))
-         (repl-results (swank:make-output-stream-for-target connection
+         (repl-results (lsp-backend:make-output-stream-for-target connection
                                                             :repl-result)))
     (typecase connection
       (multithreaded-connection
@@ -289,7 +289,7 @@ LISTENER-EVAL directly, so that spacial variables *, etc are set."
 
 (defslimefun redirect-trace-output (target)
   (setf (connection.trace-output *emacs-connection*)
-        (swank:make-output-stream-for-target *emacs-connection* target))
+        (lsp-backend:make-output-stream-for-target *emacs-connection* target))
   nil)
 
 
@@ -355,9 +355,9 @@ dynamic binding."
       (set-default-initial-binding stream-var `(quote ,stream)))))
 
 (defun prefixed-var (prefix variable-symbol)
-  "(PREFIXED-VAR \"FOO\" '*BAR*) => SWANK::*FOO-BAR*"
+  "(PREFIXED-VAR \"FOO\" '*BAR*) => lsp-backend::*FOO-BAR*"
   (let ((basename (subseq (symbol-name variable-symbol) 1)))
-    (intern (format nil "*~A-~A" (string prefix) basename) :swank)))
+    (intern (format nil "*~A-~A" (string prefix) basename) :lsp-backend)))
 
 (defvar *standard-output-streams*
   '(*standard-output* *error-output* *trace-output*)

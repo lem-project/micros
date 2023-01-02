@@ -6,7 +6,7 @@
 ;; can be used for easy interception of SLIME REPL form evaluation
 ;; for purposes such as integration with application event loop.
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (swank-require :swank-repl))

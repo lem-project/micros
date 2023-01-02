@@ -5,7 +5,7 @@
 ;;; License: This code has been placed in the Public Domain.  All warranties
 ;;;          are disclaimed.
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (defpackage :swank-buffer-streams
   (:use :cl)
@@ -32,8 +32,8 @@
           :keyword))
 
 (defun make-buffer-output-stream (&optional (target-identifier (get-temporary-identifier)))
-  (swank:ed-rpc '#:slime-make-buffer-stream-target (current-thread-id) target-identifier)
-  (values (swank:make-output-stream-for-target *emacs-connection* target-identifier)
+  (lsp-backend:ed-rpc '#:slime-make-buffer-stream-target (current-thread-id) target-identifier)
+  (values (lsp-backend:make-output-stream-for-target *emacs-connection* target-identifier)
           target-identifier))
 
 (provide :swank-buffer-streams)

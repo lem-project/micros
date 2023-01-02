@@ -142,7 +142,7 @@ subexpressions of the object to stream positions."
 (defun readtable-for-package (package)
   ;; KLUDGE: due to the load order we can't reference the swank
   ;; package.
-  (funcall (read-from-string "swank::guess-buffer-readtable")
+  (funcall (read-from-string "lsp-backend::guess-buffer-readtable")
            (string-upcase (package-name package))))
 
 ;; Search STREAM for a "(in-package ...)" form.  Use that to derive
@@ -150,7 +150,7 @@ subexpressions of the object to stream positions."
 ;;
 ;; IDEA: move GUESS-READER-STATE to swank.lisp so that all backends
 ;; use the same heuristic and to avoid the need to access
-;; swank::guess-buffer-readtable from here.
+;; lsp-backend::guess-buffer-readtable from here.
 (defun guess-reader-state (stream)
   (let* ((point (file-position stream))
 	 (pkg *package*))

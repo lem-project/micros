@@ -8,7 +8,7 @@
 ;;
 
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (swank-require :swank-util)

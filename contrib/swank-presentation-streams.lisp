@@ -8,7 +8,7 @@
 ;;; License: This code has been placed in the Public Domain.  All warranties
 ;;;          are disclaimed.
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (swank-require :swank-presentations))
@@ -216,7 +216,7 @@ says that I am starting to print an object with this id. The second says I am fi
   (let ((slime-stream-p 
 	 (and *record-repl-results* (slime-stream-p stream))))
     (if slime-stream-p
-	(let* ((pid (swank::save-presented-object object))
+	(let* ((pid (lsp-backend::save-presented-object object))
 	       (record (make-presentation-record :id pid :printed-p nil
 						 :target (if (eq slime-stream-p :repl-result)
 							     :repl-result
@@ -254,7 +254,7 @@ says that I am starting to print an object with this id. The second says I am fi
     (defun %print-unreadable-object (object stream type id thunk)
       (cond ((null stream) (setq stream *standard-output*))
 	    ((eq stream t) (setq stream *terminal-io*)))
-      (swank::presenting-object object stream
+      (lsp-backend::presenting-object object stream
 	(write-unreadable-start object stream)
 	(when type
 	  (princ (type-of object) stream)
@@ -266,13 +266,13 @@ says that I am starting to print an object with this id. The second says I am fi
 	    (pp-end-block stream ">"))
 	nil))
     (defmethod print-object :around ((pathname pathname) stream)
-      (swank::presenting-object-if
-	  (swank::can-present-readable-objects stream)
+      (lsp-backend::presenting-object-if
+	  (lsp-backend::can-present-readable-objects stream)
 	  pathname stream (call-next-method))))
   (ccl::def-load-pointers clear-presentations ()
-    (swank::clear-presentation-tables)))
+    (lsp-backend::clear-presentation-tables)))
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 #+cmu
 (progn
@@ -309,7 +309,7 @@ says that I am starting to print an object with this id. The second says I am fi
 #+allegro
 (progn
   (excl:def-fwrapper presenting-unreadable-wrapper (object stream type identity continuation)
-    (swank::presenting-object object stream (excl:call-next-fwrapper)))
+    (lsp-backend::presenting-object object stream (excl:call-next-fwrapper)))
   (excl:def-fwrapper presenting-pathname-wrapper (pathname stream depth)
     (presenting-object-if (can-present-readable-objects stream) pathname stream
       (excl:call-next-fwrapper)))

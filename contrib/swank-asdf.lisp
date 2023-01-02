@@ -8,7 +8,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :swank)
+(in-package :lsp-backend)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 ;;; The best way to load ASDF is from an init file of an
@@ -17,7 +17,7 @@
 ;;; doesn't help and *asdf-path* is set, it will be loaded from that
 ;;; file.
 ;;; To set *asdf-path* put the following into ~/.swank.lisp:
-;;; (defparameter swank::*asdf-path* #p"/path/to/asdf/asdf.lisp")
+;;; (defparameter lsp-backend::*asdf-path* #p"/path/to/asdf/asdf.lisp")
   (defvar *asdf-path* nil
     "Path to asdf.lisp file, to be loaded in case (require \"asdf\") fails."))
 
@@ -37,7 +37,7 @@
     (error "Could not load ASDF.
 Please update your implementation or
 install a recent release of ASDF and in your ~~/.swank.lisp specify:
- (defparameter swank::*asdf-path* #p\"/path/containing/asdf/asdf.lisp\")")))
+ (defparameter lsp-backend::*asdf-path* #p\"/path/containing/asdf/asdf.lisp\")")))
 
 ;;; If ASDF is too old, punt.
 ;; As of January 2014, Quicklisp has been providing 2.26 for a year

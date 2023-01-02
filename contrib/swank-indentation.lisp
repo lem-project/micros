@@ -1,4 +1,4 @@
-(in-package :swank)
+(in-package :lsp-backend)
 
 (defvar *application-hints-tables* '()
   "A list of hash tables mapping symbols to indentation hints (lists 
