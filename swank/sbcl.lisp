@@ -12,7 +12,7 @@
 ;;; Administrivia
 
 (defpackage lsp-backend/sbcl
-  (:use cl lsp-backend/backend swank/source-path-parser swank/source-file-cache))
+  (:use cl lsp-backend/backend swank/source-path-parser lsp-backend/source-file-cache))
 
 (in-package lsp-backend/sbcl)
 

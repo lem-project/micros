@@ -20,7 +20,7 @@
 ;;; This code has been placed in the Public Domain.  All warranties
 ;;; are disclaimed.
 
-(defpackage swank/source-file-cache
+(defpackage lsp-backend/source-file-cache
   (:use cl)
   (:import-from lsp-backend/backend
 		defimplementation buffer-first-change
@@ -35,7 +35,7 @@
    read-snippet-from-string
    ))
 
-(in-package swank/source-file-cache)
+(in-package lsp-backend/source-file-cache)
 
 (defvar *cache-sourcecode* t
   "When true complete source files are cached.
