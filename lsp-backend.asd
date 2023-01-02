@@ -1,4 +1,5 @@
 (defsystem "lsp-backend"
+  :version "0.0.0"
   :serial t
   :components ((:file "packages")
                (:module "sbcl"

@@ -1448,8 +1448,8 @@ Emacs Lisp via `defslimefun' or otherwise marked as RPCallable."
                              ,@args))
     (wait-for-emacs-return tag)))
 
-(defvar *swank-wire-protocol-version* nil
-  "The version of the swank/slime communication protocol.")
+(defun version ()
+  (asdf:component-version (asdf:find-system :lsp-backend)))
 
 (defslimefun connection-info ()
   "Return a key-value list of the form: 
@@ -1477,7 +1477,7 @@ VERSION: the protocol version"
       :modules ,*modules*
       :package (:name ,(package-name *package*)
                :prompt ,(package-string-for-prompt *package*))
-      :version ,*swank-wire-protocol-version*)))
+      :version (version))))
 
 (defun debug-on-swank-error ()
   (assert (eq *debug-on-swank-protocol-error* *debug-swank-backend*))
