@@ -20,7 +20,6 @@
                              (:file "swank-fancy-inspector" :depends-on ("swank-util"))
                              (:file "swank-presentations" :depends-on ("swank-repl"))
                              (:file "swank-presentation-streams" :depends-on ("swank-presentations"))
-                             (:file "swank-asdf")
                              (:file "swank-package-fu")
                              (:file "swank-hyperdoc")
                              (:file "swank-sbcl-exts" :depends-on ("swank-arglists"))
@@ -29,6 +28,7 @@
                              (:file "swank-macrostep")
                              (:file "swank-quicklisp")
 
+                             ;; (:file "swank-asdf")
                              ;; (:file "swank-buffer-streams")
                              ;; (:file "clipboard")
                              ;; (:file "indentation")
