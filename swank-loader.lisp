@@ -357,7 +357,7 @@ global variabes in SWANK."
 
 (defun dump-image (filename)
   (init :setup nil)
-  (funcall (q "swank/backend:save-image") filename))
+  (funcall (q "lsp-backend/backend:save-image") filename))
 
 (defun list-fasls (&key (include-contribs t) (compile t)
                         (quiet (not *compile-verbose*)))

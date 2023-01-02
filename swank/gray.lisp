@@ -8,7 +8,7 @@
 ;;; are disclaimed.
 ;;;
 
-(in-package swank/backend)
+(in-package lsp-backend/backend)
 
 #.(progn
     (defvar *gray-stream-symbols*
@@ -33,7 +33,7 @@
     nil)
 
 (defpackage swank/gray
-  (:use cl swank/backend)
+  (:use cl lsp-backend/backend)
   (:import-from #.(gray-package-name) . #.*gray-stream-symbols*)
   (:export . #.*gray-stream-symbols*))
 

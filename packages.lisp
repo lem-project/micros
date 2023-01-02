@@ -1,4 +1,4 @@
-(defpackage swank/backend
+(defpackage lsp-backend/backend
   (:use cl)
   (:nicknames swank-backend)
   (:export *debug-swank-backend*
@@ -133,7 +133,7 @@
    finalize-inheritance))
 
 (defpackage swank
-  (:use cl swank/backend swank/match swank/rpc)
+  (:use cl lsp-backend/backend swank/match swank/rpc)
   (:export #:startup-multiprocessing
            #:start-server
            #:create-server

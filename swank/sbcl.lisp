@@ -12,7 +12,7 @@
 ;;; Administrivia
 
 (defpackage swank/sbcl
-  (:use cl swank/backend swank/source-path-parser swank/source-file-cache))
+  (:use cl lsp-backend/backend swank/source-path-parser swank/source-file-cache))
 
 (in-package swank/sbcl)
 
@@ -118,7 +118,7 @@
 
 (defimplementation create-socket (host port &key backlog)
   (let* ((host-ent (resolve-hostname host))
-         (socket (make-instance (cond #+#.(swank/backend:with-symbol 'inet6-socket 'sb-bsd-sockets)
+         (socket (make-instance (cond #+#.(lsp-backend/backend:with-symbol 'inet6-socket 'sb-bsd-sockets)
                                       ((eql (sb-bsd-sockets:host-ent-address-type host-ent) 10)
                                        'sb-bsd-sockets:inet6-socket)
                                       (t
@@ -248,7 +248,7 @@
 #-win32
 (defun input-ready-p (stream)
   (or (not (fd-stream-input-buffer-empty-p stream))
-      #+#.(swank/backend:with-symbol 'fd-stream-fd-type 'sb-impl)
+      #+#.(lsp-backend/backend:with-symbol 'fd-stream-fd-type 'sb-impl)
       (eq :regular (sb-impl::fd-stream-fd-type stream))
       (not (sb-impl::sysread-may-block-p stream))))
 
@@ -450,17 +450,17 @@
 
 ;;; Packages
 
-#+#.(swank/backend:with-symbol 'package-local-nicknames 'sb-ext)
+#+#.(lsp-backend/backend:with-symbol 'package-local-nicknames 'sb-ext)
 (defimplementation package-local-nicknames (package)
   (sb-ext:package-local-nicknames package))
 
 ;;; Utilities
 
-#+#.(swank/backend:with-symbol 'function-lambda-list 'sb-introspect)
+#+#.(lsp-backend/backend:with-symbol 'function-lambda-list 'sb-introspect)
 (defimplementation arglist (fname)
   (sb-introspect:function-lambda-list fname))
 
-#-#.(swank/backend:with-symbol 'function-lambda-list 'sb-introspect)
+#-#.(lsp-backend/backend:with-symbol 'function-lambda-list 'sb-introspect)
 (defimplementation arglist (fname)
   (sb-introspect:function-arglist fname))
 
@@ -482,7 +482,7 @@
                     flags :key #'ensure-list))
           (call-next-method)))))
 
-#+#.(swank/backend:with-symbol 'deftype-lambda-list 'sb-introspect)
+#+#.(lsp-backend/backend:with-symbol 'deftype-lambda-list 'sb-introspect)
 (defmethod type-specifier-arglist :around (typespec-operator)
   (multiple-value-bind (arglist foundp)
       (sb-introspect:deftype-lambda-list typespec-operator)
@@ -523,13 +523,13 @@ information."
                       (sb-c:compiler-error  :error)
                       (reader-error         :read-error)
                       (error                :error)
-                      #+#.(swank/backend:with-symbol early-deprecation-warning sb-ext)
+                      #+#.(lsp-backend/backend:with-symbol early-deprecation-warning sb-ext)
                       (sb-ext::early-deprecation-warning :early-deprecation-warning)
-                      #+#.(swank/backend:with-symbol late-deprecation-warning sb-ext)
+                      #+#.(lsp-backend/backend:with-symbol late-deprecation-warning sb-ext)
                       (sb-ext::late-deprecation-warning :late-deprecation-warning)
-                      #+#.(swank/backend:with-symbol final-deprecation-warning sb-ext)
+                      #+#.(lsp-backend/backend:with-symbol final-deprecation-warning sb-ext)
                       (sb-ext::final-deprecation-warning :final-deprecation-warning)
-                      #+#.(swank/backend:with-symbol redefinition-warning
+                      #+#.(lsp-backend/backend:with-symbol redefinition-warning
                             sb-kernel)
                       (sb-kernel:redefinition-warning
                        :redefinition)
@@ -679,7 +679,7 @@ compiler state."
 (defun compiler-policy (qualities)
   "Return compiler policy qualities present in the QUALITIES alist.
 QUALITIES is an alist with (quality . value)"
-  #+#.(swank/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
+  #+#.(lsp-backend/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
   (loop with policy = (sb-ext:restrict-compiler-policy)
         for (quality) in qualities
         collect (cons quality
@@ -688,7 +688,7 @@ QUALITIES is an alist with (quality . value)"
 
 (defun (setf compiler-policy) (policy)
   (declare (ignorable policy))
-  #+#.(swank/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
+  #+#.(lsp-backend/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
   (loop for (qual . value) in policy
         do (sb-ext:restrict-compiler-policy qual value)))
 
@@ -879,7 +879,7 @@ QUALITIES is an alist with (quality . value)"
             (pathname :file-without-position)
             (t :invalid)))))
 
-#+#.(swank/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+#+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
 (defun form-number-position (definition-source stream)
   (let* ((tlf-number (car (sb-introspect:definition-source-form-path definition-source)))
          (form-number (sb-introspect:definition-source-form-number definition-source)))
@@ -892,7 +892,7 @@ QUALITIES is an alist with (quality . value)"
                           (reverse (cdr (aref path-table form-number)))))))
         (source-path-source-position path tlf pos-map)))))
 
-#+#.(swank/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+#+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
 (defun file-form-number-position (definition-source)
   (let* ((code-date (sb-introspect:definition-source-file-write-date definition-source))
          (filename (sb-introspect:definition-source-pathname definition-source))
@@ -902,7 +902,7 @@ QUALITIES is an alist with (quality . value)"
       (with-input-from-string (s source-code)
         (form-number-position definition-source s)))))
 
-#+#.(swank/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+#+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
 (defun string-form-number-position (definition-source string)
   (with-input-from-string (s string)
     (form-number-position definition-source s)))
@@ -919,7 +919,7 @@ QUALITIES is an alist with (quality . value)"
           (or
            (and form-path
                 (or
-                 #+#.(swank/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+                 #+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
                  (setf (values start end)
                        (and (sb-introspect:definition-source-form-number definition-source)
                             (string-form-number-position definition-source emacs-string)))
@@ -941,7 +941,7 @@ QUALITIES is an alist with (quality . value)"
     (let* ((namestring (namestring (translate-logical-pathname pathname)))
            (pos (or (and form-path
                          (or
-                          #+#.(swank/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+                          #+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
                           (and (sb-introspect:definition-source-form-number definition-source)
                                (ignore-errors (file-form-number-position definition-source)))
                           (ignore-errors
@@ -1068,7 +1068,7 @@ Return NIL if the symbol is unbound."
   (defxref who-sets)
   (defxref who-references)
   (defxref who-macroexpands)
-  #+#.(swank/backend:with-symbol 'who-specializes-directly 'sb-introspect)
+  #+#.(lsp-backend/backend:with-symbol 'who-specializes-directly 'sb-introspect)
   (defxref who-specializes who-specializes-directly))
 
 (defun source-location-for-xref-data (xref-data)
@@ -1199,9 +1199,9 @@ Return a list of the form (NAME LOCATION)."
   (let ((*sldb-stack-top*
           (if (and (not *debug-swank-backend*)
                    sb-debug:*stack-top-hint*)
-              #+#.(swank/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
+              #+#.(lsp-backend/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
               (sb-debug::resolve-stack-top-hint)
-              #-#.(swank/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
+              #-#.(lsp-backend/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
               sb-debug:*stack-top-hint*
               (sb-di:top-frame)))
         (sb-debug:*stack-top-hint* nil))
@@ -1293,11 +1293,11 @@ stack."
                         *package*)))
     (if (getf plist :emacs-buffer)
         (emacs-buffer-source-location code-location plist)
-        #+#.(swank/backend:with-symbol 'debug-source-from 'sb-di)
+        #+#.(lsp-backend/backend:with-symbol 'debug-source-from 'sb-di)
         (ecase (sb-di:debug-source-from dsource)
           (:file (file-source-location code-location))
           (:lisp (lisp-source-location code-location)))
-        #-#.(swank/backend:with-symbol 'debug-source-from 'sb-di)
+        #-#.(lsp-backend/backend:with-symbol 'debug-source-from 'sb-di)
         (if (sb-di:debug-source-namestring dsource)
             (file-source-location code-location)
             (lisp-source-location code-location)))))
@@ -1361,7 +1361,7 @@ stack."
                          `(:snippet ,snippet)))))))
 
 (defun code-location-debug-source-name (code-location)
-  (namestring (truename (#.(swank/backend:choose-symbol
+  (namestring (truename (#.(lsp-backend/backend:choose-symbol
                             'sb-c 'debug-source-name
                             'sb-c 'debug-source-namestring)
                            (sb-di::code-location-debug-source code-location)))))
@@ -1626,7 +1626,7 @@ stack."
    `("Constants:" (:newline))
    (loop for i from sb-vm:code-constants-offset
          below
-         (#.(swank/backend:choose-symbol 'sb-kernel 'code-header-words
+         (#.(lsp-backend/backend:choose-symbol 'sb-kernel 'code-header-words
                                          'sb-kernel 'get-header-data)
             o)
          append (label-value-line i (sb-kernel:code-header-ref o i)))
@@ -1655,7 +1655,7 @@ stack."
 ;;;; Multiprocessing
 
 #+(and sb-thread
-       #.(swank/backend:with-symbol "THREAD-NAME" "SB-THREAD"))
+       #.(lsp-backend/backend:with-symbol "THREAD-NAME" "SB-THREAD"))
 (progn
   (defvar *thread-id-counter* 0)
 
@@ -1805,9 +1805,9 @@ stack."
         (cdr (assoc name alist))))))
 
 (defimplementation quit-lisp ()
-  #+#.(swank/backend:with-symbol 'exit 'sb-ext)
+  #+#.(lsp-backend/backend:with-symbol 'exit 'sb-ext)
   (sb-ext:exit)
-  #-#.(swank/backend:with-symbol 'exit 'sb-ext)
+  #-#.(lsp-backend/backend:with-symbol 'exit 'sb-ext)
   (progn
     #+sb-thread
     (dolist (thread (remove (current-thread) (all-threads)))
@@ -1919,10 +1919,10 @@ stack."
         (sb-alien:free-alien a-args))))
 
   (defun runtime-pathname ()
-    #+#.(swank/backend:with-symbol
+    #+#.(lsp-backend/backend:with-symbol
             '*runtime-pathname* 'sb-ext)
     sb-ext:*runtime-pathname*
-    #-#.(swank/backend:with-symbol
+    #-#.(lsp-backend/backend:with-symbol
             '*runtime-pathname* 'sb-ext)
     (car sb-ext:*posix-argv*))
 
@@ -1981,9 +1981,9 @@ stack."
 ;;;; wrap interface implementation
 
 (defun sbcl-version>= (&rest subversions)
-  #+#.(swank/backend:with-symbol 'assert-version->= 'sb-ext)
+  #+#.(lsp-backend/backend:with-symbol 'assert-version->= 'sb-ext)
   (values (ignore-errors (apply #'sb-ext:assert-version->= subversions) t))
-  #-#.(swank/backend:with-symbol 'assert-version->= 'sb-ext)
+  #-#.(lsp-backend/backend:with-symbol 'assert-version->= 'sb-ext)
   nil)
 
 (defimplementation wrap (spec indicator &key before after replace)
@@ -1992,10 +1992,10 @@ stack."
           spec indicator)
     (sb-int:unencapsulate spec indicator))
   (sb-int:encapsulate spec indicator
-                      #-#.(swank/backend:with-symbol 'arg-list 'sb-int)
+                      #-#.(lsp-backend/backend:with-symbol 'arg-list 'sb-int)
                       (lambda (function &rest args)
                         (sbcl-wrap spec before after replace function args))
-                      #+#.(swank/backend:with-symbol 'arg-list 'sb-int)
+                      #+#.(lsp-backend/backend:with-symbol 'arg-list 'sb-int)
                       (if (sbcl-version>= 1 1 16)
                           (lambda ()
                             (sbcl-wrap spec before after replace
@@ -2027,7 +2027,7 @@ stack."
       (when after
         (funcall after (if completed retlist :exited-non-locally))))))
 
-#+#.(swank/backend:with-symbol 'comma-expr 'sb-impl)
+#+#.(lsp-backend/backend:with-symbol 'comma-expr 'sb-impl)
 (progn
   (defmethod sexp-in-bounds-p ((s sb-impl::comma) i)
     (sexp-in-bounds-p (sb-impl::comma-expr s) i))

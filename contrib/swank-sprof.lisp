@@ -53,7 +53,7 @@
   (let ((swank-packages (load-time-value
                          (mapcar #'find-package
                                  '(swank swank/rpc swank/mop
-                                   swank/match swank/backend)))))
+                                   swank/match lsp-backend/backend)))))
     (remove-if (lambda (node)
                  (let ((name (sb-sprof::node-name node)))
                    (and (symbolp name)
@@ -138,9 +138,9 @@
          (debug-info (sb-sprof::node-debug-info node)))
     (or (when (typep debug-info 'sb-di::compiled-debug-fun)
           (let* ((component (sb-di::compiled-debug-fun-component debug-info))
-                 (function #-#.(swank/backend:with-symbol '%code-entry-point 'sb-kernel)
+                 (function #-#.(lsp-backend/backend:with-symbol '%code-entry-point 'sb-kernel)
                            (sb-kernel::%code-entry-points component)
-                           #+#.(swank/backend:with-symbol '%code-entry-point 'sb-kernel)
+                           #+#.(lsp-backend/backend:with-symbol '%code-entry-point 'sb-kernel)
                            (sb-kernel:%code-entry-point component 0)))
             (when function
               (find-source-location function))))

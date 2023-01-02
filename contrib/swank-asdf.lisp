@@ -352,7 +352,7 @@ install a recent release of ASDF and in your ~~/.swank.lisp specify:
           for asd-file = (asdf:system-definition-pathname dependency)
           when asd-file
           collect (list dependency
-                        (swank/backend:make-location
+                        (lsp-backend/backend:make-location
                          `(:file ,(namestring asd-file))
                          `(:position 1)
                          `(:snippet ,(format nil "(defsystem :~A" dependency)
@@ -425,9 +425,9 @@ already knows."
       (f component))))
 
 (defun make-operation (x)
-  #+#.(swank/backend:with-symbol 'make-operation 'asdf)
+  #+#.(lsp-backend/backend:with-symbol 'make-operation 'asdf)
   (asdf:make-operation x)
-  #-#.(swank/backend:with-symbol 'make-operation 'asdf)
+  #-#.(lsp-backend/backend:with-symbol 'make-operation 'asdf)
   (make-instance x))
 
 (defun asdf-component-output-files (component)

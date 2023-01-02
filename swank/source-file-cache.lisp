@@ -22,7 +22,7 @@
 
 (defpackage swank/source-file-cache
   (:use cl)
-  (:import-from swank/backend
+  (:import-from lsp-backend/backend
 		defimplementation buffer-first-change
 		guess-external-format
 		find-external-format)
