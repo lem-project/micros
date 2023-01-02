@@ -32,12 +32,12 @@
       #+sbcl stream-file-position))
     nil)
 
-(defpackage swank/gray
+(defpackage lsp-backend/gray
   (:use cl lsp-backend/backend)
   (:import-from #.(gray-package-name) . #.*gray-stream-symbols*)
   (:export . #.*gray-stream-symbols*))
 
-(in-package swank/gray)
+(in-package lsp-backend/gray)
 
 (defclass slime-output-stream (fundamental-character-output-stream)
   ((output-fn :initarg :output-fn)
