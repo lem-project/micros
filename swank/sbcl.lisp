@@ -11,10 +11,10 @@
 
 ;;; Administrivia
 
-(defpackage swank/sbcl
+(defpackage lsp-backend/sbcl
   (:use cl lsp-backend/backend swank/source-path-parser swank/source-file-cache))
 
-(in-package swank/sbcl)
+(in-package lsp-backend/sbcl)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require 'sb-bsd-sockets)
@@ -1004,7 +1004,7 @@ QUALITIES is an alist with (quality . value)"
 
 (defun setf-expander (symbol)
   (or
-   #+#.(swank/sbcl::sbcl-with-setf-inverse-meta-info)
+   #+#.(lsp-backend/sbcl::sbcl-with-setf-inverse-meta-info)
    (sb-int:info :setf :inverse symbol)
    (sb-int:info :setf :expander symbol)))
 
@@ -1052,7 +1052,7 @@ Return NIL if the symbol is unbound."
     (:type
      (describe (sb-kernel:values-specifier-type symbol)))))
 
-#+#.(swank/sbcl::sbcl-with-xref-p)
+#+#.(lsp-backend/sbcl::sbcl-with-xref-p)
 (progn
   (defmacro defxref (name &optional fn-name)
     `(defimplementation ,name (what)
@@ -1106,9 +1106,9 @@ Return NIL if the symbol is unbound."
                 (equal (second a) (second b))))))
 
 (defun ignored-xref-function-names ()
-  #-#.(swank/sbcl::sbcl-with-new-stepper-p)
+  #-#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
   '(nil sb-c::step-form sb-c::step-values)
-  #+#.(swank/sbcl::sbcl-with-new-stepper-p)
+  #+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
   '(nil))
 
 (defun function-dspec (fn)
@@ -1173,7 +1173,7 @@ Return a list of the form (NAME LOCATION)."
   (set-break-hook function))
 
 (defimplementation condition-extras (condition)
-  (cond #+#.(swank/sbcl::sbcl-with-new-stepper-p)
+  (cond #+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
         ((typep condition 'sb-impl::step-form-condition)
          `((:show-frame-source 0)))
         ((typep condition 'sb-int:reference-condition)
@@ -1211,7 +1211,7 @@ Return a list of the form (NAME LOCATION)."
                                :original-condition condition))))
       (funcall debugger-loop-fn))))
 
-#+#.(swank/sbcl::sbcl-with-new-stepper-p)
+#+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
 (progn
   (defimplementation activate-stepping (frame)
     (declare (ignore frame))
@@ -1227,14 +1227,14 @@ Return a list of the form (NAME LOCATION)."
 
 (defimplementation call-with-debugger-hook (hook fun)
   (let ((*debugger-hook* hook)
-        #+#.(swank/sbcl::sbcl-with-new-stepper-p)
+        #+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
         (sb-ext:*stepper-hook*
          (lambda (condition)
            (typecase condition
              (sb-ext:step-form-condition
               (let ((sb-debug:*stack-top-hint* (sb-di::find-stepped-frame)))
                 (sb-impl::invoke-debugger condition)))))))
-    (handler-bind (#+#.(swank/sbcl::sbcl-with-new-stepper-p)
+    (handler-bind (#+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
                    (sb-ext:step-condition #'sb-impl::invoke-stepper))
       (call-with-break-hook hook fun))))
 
@@ -1258,7 +1258,7 @@ stack."
                               :emergency-best-effort t))
 
 (defimplementation frame-restartable-p (frame)
-  #+#.(swank/sbcl::sbcl-with-restart-frame)
+  #+#.(lsp-backend/sbcl::sbcl-with-restart-frame)
   (not (null (sb-debug:frame-has-debug-tag-p frame))))
 
 (defimplementation frame-call (frame-number)
@@ -1502,7 +1502,7 @@ stack."
           (symbol (symbol-package name))
           ((cons (eql setf) (cons symbol)) (symbol-package (cadr name))))))))
 
-#+#.(swank/sbcl::sbcl-with-restart-frame)
+#+#.(lsp-backend/sbcl::sbcl-with-restart-frame)
 (progn
   (defimplementation return-from-frame (index form)
     (let* ((frame (nth-frame index)))
@@ -1534,7 +1534,7 @@ stack."
 ;; FIXME: this implementation doesn't unwind the stack before
 ;; re-invoking the function, but it's better than no implementation at
 ;; all.
-#-#.(swank/sbcl::sbcl-with-restart-frame)
+#-#.(lsp-backend/sbcl::sbcl-with-restart-frame)
 (progn
   (defun sb-debug-catch-tag-p (tag)
     (and (symbolp tag)
@@ -1856,19 +1856,19 @@ stack."
 ;;; Weak datastructures
 
 (defimplementation make-weak-key-hash-table (&rest args)
-  #+#.(swank/sbcl::sbcl-with-weak-hash-tables)
+  #+#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table :weakness :key args)
-  #-#.(swank/sbcl::sbcl-with-weak-hash-tables)
+  #-#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table args))
 
 (defimplementation make-weak-value-hash-table (&rest args)
-  #+#.(swank/sbcl::sbcl-with-weak-hash-tables)
+  #+#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table :weakness :value args)
-  #-#.(swank/sbcl::sbcl-with-weak-hash-tables)
+  #-#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table args))
 
 (defimplementation hash-table-weakness (hashtable)
-  #+#.(swank/sbcl::sbcl-with-weak-hash-tables)
+  #+#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
   (sb-ext:hash-table-weakness hashtable))
 
 ;;; Floating point

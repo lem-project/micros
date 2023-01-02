@@ -102,7 +102,7 @@
                 (:defined
                  (or (sb-int:info :type :expander symbol) t))
                 (:primitive
-                 (or #.(if (swank/sbcl::sbcl-version>= 1 3 1)
+                 (or #.(if (lsp-backend/sbcl::sbcl-version>= 1 3 1)
                            '(let ((x (sb-int:info :type :expander symbol)))
                              (if (consp x)
                                  (car x)
