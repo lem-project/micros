@@ -2551,50 +2551,6 @@ Record compiler notes signalled as `compiler-condition's."
   (to-string (load (filename-to-pathname filename))))
 
 
-;;;;; swank-require
-
-(defslimefun swank-require (modules &optional filename)
-  "Load the module MODULE."
-  (dolist (module (ensure-list modules))
-    (unless (member (string module) *modules* :test #'string=)
-      (require module (if filename
-                          (filename-to-pathname filename)
-                          (module-filename module)))
-      (assert (member (string module) *modules* :test #'string=)
-              () "Required module ~s was not provided" module)))
-  *modules*)
-
-(defvar *find-module* 'find-module
-  "Pluggable function to locate modules.
-The function receives a module name as argument and should return
-the filename of the module (or nil if the file doesn't exist).")
-
-(defun module-filename (module)
-  "Return the filename for the module MODULE."
-  (or (funcall *find-module* module)
-      (error "Can't locate module: ~s" module)))
-
-;;;;;; Simple *find-module* function.
-
-(defun merged-directory (dirname defaults)
-  (pathname-directory
-   (merge-pathnames
-    (make-pathname :directory `(:relative ,dirname) :defaults defaults)
-    defaults)))
-
-(defvar *load-path* '()
-  "A list of directories to search for modules.")
-
-(defun module-candidates (name dir)
-  (list (compile-file-pathname (make-pathname :name name :defaults dir))
-        (make-pathname :name name :type "lisp" :defaults dir)))
-
-(defun find-module (module)
-  (let ((name (string-downcase module)))
-    (some (lambda (dir) (some #'probe-file (module-candidates name dir)))
-          *load-path*)))
-
-
 ;;;; Macroexpansion
 
 (defvar *macroexpand-printer-bindings*
