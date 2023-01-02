@@ -1,6 +1,5 @@
 (defpackage lsp-backend/backend
   (:use cl)
-  (:nicknames swank-backend)
   (:export *debug-swank-backend*
            *log-output*
            sldb-condition
