@@ -148,7 +148,7 @@ The secondary value indicates the absence of an entry."
 (defun swank-ioify (thing)
   (cond ((keywordp thing) thing)
 	((and (symbolp thing)(not (find #\: (symbol-name thing))))
-	 (intern (symbol-name thing) 'swank-io-package))
+         (intern (symbol-name thing) *swank-io-package*))
 	((consp thing) (cons (swank-ioify (car thing))
 			     (swank-ioify (cdr thing))))
 	(t thing)))

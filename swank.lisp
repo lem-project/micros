@@ -283,7 +283,7 @@ to T unless you want to debug swank internals.")
 ;;;;; Logging
 
 (defvar *swank-io-package*
-  (let ((package (make-package :swank-io-package :use '())))
+  (let ((package (make-package :lsp-backend/io-package :use '())))
     (import '(nil t quote) package)
     package))
 
