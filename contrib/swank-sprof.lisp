@@ -53,7 +53,7 @@
   (let ((swank-packages (load-time-value
                          (mapcar #'find-package
                                  '(swank lsp-backend/rpc swank/mop
-                                   swank/match lsp-backend/backend)))))
+                                   lsp-backend/match lsp-backend/backend)))))
     (remove-if (lambda (node)
                  (let ((name (sb-sprof::node-name node)))
                    (and (symbolp name)

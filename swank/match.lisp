@@ -84,7 +84,7 @@
 ;;      case, like OTHER above.
 ;;
 
-(in-package swank/match)
+(in-package lsp-backend/match)
 
 (defmacro match (expression &body patterns)
   `(select-match ,expression ,@patterns))

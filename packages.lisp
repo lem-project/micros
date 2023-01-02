@@ -74,7 +74,7 @@
    swank-reader-error.cause
    write-message))
 
-(defpackage swank/match
+(defpackage lsp-backend/match
   (:use cl)
   (:export match))
 
@@ -133,7 +133,7 @@
    finalize-inheritance))
 
 (defpackage swank
-  (:use cl lsp-backend/backend swank/match lsp-backend/rpc)
+  (:use cl lsp-backend/backend lsp-backend/match lsp-backend/rpc)
   (:export #:startup-multiprocessing
            #:start-server
            #:create-server
