@@ -3782,15 +3782,6 @@ Collisions are caused because package information is ignored."
       (force-output stream)
       (background-message "flow-control-test: ~d" i))))
 
-
-(defun before-init (version load-path)
-  (pushnew :lsp-backend *features*)
-  (setq *swank-wire-protocol-version* version)
-  (setq *load-path* load-path))
-
-(defun init ()
-  (run-hook *after-init-hook*))
-
 ;; Local Variables:
 ;; coding: latin-1-unix
 ;; indent-tabs-mode: nil
