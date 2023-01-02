@@ -52,7 +52,7 @@
 (defun filter-swank-nodes (nodes)
   (let ((swank-packages (load-time-value
                          (mapcar #'find-package
-                                 '(swank swank/rpc swank/mop
+                                 '(swank lsp-backend/rpc swank/mop
                                    swank/match lsp-backend/backend)))))
     (remove-if (lambda (node)
                  (let ((name (sb-sprof::node-name node)))

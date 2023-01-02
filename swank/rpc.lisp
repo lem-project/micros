@@ -8,7 +8,7 @@
 ;;; are disclaimed.
 ;;;
 
-(in-package swank/rpc)
+(in-package lsp-backend/rpc)
 
 
 ;;;;; Input

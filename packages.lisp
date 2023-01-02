@@ -64,7 +64,7 @@
            auto-flush-loop
            *auto-flush-interval*))
 
-(defpackage swank/rpc
+(defpackage lsp-backend/rpc
   (:use :cl)
   (:export
    read-message
@@ -133,7 +133,7 @@
    finalize-inheritance))
 
 (defpackage swank
-  (:use cl lsp-backend/backend swank/match swank/rpc)
+  (:use cl lsp-backend/backend swank/match lsp-backend/rpc)
   (:export #:startup-multiprocessing
            #:start-server
            #:create-server
