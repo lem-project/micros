@@ -1505,6 +1505,13 @@ stack."
           (symbol (symbol-package name))
           ((cons (eql setf) (cons symbol)) (symbol-package (cadr name))))))))
 
+(defun frame-args-as-list (frame)
+  (apply #'sb-debug::frame-args-as-list
+         frame
+         (if (sbcl-version>= 2 3 0)
+             '(100)
+             '())))
+
 #+#.(lsp-backend/sbcl::sbcl-with-restart-frame)
 (progn
   (defimplementation return-from-frame (index form)
@@ -1524,7 +1531,7 @@ stack."
               (if (and (sb-int:legal-fun-name-p fname) (fboundp fname))
                   (values (fdefinition fname) args)
                   (values (sb-di:debug-fun-fun (sb-di:frame-debug-fun frame))
-                          (sb-debug::frame-args-as-list frame)))
+                          (frame-args-as-list frame)))
             (when (functionp fun)
               (sb-debug:unwind-to-frame-and-call
                frame
