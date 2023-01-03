@@ -1477,7 +1477,7 @@ VERSION: the protocol version"
       :modules ,*modules*
       :package (:name ,(package-name *package*)
                :prompt ,(package-string-for-prompt *package*))
-      :version (version))))
+      :version ,(version))))
 
 (defun debug-on-swank-error ()
   (assert (eq *debug-on-swank-protocol-error* *debug-swank-backend*))
