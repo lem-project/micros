@@ -36,7 +36,8 @@
                              ;; (:file "listener-hooks" :depends-on ("swank-repl"))
                              ;; (:file "snapshot")
                              ;; (:file "sprof")
-                             ))))
+                             ))
+               (:file "lsp-api")))
 
 (defsystem "lsp-backend/client"
   :depends-on ("sb-concurrency"
