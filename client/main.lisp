@@ -1,6 +1,8 @@
 (defpackage :lsp-backend/client/main
   (:nicknames :lsp-backend/client)
   (:use :cl)
+  (:import-from :lsp-backend/client/port
+                :random-available-port)
   (:export :remote-eval
            :remote-eval-sync
            :start-server-and-connect
@@ -205,7 +207,7 @@
     (async-process:create-process command)))
 
 (defun start-server-and-connect ()
-  (let* ((port 12345) ; TODO: Find a random port that is available.
+  (let* ((port (random-available-port))
          (process (create-server-process port)))
     (log:debug process (async-process::process-pid process))
     (let* ((connection (connect* "localhost" port))
