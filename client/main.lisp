@@ -1,3 +1,5 @@
+(require "sb-concurrency")
+
 (defpackage :lsp-backend/client/main
   (:nicknames :lsp-backend/client)
   (:use :cl)
@@ -192,8 +194,6 @@
   (values))
 
 #|
-(require :sb-concurrency)
-
 (log:config :debug)
 
 (defparameter *connection* (start-server-and-connect))
