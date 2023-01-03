@@ -10,11 +10,17 @@
 (define-condition give-up-connection-to-server (error)
   ((hostname :initarg :hostname)
    (port :initarg :port))
-  (:report (lambda (condition stream)
-             (with-slots (hostname port retry-count retry-interval) condition
-               (format stream
+  (:report (lambda (c s)
+             (with-slots (hostname port retry-count retry-interval) c
+               (format s
                        "Give Up connection to server ~A:~D"
                        hostname port)))))
+
+(define-condition remote-eval-abort (error)
+  ((condition :initarg :condition))
+  (:report (lambda (c s)
+             (with-slots (condition) c
+               (format s "Evaluation aborted on ~A." condition)))))
 
 (defstruct continuation id function)
 
@@ -130,6 +136,23 @@
                     ,package-name
                     ,thread
                     ,request-id))))
+
+(defun remote-eval-sync (connection
+                         expression
+                         &key (package-name (connection-package connection)))
+  (let ((mailbox (sb-concurrency:make-mailbox)))
+    (remote-eval connection
+                 expression
+                 :package-name package-name
+                 :thread t
+                 :callback (lambda (value)
+                             (sb-concurrency:send-message mailbox value)))
+    (let ((value (sb-concurrency:receive-message mailbox)))
+      (alexandria:destructuring-ecase value
+        ((:ok result)
+         result)
+        ((:abort condition)
+         (error 'remote-eval-abort :condition condition))))))
 
 (defun call-continuation (connection value request-id)
   (let ((continuation (get-and-drop-continuation connection request-id)))
