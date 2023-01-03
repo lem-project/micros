@@ -3,7 +3,9 @@
 (defpackage :lsp-backend/client/main
   (:nicknames :lsp-backend/client)
   (:use :cl)
-  (:export :start-server-and-connect
+  (:export :remote-eval
+           :remote-eval-sync
+           :start-server-and-connect
            :stop-server))
 (in-package :lsp-backend/client/main)
 
