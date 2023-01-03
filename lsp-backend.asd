@@ -48,4 +48,5 @@
                "async-process")
   :serial t
   :pathname "client"
-  :components ((:file "main")))
+  :components ((:file "port")
+               (:file "main")))
