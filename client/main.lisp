@@ -193,24 +193,28 @@
                         :hostname hostname
                         :port port)))
 
+(defun create-server-process (port)
+  (let ((command
+          `("ros"
+            "run"
+            "-s"
+            "lsp-backend"
+            "-e"
+            ,(format nil "(lsp-backend:create-server :dont-close t :port ~D)" port))))
+    (log:debug "create-process" command)
+    (async-process:create-process command)))
+
 (defun start-server-and-connect ()
-  (let ((port 12345)) ; TODO: Find a random port that is available.
-    (let ((process
-            (async-process:create-process
-             `("ros"
-               "run"
-               "-s"
-               "lsp-backend"
-               "-e"
-               ,(format nil "(lsp-backend:create-server :dont-close t :port ~D)" port)))))
-      (log:debug process (async-process::process-pid process))
-      (let* ((connection (connect* "localhost" port))
-             (thread (sb-thread:make-thread #'dispatch-message-loop
-                                            :name "lsp-backend/client dispatch-message-loop"
-                                            :arguments (list connection))))
-        (setf (connection-message-dispatcher-thread connection) thread
-              (connection-server-process connection) process)
-        connection))))
+  (let* ((port 12345) ; TODO: Find a random port that is available.
+         (process (create-server-process port)))
+    (log:debug process (async-process::process-pid process))
+    (let* ((connection (connect* "localhost" port))
+           (thread (sb-thread:make-thread #'dispatch-message-loop
+                                          :name "lsp-backend/client dispatch-message-loop"
+                                          :arguments (list connection))))
+      (setf (connection-message-dispatcher-thread connection) thread
+            (connection-server-process connection) process)
+      connection)))
 
 (defun stop-server (connection)
   (sb-thread:terminate-thread (connection-message-dispatcher-thread connection))
