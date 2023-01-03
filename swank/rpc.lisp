@@ -13,15 +13,18 @@
 
 ;;;;; Input
 
+(defparameter *validate-input* nil
+  "Set to true to require input that more strictly conforms to the protocol")
+
 (define-condition swank-reader-error (reader-error)
   ((packet :type string :initarg :packet 
            :reader swank-reader-error.packet)
    (cause :type reader-error :initarg :cause 
           :reader swank-reader-error.cause)))
 
-(defun read-message (stream package)
+(defun read-message (stream package &key (validate-input *validate-input*))
   (let ((packet (read-packet stream)))
-    (handler-case (values (read-form packet package))
+    (handler-case (values (read-form packet package :validate-input validate-input))
       (reader-error (c)
         (error 'swank-reader-error 
                :packet packet :cause c)))))
@@ -57,10 +60,7 @@
           (t
            (error "Short read: length=~D  count=~D" length count)))))
 
-(defparameter *validate-input* nil
-  "Set to true to require input that more strictly conforms to the protocol")
-
-(defun read-form (string package)
+(defun read-form (string package &key ((:validate-input *validate-input*) nil))
   (with-standard-io-syntax
     (let ((*package* package))
       (if *validate-input*
