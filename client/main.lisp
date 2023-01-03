@@ -117,7 +117,7 @@
                                  (usocket:socket-stream (connection-socket connection))))
 
 (defun remote-eval (connection
-                    string-expression
+                    expression
                     &key (package-name (connection-package connection))
                          (thread t)
                          callback)
@@ -126,7 +126,7 @@
     (add-continuation connection request-id callback)
     (send-message connection
                   `(:emacs-rex
-                    ,string-expression
+                    ,expression
                     ,package-name
                     ,thread
                     ,request-id))))
