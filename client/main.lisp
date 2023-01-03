@@ -81,7 +81,6 @@
     socket))
 
 (defun create-connection (hostname port)
-  (log:debug "socket connect" hostname port)
   (let* ((socket (socket-connect hostname port))
          (connection (make-instance 'connection
                                     :socket socket

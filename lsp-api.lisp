@@ -1,9 +1,9 @@
 (defpackage :lsp-backend/lsp-api
   (:use :cl)
-  (:export :describe-symbol))
+  (:export :hover-symbol))
 (in-package :lsp-backend/lsp-api)
 
-(defun describe-symbol (symbol-name)
+(defun hover-symbol (symbol-name)
   (lsp-backend::with-buffer-syntax ()
     (multiple-value-bind (symbol status)
         (lsp-backend::parse-symbol symbol-name)
