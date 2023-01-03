@@ -1,5 +1,3 @@
-(require "sb-concurrency")
-
 (defpackage :lsp-backend/client/main
   (:nicknames :lsp-backend/client)
   (:use :cl)

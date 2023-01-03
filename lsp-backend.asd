@@ -39,7 +39,8 @@
                              ))))
 
 (defsystem "lsp-backend/client"
-  :depends-on ("lsp-backend"
+  :depends-on ("sb-concurrency"
+               "lsp-backend"
                "usocket"
                "alexandria"
                "log4cl"
