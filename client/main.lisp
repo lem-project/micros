@@ -220,17 +220,3 @@
   (sb-thread:terminate-thread (connection-message-dispatcher-thread connection))
   (async-process:delete-process (connection-server-process connection))
   (values))
-
-#|
-(log:config :debug)
-
-(defparameter *connection* (start-server-and-connect))
-
-(let ((mailbox (sb-concurrency:make-mailbox)))
-  (remote-eval *connection* '(lsp-backend:connection-info)
-               :callback (lambda (result)
-                           (sb-concurrency:send-message mailbox result)))
-  (sb-concurrency:receive-message mailbox))
-
-(stop-server *connection*)
-|#
