@@ -170,7 +170,7 @@
                         :port port)))
 
 (defun start-server-and-connect ()
-  (let ((port 12345))
+  (let ((port 12345)) ; TODO: Find a random port that is available.
     (let ((process
             (async-process:create-process
              `("ros"
