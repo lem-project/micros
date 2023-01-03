@@ -37,3 +37,13 @@
                              ;; (:file "snapshot")
                              ;; (:file "sprof")
                              ))))
+
+(defsystem "lsp-backend/client"
+  :depends-on ("lsp-backend"
+               "usocket"
+               "alexandria"
+               "log4cl"
+               "async-process")
+  :serial t
+  :pathname "client"
+  :components ((:file "main")))
