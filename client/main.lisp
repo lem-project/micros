@@ -169,6 +169,7 @@
     (dispatch-waiting-messages connection)))
 
 (defun dispatch-message (connection message)
+  (log:debug message)
   (alexandria:destructuring-case message
     ((:return value request-id)
      (call-continuation connection value request-id))))
