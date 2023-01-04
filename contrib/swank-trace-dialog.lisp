@@ -1,6 +1,6 @@
-(defpackage :lsp-backend/contrib/trace-dialog
+(defpackage :micros/contrib/trace-dialog
   (:use :cl)
-  (:import-from :lsp-backend :defslimefun :from-string :to-string)
+  (:import-from :micros :defslimefun :from-string :to-string)
   (:export #:clear-trace-tree
            #:dialog-toggle-trace
            #:dialog-trace
@@ -22,7 +22,7 @@
            #:find-trace-part
            #:find-trace))
 
-(in-package :lsp-backend/contrib/trace-dialog)
+(in-package :micros/contrib/trace-dialog)
 
 (defparameter *record-backtrace* nil
   "Record a backtrace of the last 20 calls for each trace.
@@ -39,7 +39,7 @@ program.")
 (defvar *traces* (make-array 1000 :fill-pointer 0
                                   :adjustable t))
 
-(defvar *trace-lock* (lsp-backend/backend:make-lock :name "swank-trace-dialog lock"))
+(defvar *trace-lock* (micros/backend:make-lock :name "swank-trace-dialog lock"))
 
 (defvar *current-trace-by-thread* (make-hash-table))
 
@@ -62,7 +62,7 @@ program.")
   (declare (ignore initargs))
   (if (parent-of entry)
       (nconc (children-of (parent-of entry)) (list entry)))
-  (lsp-backend/backend:call-with-lock-held
+  (micros/backend:call-with-lock-held
    *trace-lock*
    #'(lambda ()
        (setf (slot-value entry 'id) (fill-pointer *traces*))
@@ -83,22 +83,22 @@ program.")
          (l (and trace
                  (ecase type
                    (:arg (args-of trace))
-                   (:retval (lsp-backend::ensure-list (retlist-of trace)))))))
+                   (:retval (micros::ensure-list (retlist-of trace)))))))
     (values (nth part-id l)
             (< part-id (length l)))))
 
 (defun useful-backtrace ()
-  (lsp-backend/backend:call-with-debugging-environment
+  (micros/backend:call-with-debugging-environment
    #'(lambda ()
        (loop for i from 0
-             for frame in (lsp-backend/backend:compute-backtrace 0 20)
-             collect (list i (lsp-backend::frame-to-string frame))))))
+             for frame in (micros/backend:compute-backtrace 0 20)
+             collect (list i (micros::frame-to-string frame))))))
 
 (defun current-trace ()
-  (gethash (lsp-backend/backend:current-thread) *current-trace-by-thread*))
+  (gethash (micros/backend:current-thread) *current-trace-by-thread*))
 
 (defun (setf current-trace) (trace)
-  (setf (gethash (lsp-backend/backend:current-thread) *current-trace-by-thread*)
+  (setf (gethash (micros/backend:current-thread) *current-trace-by-thread*)
         trace))
 
 
@@ -124,14 +124,14 @@ program.")
     (when (dialog-traced-p spec)
       (warn "~a is apparently already traced! Untracing and retracing." spec)
       (dialog-untrace spec))
-    (lsp-backend/backend:wrap spec 'trace-dialog
+    (micros/backend:wrap spec 'trace-dialog
                         :before #'before-hook
                         :after #'after-hook)
     (pushnew spec *traced-specs*)
     (format nil "~a is now traced for trace dialog" spec)))
 
 (defslimefun dialog-untrace (spec)
-  (lsp-backend/backend:unwrap spec 'trace-dialog)
+  (micros/backend:unwrap spec 'trace-dialog)
   (setq *traced-specs* (remove spec *traced-specs* :test #'equal))
   (format nil "~a is now untraced for trace dialog" spec))
 
@@ -149,7 +149,7 @@ program.")
 
 (defparameter *dialog-trace-follows-trace* nil)
 
-(setq lsp-backend:*after-toggle-trace-hook*
+(setq micros:*after-toggle-trace-hook*
       #'(lambda (spec traced-p)
           (when *dialog-trace-follows-trace*
             (cond (traced-p
@@ -185,10 +185,10 @@ program.")
     ,(spec-of trace)
     ,(loop for arg in (args-of trace)
            for i from 0
-           collect (list i (lsp-backend::to-line arg)))
-    ,(loop for retval in (lsp-backend::ensure-list (retlist-of trace))
+           collect (list i (micros::to-line arg)))
+    ,(loop for retval in (micros::ensure-list (retlist-of trace))
            for i from 0
-           collect (list i (lsp-backend::to-line retval)))))
+           collect (list i (micros::to-line retval)))))
 
 (defslimefun report-partial-tree (key)
   (unless (equal key *visitor-key*)
@@ -220,15 +220,15 @@ program.")
     key)))
 
 (defslimefun report-trace-detail (trace-id)
-  (lsp-backend::call-with-bindings
-   lsp-backend::*inspector-printer-bindings*
+  (micros::call-with-bindings
+   micros::*inspector-printer-bindings*
    #'(lambda ()
        (let ((trace (find-trace trace-id)))
          (when trace
            (append
             (describe-trace-for-emacs trace)
             (list (backtrace-of trace)
-                  (lsp-backend::to-line trace))))))))
+                  (micros::to-line trace))))))))
 
 (defslimefun report-specs ()
   (sort (copy-list *traced-specs*)
@@ -242,23 +242,23 @@ program.")
   (setf *current-trace-by-thread* (clrhash *current-trace-by-thread*)
         *visitor-key* nil
         *unfinished-traces* nil)
-  (lsp-backend/backend:call-with-lock-held
+  (micros/backend:call-with-lock-held
    *trace-lock*
    #'(lambda () (setf (fill-pointer *traces*) 0)))
   nil)
 
-;; HACK: `lsp-backend::*inspector-history*' is unbound by default and needs
-;; a reset in that case so that it won't error `lsp-backend::inspect-object'
+;; HACK: `micros::*inspector-history*' is unbound by default and needs
+;; a reset in that case so that it won't error `micros::inspect-object'
 ;; before any other object is inspected in the slime session.
 ;;
-(unless (boundp 'lsp-backend::*inspector-history*)
-  (lsp-backend::reset-inspector))
+(unless (boundp 'micros::*inspector-history*)
+  (micros::reset-inspector))
 
 (defslimefun inspect-trace-part (trace-id part-id type)
   (multiple-value-bind (obj found)
       (find-trace-part trace-id part-id type)
     (if found
-        (lsp-backend::inspect-object obj)
+        (micros::inspect-object obj)
         (error "No object found with ~a, ~a and ~a" trace-id part-id type))))
 
 (provide :swank-trace-dialog)

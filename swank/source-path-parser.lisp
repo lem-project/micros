@@ -23,7 +23,7 @@
 
 ;;; Taken from swank-cmucl.lisp, by Helmut Eller
 
-(defpackage lsp-backend/source-path-parser
+(defpackage micros/source-path-parser
   (:use cl)
   (:export
    read-source-form
@@ -35,7 +35,7 @@
    sexp-ref)
   (:shadow ignore-errors))
 
-(in-package lsp-backend/source-path-parser)
+(in-package micros/source-path-parser)
 
 ;; Some test to ensure the required conformance
 (let ((rt (copy-readtable nil)))
@@ -142,7 +142,7 @@ subexpressions of the object to stream positions."
 (defun readtable-for-package (package)
   ;; KLUDGE: due to the load order we can't reference the swank
   ;; package.
-  (funcall (read-from-string "lsp-backend::guess-buffer-readtable")
+  (funcall (read-from-string "micros::guess-buffer-readtable")
            (string-upcase (package-name package))))
 
 ;; Search STREAM for a "(in-package ...)" form.  Use that to derive
@@ -150,7 +150,7 @@ subexpressions of the object to stream positions."
 ;;
 ;; IDEA: move GUESS-READER-STATE to swank.lisp so that all backends
 ;; use the same heuristic and to avoid the need to access
-;; lsp-backend::guess-buffer-readtable from here.
+;; micros::guess-buffer-readtable from here.
 (defun guess-reader-state (stream)
   (let* ((point (file-position stream))
 	 (pkg *package*))

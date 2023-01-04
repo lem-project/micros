@@ -6,7 +6,7 @@
 ;; can be used for easy interception of SLIME REPL form evaluation
 ;; for purposes such as integration with application event loop.
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defvar *slime-repl-advance-history* nil
   "In the dynamic scope of a single form typed at the repl, is set to nil to
@@ -69,7 +69,7 @@
 (defun %listener-eval (string)
   (clear-user-input)
   (with-buffer-syntax ()
-    (lsp-backend/contrib/repl::track-package
+    (micros/contrib/repl::track-package
      (lambda ()
        (let ((*slime-repl-suppress-output* :unset)
 	     (*slime-repl-advance-history* :unset))
@@ -80,9 +80,9 @@
 		   /// //  // /  / values))
 	   (setq +++ ++  ++ +  + last-form)
 	   (unless (eq *slime-repl-suppress-output* t)
-	     (funcall lsp-backend/contrib/repl::*send-repl-results-function* values)))))))
+	     (funcall micros/contrib/repl::*send-repl-results-function* values)))))))
   nil)
 
-(setq lsp-backend/contrib/repl::*listener-eval-function* '%listener-eval)
+(setq micros/contrib/repl::*listener-eval-function* '%listener-eval)
 
 (provide :swank-listener-hooks)

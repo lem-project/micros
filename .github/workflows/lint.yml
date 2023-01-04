@@ -37,7 +37,7 @@ jobs:
           ros install cxxxr/sblint
           mkdir $HOME/common-lisp
           cd $HOME/common-lisp
-          git clone https://github.com/lem-project/lsp-backend.git
-          cd lsp-backend
+          git clone https://github.com/lem-project/micros.git
+          cd micros
           sblint
           

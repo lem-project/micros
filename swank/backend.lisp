@@ -10,12 +10,12 @@
 ;;; separately for each Lisp. Each is declared as a generic function
 ;;; for which swank-<implementation>.lisp provides methods.
 
-(in-package lsp-backend/backend)
+(in-package micros/backend)
 
 
 ;;;; Metacode
 
-(declaim (special lsp-backend:*communication-style*))
+(declaim (special micros:*communication-style*))
 
 (defparameter *debug-swank-backend* nil
   "If this is true, backends should not catch errors but enter the
@@ -77,7 +77,7 @@ Backends implement these functions using DEFIMPLEMENTATION."
             `(pushnew ',name *unimplemented-interfaces*)
             (gen-default-impl))
        (eval-when (:compile-toplevel :load-toplevel :execute)
-         (export ',name :lsp-backend/backend))
+         (export ',name :micros/backend))
        ',name)))
 
 (defmacro defimplementation (name args &body body)
@@ -102,22 +102,22 @@ The portable code calls this function at startup."
 
 (defun import-to-swank-mop (symbol-list)
   (dolist (sym symbol-list)
-    (let* ((swank-mop-sym (find-symbol (symbol-name sym) :lsp-backend/mop)))
+    (let* ((swank-mop-sym (find-symbol (symbol-name sym) :micros/mop)))
       (when swank-mop-sym
-        (unintern swank-mop-sym :lsp-backend/mop))
-      (import sym :lsp-backend/mop)
-      (export sym :lsp-backend/mop))))
+        (unintern swank-mop-sym :micros/mop))
+      (import sym :micros/mop)
+      (export sym :micros/mop))))
 
 (defun import-swank-mop-symbols (package except)
-  "Import the mop symbols from PACKAGE to lsp-backend/mop.
+  "Import the mop symbols from PACKAGE to micros/mop.
 EXCEPT is a list of symbol names which should be ignored."
-  (do-symbols (s :lsp-backend/mop)
+  (do-symbols (s :micros/mop)
     (unless (member s except :test #'string=)
       (let ((real-symbol (find-symbol (string s) package)))
         (assert real-symbol () "Symbol ~A not found in package ~A" s package)
-        (unintern s :lsp-backend/mop)
-        (import real-symbol :lsp-backend/mop)
-        (export real-symbol :lsp-backend/mop)))))
+        (unintern s :micros/mop)
+        (import real-symbol :micros/mop)
+        (export real-symbol :micros/mop)))))
 
 (definterface gray-package-name ()
   "Return a package-name that contains the Gray stream symbols.
@@ -480,7 +480,7 @@ This is used to resolve filenames without directory component."
   (funcall fn))
 
 (definterface default-readtable-alist ()
-  "Return a suitable initial value for lsp-backend:*READTABLE-ALIST*."
+  "Return a suitable initial value for micros:*READTABLE-ALIST*."
   '())
 
 
@@ -1393,7 +1393,7 @@ Return :interrupt if an interrupt occurs while waiting."
    nil
    (lambda ()
      (error "~s not implemented. Check if ~s = ~s is supported by the implementation."
-            'wait-for-input 'lsp-backend:*communication-style* lsp-backend:*communication-style*))))
+            'wait-for-input 'micros:*communication-style* micros:*communication-style*))))
 
 
 ;;;;  Locks

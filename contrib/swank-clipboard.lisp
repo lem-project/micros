@@ -3,12 +3,12 @@
 ;; Written by Helmut Eller in 2008.
 ;; License: Public Domain
 
-(defpackage :lsp-backend/contrib/clipboard
+(defpackage :micros/contrib/clipboard
   (:use :cl)
-  (:import-from :lsp-backend :defslimefun :with-buffer-syntax :dcase)
+  (:import-from :micros :defslimefun :with-buffer-syntax :dcase)
   (:export :add :delete-entry :entries :entry-to-ref :ref))
 
-(in-package :lsp-backend/contrib/clipboard)
+(in-package :micros/contrib/clipboard)
 
 (defstruct clipboard entries (counter 0))
 
@@ -20,9 +20,9 @@
 		  (with-buffer-syntax (package)
 		    (eval (read-from-string string))))
 		 ((:inspector part) 
-		  (lsp-backend:inspector-nth-part part))
+		  (micros:inspector-nth-part part))
 		 ((:sldb frame var)
-		  (lsp-backend/backend:frame-var-value frame var)))))
+		  (micros/backend:frame-var-value frame var)))))
     (clipboard-add value)
     (format nil "Added: ~a"
 	    (entry-to-string (1- (length (clipboard-entries *clipboard*)))))))

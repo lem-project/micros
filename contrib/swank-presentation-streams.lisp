@@ -8,7 +8,7 @@
 ;;; License: This code has been placed in the Public Domain.  All warranties
 ;;;          are disclaimed.
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 ;; This file contains a mechanism for printing to the slime repl so
 ;; that the printed result remembers what object it is associated
@@ -197,7 +197,7 @@ says that I am starting to print an object with this id. The second says I am fi
   (let ((slime-stream-p 
 	 (and *record-repl-results* (slime-stream-p stream))))
     (if slime-stream-p
-	(let* ((pid (lsp-backend::save-presented-object object))
+	(let* ((pid (micros::save-presented-object object))
 	       (record (make-presentation-record :id pid :printed-p nil
 						 :target (if (eq slime-stream-p :repl-result)
 							     :repl-result
@@ -235,7 +235,7 @@ says that I am starting to print an object with this id. The second says I am fi
     (defun %print-unreadable-object (object stream type id thunk)
       (cond ((null stream) (setq stream *standard-output*))
 	    ((eq stream t) (setq stream *terminal-io*)))
-      (lsp-backend::presenting-object object stream
+      (micros::presenting-object object stream
 	(write-unreadable-start object stream)
 	(when type
 	  (princ (type-of object) stream)
@@ -247,13 +247,13 @@ says that I am starting to print an object with this id. The second says I am fi
 	    (pp-end-block stream ">"))
 	nil))
     (defmethod print-object :around ((pathname pathname) stream)
-      (lsp-backend::presenting-object-if
-	  (lsp-backend::can-present-readable-objects stream)
+      (micros::presenting-object-if
+	  (micros::can-present-readable-objects stream)
 	  pathname stream (call-next-method))))
   (ccl::def-load-pointers clear-presentations ()
-    (lsp-backend::clear-presentation-tables)))
+    (micros::clear-presentation-tables)))
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 #+cmu
 (progn
@@ -290,7 +290,7 @@ says that I am starting to print an object with this id. The second says I am fi
 #+allegro
 (progn
   (excl:def-fwrapper presenting-unreadable-wrapper (object stream type identity continuation)
-    (lsp-backend::presenting-object object stream (excl:call-next-fwrapper)))
+    (micros::presenting-object object stream (excl:call-next-fwrapper)))
   (excl:def-fwrapper presenting-pathname-wrapper (pathname stream depth)
     (presenting-object-if (can-present-readable-objects stream) pathname stream
       (excl:call-next-fwrapper)))
@@ -309,7 +309,7 @@ says that I am starting to print an object with this id. The second says I am fi
 (defslimefun init-presentation-streams ()
   (monkey-patch-stream-printing)
   ;; FIXME: import/use swank-repl to avoid package qualifier.
-  (setq lsp-backend/contrib/repl:*send-repl-results-function*
+  (setq micros/contrib/repl:*send-repl-results-function*
 	'present-repl-results-via-presentation-streams))
 
 (provide :swank-presentation-streams)

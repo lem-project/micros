@@ -6,11 +6,11 @@
 ;;; This file defines the "Swank" TCP server for Emacs to talk to. The
 ;;; code in this file is purely portable Common Lisp. We do require a
 ;;; smattering of non-portable functions in order to write the server,
-;;; so we have defined them in `lsp-backend/backend.lisp' and implemented
+;;; so we have defined them in `micros/backend.lisp' and implemented
 ;;; them separately for each Lisp implementation. These extensions are
-;;; available to us here via the `lsp-backend/backend' package.
+;;; available to us here via the `micros/backend' package.
 
-(in-package :lsp-backend)
+(in-package :micros)
 ;;;; Top-level variables, constants, macros
 
 (defconstant cl-package (find-package :cl)
@@ -283,7 +283,7 @@ to T unless you want to debug swank internals.")
 ;;;;; Logging
 
 (defvar *swank-io-package*
-  (let ((package (make-package :lsp-backend/io-package :use '())))
+  (let ((package (make-package :micros/io-package :use '())))
     (import '(nil t quote) package)
     package))
 
@@ -767,7 +767,7 @@ e.g.: (restart-loop (http-request url) (use-value (new) (setq url new)))"
         (:spawn (initialize-multiprocessing
                  (lambda ()
                    (start-sentinel)
-                   (spawn #'serve-loop :name (format nil "lsp-backend ~s" port)))))
+                   (spawn #'serve-loop :name (format nil "micros ~s" port)))))
         ((:fd-handler :sigio)
          (note)
          (add-fd-handler socket #'serve))
@@ -922,7 +922,7 @@ The processing is done in the extent of the toplevel restart."
 (defun close-connection% (c condition backtrace)
   (let ((*debugger-hook* nil))
     (log-event "close-connection: ~a ...~%" condition)
-    (format *log-output* "~&;; lsp-backend:close-connection: ~A~%"
+    (format *log-output* "~&;; micros:close-connection: ~A~%"
             (escape-non-ascii (safe-condition-message condition)))
     (stop-serving-requests c)
     (close (connection.socket-io c))
@@ -1449,7 +1449,7 @@ Emacs Lisp via `defslimefun' or otherwise marked as RPCallable."
     (wait-for-emacs-return tag)))
 
 (defun version ()
-  (asdf:component-version (asdf:find-system :lsp-backend)))
+  (asdf:component-version (asdf:find-system :micros)))
 
 (defslimefun connection-info ()
   "Return a key-value list of the form: 
@@ -3493,9 +3493,9 @@ The server port is written to PORT-FILE-NAME."
   (let ((symbol (parse-symbol symbol-name *buffer-package*)))
     (ecase type
       (:subclasses
-       (mop-helper symbol #'lsp-backend/mop:class-direct-subclasses))
+       (mop-helper symbol #'micros/mop:class-direct-subclasses))
       (:superclasses 
-       (mop-helper symbol #'lsp-backend/mop:class-direct-superclasses)))))
+       (mop-helper symbol #'micros/mop:class-direct-superclasses)))))
 
 
 ;;;; Automatically synchronized state
@@ -3699,10 +3699,10 @@ Collisions are caused because package information is ignored."
 (defun make-output-function-for-target (connection target)
   "Create a function to send user output to a specific TARGET in Emacs."
   (lambda (string)
-    (lsp-backend::with-connection (connection)
+    (micros::with-connection (connection)
       (with-simple-restart
           (abort "Abort sending output to Emacs.")
-        (lsp-backend::send-to-emacs `(:write-string ,string ,target))))))
+        (micros::send-to-emacs `(:write-string ,string ,target))))))
 
 (defun make-output-stream-for-target (connection target)
   "Create a stream that sends output to a specific TARGET in Emacs."

@@ -1,4 +1,4 @@
-(defpackage lsp-backend/backend
+(defpackage micros/backend
   (:use cl)
   (:export *debug-swank-backend*
            *log-output*
@@ -63,7 +63,7 @@
            auto-flush-loop
            *auto-flush-interval*))
 
-(defpackage lsp-backend/rpc
+(defpackage micros/rpc
   (:use :cl)
   (:export
    read-message
@@ -73,11 +73,11 @@
    swank-reader-error.cause
    write-message))
 
-(defpackage lsp-backend/match
+(defpackage micros/match
   (:use cl)
   (:export match))
 
-(defpackage lsp-backend/mop
+(defpackage micros/mop
   (:use)
   (:export
    ;; classes
@@ -130,8 +130,8 @@
    compute-applicable-methods-using-classes
    finalize-inheritance))
 
-(defpackage lsp-backend
-  (:use cl lsp-backend/backend lsp-backend/match lsp-backend/rpc)
+(defpackage micros
+  (:use cl micros/backend micros/match micros/rpc)
   (:export #:startup-multiprocessing
            #:start-server
            #:create-server

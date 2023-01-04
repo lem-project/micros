@@ -2,7 +2,7 @@
 ;;
 ;; Licence: public domain
 
-(in-package :lsp-backend)
+(in-package :micros)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (let ((api '(
 	       *emacs-connection*
@@ -21,16 +21,16 @@
 	       with-top-level-restart
 	       with-slime-interrupts
 	       )))
-    (eval `(defpackage :lsp-backend/contrib/swank-api
+    (eval `(defpackage :micros/contrib/swank-api
 	     (:use)
-	     (:import-from #:lsp-backend . ,api)
+	     (:import-from #:micros . ,api)
 	     (:export . ,api)))))
 
-(defpackage :lsp-backend/contrib/mrepl
-  (:use :cl :lsp-backend/contrib/swank-api)
+(defpackage :micros/contrib/mrepl
+  (:use :cl :micros/contrib/swank-api)
   (:export #:create-mrepl))
 
-(in-package :lsp-backend/contrib/mrepl)
+(in-package :micros/contrib/mrepl)
 
 (defclass listener-channel (channel)
   ((remote :initarg :remote)
@@ -51,9 +51,9 @@
          (ch (make-instance 'listener-channel :remote remote :thread thread)))
     (setf (slot-value ch 'env) (initial-listener-env ch))
     (when thread
-      (lsp-backend/backend:send thread `(:serve-channel ,ch)))
+      (micros/backend:send thread `(:serve-channel ,ch)))
     (list (channel-id ch)
-	  (lsp-backend/backend:thread-id (or thread (lsp-backend/backend:current-thread)))
+	  (micros/backend:thread-id (or thread (micros/backend:current-thread)))
 	  (package-name pkg)
 	  (package-prompt pkg))))
 
@@ -63,10 +63,10 @@
     (*standard-input* . ,(make-listener-input-stream listener))))
 
 (defun spawn-listener-thread (connection)
-  (lsp-backend/backend:spawn 
+  (micros/backend:spawn 
    (lambda ()
      (with-connection (connection)
-       (dcase (lsp-backend/backend:receive)
+       (dcase (micros/backend:receive)
 	 ((:serve-channel c)
 	  (loop
 	   (with-top-level-restart (connection (drop-unprocessed-events c))
@@ -134,12 +134,12 @@
 
 (defun make-listener-output-stream (channel)
   (let ((remote (slot-value channel 'remote)))
-    (lsp-backend/backend:make-output-stream 
+    (micros/backend:make-output-stream 
      (lambda (string)
        (send-to-remote-channel remote `(:write-string ,string))))))
 
 (defun make-listener-input-stream (channel)
-  (lsp-backend/backend:make-input-stream (lambda () (read-input channel))))
+  (micros/backend:make-input-stream (lambda () (read-input channel))))
 
 (defun set-mode (channel new-mode)
   (with-slots (mode remote) channel

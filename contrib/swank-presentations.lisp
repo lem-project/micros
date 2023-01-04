@@ -9,7 +9,7 @@
 ;;          are disclaimed.
 ;;
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 ;;;; Recording and accessing results of computations
 
@@ -238,6 +238,6 @@ The secondary value indicates the absence of an entry."
 
 (defslimefun init-presentations ()
   ;; FIXME: import/use swank-repl to avoid package qualifier.
-  (setq lsp-backend/contrib/repl:*send-repl-results-function* 'present-repl-results))
+  (setq micros/contrib/repl:*send-repl-results-function* 'present-repl-results))
 
 (provide :swank-presentations)

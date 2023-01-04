@@ -1,4 +1,4 @@
-(defsystem "lsp-backend"
+(defsystem "micros"
   :version "0.0.0"
   :serial t
   :components ((:file "packages")
@@ -39,9 +39,9 @@
                              ))
                (:file "lsp-api")))
 
-(defsystem "lsp-backend/client"
+(defsystem "micros/client"
   :depends-on ("sb-concurrency"
-               "lsp-backend"
+               "micros"
                "usocket"
                "alexandria"
                "log4cl"

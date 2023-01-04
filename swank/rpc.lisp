@@ -8,7 +8,7 @@
 ;;; are disclaimed.
 ;;;
 
-(in-package lsp-backend/rpc)
+(in-package micros/rpc)
 
 
 ;;;;; Input
@@ -32,7 +32,7 @@
 (defun read-packet (stream)
   (let* ((length (parse-header stream))
          (octets (read-chunk stream length)))
-    (handler-case (lsp-backend/backend:utf8-to-string octets)
+    (handler-case (micros/backend:utf8-to-string octets)
       (error (c) 
         (error 'swank-reader-error 
                :packet (asciify octets)
@@ -99,7 +99,7 @@
 
 (defun write-message (message package stream)
   (let* ((string (prin1-to-string-for-emacs message package))
-         (octets (handler-case (lsp-backend/backend:string-to-utf8 string)
+         (octets (handler-case (micros/backend:string-to-utf8 string)
                    (error (c) (encoding-error c string))))
          (length (length octets)))
     (write-header stream length)
@@ -108,7 +108,7 @@
 
 ;; FIXME: for now just tell emacs that we and an encoding problem.
 (defun encoding-error (condition string)
-  (lsp-backend/backend:string-to-utf8
+  (micros/backend:string-to-utf8
    (prin1-to-string-for-emacs
     `(:reader-error
       ,(asciify string)

@@ -1,7 +1,7 @@
-(defpackage :lsp-backend/client/port
+(defpackage :micros/client/port
   (:use :cl)
   (:export :random-available-port))
-(in-package :lsp-backend/client/port)
+(in-package :micros/client/port)
 
 (defconstant +private-port-min+ 49152)
 (defconstant +private-port-max+ 65535)

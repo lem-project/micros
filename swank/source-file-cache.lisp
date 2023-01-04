@@ -20,9 +20,9 @@
 ;;; This code has been placed in the Public Domain.  All warranties
 ;;; are disclaimed.
 
-(defpackage lsp-backend/source-file-cache
+(defpackage micros/source-file-cache
   (:use cl)
-  (:import-from lsp-backend/backend
+  (:import-from micros/backend
 		defimplementation buffer-first-change
 		guess-external-format
 		find-external-format)
@@ -35,7 +35,7 @@
    read-snippet-from-string
    ))
 
-(in-package lsp-backend/source-file-cache)
+(in-package micros/source-file-cache)
 
 (defvar *cache-sourcecode* t
   "When true complete source files are cached.

@@ -5,9 +5,9 @@
 ;;; License: This code has been placed in the Public Domain.  All warranties
 ;;;          are disclaimed.
 
-(in-package :lsp-backend)
+(in-package :micros)
 
-(defpackage :lsp-backend/contrib/buffer-streams
+(defpackage :micros/contrib/buffer-streams
   (:use :cl)
   (:import-from :swank
                 defslimefun
@@ -25,15 +25,15 @@
                 *event-hook*)
   (:export make-buffer-output-stream))
 
-(in-package :lsp-backend/contrib/buffer-streams)
+(in-package :micros/contrib/buffer-streams)
 
 (defun get-temporary-identifier ()
   (intern (symbol-name (gensym "BUFFER"))
           :keyword))
 
 (defun make-buffer-output-stream (&optional (target-identifier (get-temporary-identifier)))
-  (lsp-backend:ed-rpc '#:slime-make-buffer-stream-target (current-thread-id) target-identifier)
-  (values (lsp-backend:make-output-stream-for-target *emacs-connection* target-identifier)
+  (micros:ed-rpc '#:slime-make-buffer-stream-target (current-thread-id) target-identifier)
+  (values (micros:make-output-stream-for-target *emacs-connection* target-identifier)
           target-identifier))
 
 (provide :swank-buffer-streams)

@@ -4,7 +4,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defmethod emacs-inspect ((symbol symbol))
   (let ((package (symbol-package symbol)))
@@ -99,7 +99,7 @@
                 (:defined
                  (or (sb-int:info :type :expander symbol) t))
                 (:primitive
-                 (or #.(if (lsp-backend/sbcl::sbcl-version>= 1 3 1)
+                 (or #.(if (micros/sbcl::sbcl-version>= 1 3 1)
                            '(let ((x (sb-int:info :type :expander symbol)))
                              (if (consp x)
                                  (car x)
@@ -160,11 +160,11 @@
   specializers are replaced by `(eql ,object)."
   (mapcar (lambda (spec)
             (typecase spec
-              (lsp-backend/mop:eql-specializer
-               `(eql ,(lsp-backend/mop:eql-specializer-object spec)))
+              (micros/mop:eql-specializer
+               `(eql ,(micros/mop:eql-specializer-object spec)))
               #-sbcl
               (t
-               (lsp-backend/mop:class-name spec))
+               (micros/mop:class-name spec))
               #+sbcl
               (t
                ;; SBCL has extended specializers
@@ -175,7 +175,7 @@
                         (class-name spec))
                        (t
                         spec))))))
-          (lsp-backend/mop:method-specializers method)))
+          (micros/mop:method-specializers method)))
 
 (defun method-for-inspect-value (method)
   "Returns a \"pretty\" list describing METHOD. The first element
@@ -183,9 +183,9 @@
   specialiazed on, the second element is the method qualifiers,
   the rest of the list is the method's specialiazers (as per
   method-specializers-for-inspect)."
-  (append (list (lsp-backend/mop:generic-function-name
-                 (lsp-backend/mop:method-generic-function method)))
-          (lsp-backend/mop:method-qualifiers method)
+  (append (list (micros/mop:generic-function-name
+                 (micros/mop:method-generic-function method)))
+          (micros/mop:method-qualifiers method)
           (method-specializers-for-inspect method)))
 
 (defmethod emacs-inspect ((object standard-object))
@@ -201,12 +201,12 @@ See `methods-by-applicability'.")
 (defun specializer< (specializer1 specializer2)
   "Return true if SPECIALIZER1 is more specific than SPECIALIZER2."
   (let ((s1 specializer1) (s2 specializer2) )
-    (cond ((typep s1 'lsp-backend/mop:eql-specializer)
-           (not (typep s2 'lsp-backend/mop:eql-specializer)))
+    (cond ((typep s1 'micros/mop:eql-specializer)
+           (not (typep s2 'micros/mop:eql-specializer)))
           ((typep s1 'class)
            (flet ((cpl (class)
-                    (and (lsp-backend/mop:class-finalized-p class)
-                         (lsp-backend/mop:class-precedence-list class))))
+                    (and (micros/mop:class-finalized-p class)
+                         (micros/mop:class-precedence-list class))))
              (member s2 (cpl s1)))))))
 
 (defun methods-by-applicability (gf)
@@ -215,11 +215,11 @@ See `methods-by-applicability'.")
 `method-specializer<' is used for sorting."
   ;; FIXME: argument-precedence-order and qualifiers are ignored.
   (labels ((method< (meth1 meth2)
-             (loop for s1 in (lsp-backend/mop:method-specializers meth1)
-                   for s2 in (lsp-backend/mop:method-specializers meth2)
+             (loop for s1 in (micros/mop:method-specializers meth1)
+                   for s2 in (micros/mop:method-specializers meth2)
                    do (cond ((specializer< s2 s1) (return nil))
                             ((specializer< s1 s2) (return t))))))
-    (stable-sort (copy-seq (lsp-backend/mop:generic-function-methods gf))
+    (stable-sort (copy-seq (micros/mop:generic-function-methods gf))
                  #'method<)))
 
 (defun abbrev-doc (doc &optional (maxlen 80))
@@ -279,12 +279,12 @@ See `methods-by-applicability'.")
 
 (defmethod all-slots-for-inspector ((object standard-object))
   (let* ((class           (class-of object))
-         (direct-slots    (lsp-backend/mop:class-direct-slots class))
-         (effective-slots (lsp-backend/mop:class-slots class))
+         (direct-slots    (micros/mop:class-direct-slots class))
+         (effective-slots (micros/mop:class-slots class))
          (longest-slot-name-length
           (loop for slot :in effective-slots
                 maximize (length (symbol-name
-                                  (lsp-backend/mop:slot-definition-name slot)))))
+                                  (micros/mop:slot-definition-name slot)))))
          (checklist
           (reinitialize-checklist
            (ensure-istate-metadata object :checklist
@@ -301,7 +301,7 @@ See `methods-by-applicability'.")
                            (:unsorted (constantly nil))))
          (sorted-slots (sort (copy-seq effective-slots)
                              sort-predicate
-                             :key #'lsp-backend/mop:slot-definition-name))
+                             :key #'micros/mop:slot-definition-name))
          (effective-slots
           (ecase (ref grouping-kind)
             (:all sorted-slots)
@@ -358,7 +358,7 @@ See `methods-by-applicability'.")
       (:action "[make unbound]"
                ,(lambda ()
                         (do-checklist (idx checklist)
-                          (lsp-backend/mop:slot-makunbound-using-class
+                          (micros/mop:slot-makunbound-using-class
                            class object (nth idx effective-slots))))
                :refreshp t)
       (:newline))))
@@ -400,11 +400,11 @@ See `methods-by-applicability'.")
                         :initial-element #\Space)))
     (loop
       for effective-slot :in effective-slots
-      for direct-slot = (find (lsp-backend/mop:slot-definition-name effective-slot)
+      for direct-slot = (find (micros/mop:slot-definition-name effective-slot)
                               direct-slots
-                              :key #'lsp-backend/mop:slot-definition-name)
+                              :key #'micros/mop:slot-definition-name)
       for slot-name   = (inspector-princ
-                         (lsp-backend/mop:slot-definition-name effective-slot))
+                         (micros/mop:slot-definition-name effective-slot))
       collect (make-checklist-button checklist)
       collect "  "
       collect `(:value ,(if direct-slot
@@ -418,16 +418,16 @@ See `methods-by-applicability'.")
 
 (defgeneric slot-value-for-inspector (class object slot)
   (:method (class object slot)
-    (let ((boundp (lsp-backend/mop:slot-boundp-using-class class object slot)))
+    (let ((boundp (micros/mop:slot-boundp-using-class class object slot)))
       (if boundp
-          `(:value ,(lsp-backend/mop:slot-value-using-class class object slot))
+          `(:value ,(micros/mop:slot-value-using-class class object slot))
           "#<unbound>"))))
 
 (defun slot-home-class-using-class (slot class)
-  (let ((slot-name (lsp-backend/mop:slot-definition-name slot)))
-    (loop for class in (reverse (lsp-backend/mop:class-precedence-list class))
-          thereis (and (member slot-name (lsp-backend/mop:class-direct-slots class)
-                               :key #'lsp-backend/mop:slot-definition-name
+  (let ((slot-name (micros/mop:slot-definition-name slot)))
+    (loop for class in (reverse (micros/mop:class-precedence-list class))
+          thereis (and (member slot-name (micros/mop:class-direct-slots class)
+                               :key #'micros/mop:slot-definition-name
                                :test #'eq)
                        class))))
 
@@ -437,25 +437,25 @@ See `methods-by-applicability'.")
                         (class-name (slot-home-class-using-class s class)))))
 
 (defun query-and-set-slot (class object slot)
-  (let* ((slot-name (lsp-backend/mop:slot-definition-name slot))
+  (let* ((slot-name (micros/mop:slot-definition-name slot))
          (value-string (read-from-minibuffer-in-emacs
                         (format nil "Set slot ~S to (evaluated) : "
                                 slot-name))))
     (when (and value-string (not (string= value-string "")))
       (with-simple-restart (abort "Abort setting slot ~S" slot-name)
-        (setf (lsp-backend/mop:slot-value-using-class class object slot)
+        (setf (micros/mop:slot-value-using-class class object slot)
               (eval (read-from-string value-string)))))))
 
 
 (defmethod emacs-inspect ((gf standard-generic-function))
   (flet ((lv (label value) (label-value-line label value)))
     (append
-      (lv "Name" (lsp-backend/mop:generic-function-name gf))
-      (lv "Arguments" (lsp-backend/mop:generic-function-lambda-list gf))
+      (lv "Name" (micros/mop:generic-function-name gf))
+      (lv "Arguments" (micros/mop:generic-function-lambda-list gf))
       (docstring-ispec "Documentation" gf t)
-      (lv "Method class" (lsp-backend/mop:generic-function-method-class gf))
+      (lv "Method class" (micros/mop:generic-function-method-class gf))
       (lv "Method combination"
-          (lsp-backend/mop:generic-function-method-combination gf))
+          (micros/mop:generic-function-method-combination gf))
       `("Methods: " (:newline))
       (loop for method in (funcall *gf-method-getter* gf) append
             `((:value ,method ,(inspector-princ
@@ -471,35 +471,35 @@ See `methods-by-applicability'.")
       (all-slots-for-inspector gf))))
 
 (defmethod emacs-inspect ((method standard-method))
-  `(,@(if (lsp-backend/mop:method-generic-function method)
+  `(,@(if (micros/mop:method-generic-function method)
           `("Method defined on the generic function "
-            (:value ,(lsp-backend/mop:method-generic-function method)
+            (:value ,(micros/mop:method-generic-function method)
                     ,(inspector-princ
-                      (lsp-backend/mop:generic-function-name
-                       (lsp-backend/mop:method-generic-function method)))))
+                      (micros/mop:generic-function-name
+                       (micros/mop:method-generic-function method)))))
           '("Method without a generic function"))
       (:newline)
       ,@(docstring-ispec "Documentation" method t)
-      "Lambda List: " (:value ,(lsp-backend/mop:method-lambda-list method))
+      "Lambda List: " (:value ,(micros/mop:method-lambda-list method))
       (:newline)
-      "Specializers: " (:value ,(lsp-backend/mop:method-specializers method)
+      "Specializers: " (:value ,(micros/mop:method-specializers method)
                                ,(inspector-princ
                                  (method-specializers-for-inspect method)))
       (:newline)
-      "Qualifiers: " (:value ,(lsp-backend/mop:method-qualifiers method))
+      "Qualifiers: " (:value ,(micros/mop:method-qualifiers method))
       (:newline)
-      "Method function: " (:value ,(lsp-backend/mop:method-function method))
+      "Method function: " (:value ,(micros/mop:method-function method))
       (:newline)
       ,@(all-slots-for-inspector method)))
 
 (defun specializer-direct-methods (class)
-  (sort (copy-seq (lsp-backend/mop:specializer-direct-methods class))
+  (sort (copy-seq (micros/mop:specializer-direct-methods class))
         #'string<
         :key
         (lambda (x)
           (symbol-name
-           (let ((name (lsp-backend/mop::generic-function-name
-                        (lsp-backend/mop::method-generic-function x))))
+           (let ((name (micros/mop::generic-function-name
+                        (micros/mop::method-generic-function x))))
              (if (symbolp name)
                  name
                  (second name)))))))
@@ -509,44 +509,44 @@ See `methods-by-applicability'.")
     (:value ,(class-name class))
     (:newline)
     "Super classes: "
-    ,@(common-seperated-spec (lsp-backend/mop:class-direct-superclasses class))
+    ,@(common-seperated-spec (micros/mop:class-direct-superclasses class))
     (:newline)
     "Direct Slots: "
     ,@(common-seperated-spec
-       (lsp-backend/mop:class-direct-slots class)
+       (micros/mop:class-direct-slots class)
        (lambda (slot)
          `(:value ,slot ,(inspector-princ
-                          (lsp-backend/mop:slot-definition-name slot)))))
+                          (micros/mop:slot-definition-name slot)))))
     (:newline)
     "Effective Slots: "
-    ,@(if (lsp-backend/mop:class-finalized-p class)
+    ,@(if (micros/mop:class-finalized-p class)
           (common-seperated-spec
-           (lsp-backend/mop:class-slots class)
+           (micros/mop:class-slots class)
            (lambda (slot)
              `(:value ,slot ,(inspector-princ
-                              (lsp-backend/mop:slot-definition-name slot)))))
+                              (micros/mop:slot-definition-name slot)))))
           `("#<N/A (class not finalized)> "
             (:action "[finalize]"
-                     ,(lambda () (lsp-backend/mop:finalize-inheritance class)))))
+                     ,(lambda () (micros/mop:finalize-inheritance class)))))
     (:newline)
     ,@(let ((doc (documentation class t)))
         (when doc
           `("Documentation:" (:newline) ,(inspector-princ doc) (:newline))))
     "Sub classes: "
-    ,@(common-seperated-spec (lsp-backend/mop:class-direct-subclasses class)
+    ,@(common-seperated-spec (micros/mop:class-direct-subclasses class)
                              (lambda (sub)
                                `(:value ,sub
                                         ,(inspector-princ (class-name sub)))))
     (:newline)
     "Precedence List: "
-    ,@(if (lsp-backend/mop:class-finalized-p class)
+    ,@(if (micros/mop:class-finalized-p class)
           (common-seperated-spec
-           (lsp-backend/mop:class-precedence-list class)
+           (micros/mop:class-precedence-list class)
            (lambda (class)
              `(:value ,class ,(inspector-princ (class-name class)))))
           '("#<N/A (class not finalized)>"))
     (:newline)
-    ,@(when (lsp-backend/mop:specializer-direct-methods class)
+    ,@(when (micros/mop:specializer-direct-methods class)
         `("It is used as a direct specializer in the following methods:"
           (:newline)
           ,@(loop
@@ -560,31 +560,31 @@ See `methods-by-applicability'.")
               collect "    Documentation: " and
               collect (abbrev-doc (documentation method t)) and
               collect '(:newline))))
-    "Prototype: " ,(if (lsp-backend/mop:class-finalized-p class)
-                       `(:value ,(lsp-backend/mop:class-prototype class))
+    "Prototype: " ,(if (micros/mop:class-finalized-p class)
+                       `(:value ,(micros/mop:class-prototype class))
                        '"#<N/A (class not finalized)>")
     (:newline)
     ,@(all-slots-for-inspector class)))
 
-(defmethod emacs-inspect ((slot lsp-backend/mop:standard-slot-definition))
+(defmethod emacs-inspect ((slot micros/mop:standard-slot-definition))
   `("Name: "
-    (:value ,(lsp-backend/mop:slot-definition-name slot))
+    (:value ,(micros/mop:slot-definition-name slot))
     (:newline)
-    ,@(when (lsp-backend/mop:slot-definition-documentation slot)
+    ,@(when (micros/mop:slot-definition-documentation slot)
         `("Documentation:" (:newline)
-                           (:value ,(lsp-backend/mop:slot-definition-documentation
+                           (:value ,(micros/mop:slot-definition-documentation
                                      slot))
                            (:newline)))
     "Init args: "
-    (:value ,(lsp-backend/mop:slot-definition-initargs slot))
+    (:value ,(micros/mop:slot-definition-initargs slot))
     (:newline)
     "Init form: "
-    ,(if (lsp-backend/mop:slot-definition-initfunction slot)
-         `(:value ,(lsp-backend/mop:slot-definition-initform slot))
+    ,(if (micros/mop:slot-definition-initfunction slot)
+         `(:value ,(micros/mop:slot-definition-initform slot))
          "#<unspecified>")
     (:newline)
     "Init function: "
-    (:value ,(lsp-backend/mop:slot-definition-initfunction slot))
+    (:value ,(micros/mop:slot-definition-initfunction slot))
     (:newline)
     ,@(all-slots-for-inspector slot)))
 

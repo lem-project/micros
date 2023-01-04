@@ -1,4 +1,4 @@
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defslimefun hyperdoc (string)
   (let ((hyperdoc-package (find-package :hyperdoc)))

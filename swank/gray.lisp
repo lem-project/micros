@@ -8,7 +8,7 @@
 ;;; are disclaimed.
 ;;;
 
-(in-package lsp-backend/backend)
+(in-package micros/backend)
 
 #.(progn
     (defvar *gray-stream-symbols*
@@ -32,12 +32,12 @@
       #+sbcl stream-file-position))
     nil)
 
-(defpackage lsp-backend/gray
-  (:use cl lsp-backend/backend)
+(defpackage micros/gray
+  (:use cl micros/backend)
   (:import-from #.(gray-package-name) . #.*gray-stream-symbols*)
   (:export . #.*gray-stream-symbols*))
 
-(in-package lsp-backend/gray)
+(in-package micros/gray)
 
 (defclass slime-output-stream (fundamental-character-output-stream)
   ((output-fn :initarg :output-fn)

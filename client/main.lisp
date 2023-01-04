@@ -1,13 +1,13 @@
-(defpackage :lsp-backend/client/main
-  (:nicknames :lsp-backend/client)
+(defpackage :micros/client/main
+  (:nicknames :micros/client)
   (:use :cl)
-  (:import-from :lsp-backend/client/port
+  (:import-from :micros/client/port
                 :random-available-port)
   (:export :remote-eval
            :remote-eval-sync
            :start-server-and-connect
            :stop-server))
-(in-package :lsp-backend/client/main)
+(in-package :micros/client/main)
 
 (define-condition give-up-connection-to-server (error)
   ((hostname :initarg :hostname)
@@ -114,13 +114,13 @@
         nil)))
 
 (defun read-message (connection)
-  (lsp-backend/rpc:read-message (usocket:socket-stream (connection-socket connection))
-                                lsp-backend::*swank-io-package*
+  (micros/rpc:read-message (usocket:socket-stream (connection-socket connection))
+                                micros::*swank-io-package*
                                 :validate-input t))
 
 (defun send-message (connection message)
-  (lsp-backend/rpc:write-message message
-                                 lsp-backend::*swank-io-package*
+  (micros/rpc:write-message message
+                                 micros::*swank-io-package*
                                  (usocket:socket-stream (connection-socket connection))))
 
 (defun remote-eval (connection
@@ -178,7 +178,7 @@
 (defun connect (hostname port)
   (let* ((connection (create-connection hostname port))
          (thread (sb-thread:make-thread #'dispatch-message-loop
-                                        :name "lsp-backend/client dispatch-message-loop"
+                                        :name "micros/client dispatch-message-loop"
                                         :arguments (list connection))))
     (setf (connection-message-dispatcher-thread connection) thread)
     connection))
@@ -199,9 +199,9 @@
           `("ros"
             "run"
             "-s"
-            "lsp-backend"
+            "micros"
             "-e"
-            ,(format nil "(lsp-backend:create-server :dont-close t :port ~D)" port))))
+            ,(format nil "(micros:create-server :dont-close t :port ~D)" port))))
     (log:debug "create-process" command)
     (async-process:create-process command)))
 
@@ -211,7 +211,7 @@
     (log:debug process (async-process::process-pid process))
     (let* ((connection (connect* "localhost" port))
            (thread (sb-thread:make-thread #'dispatch-message-loop
-                                          :name "lsp-backend/client dispatch-message-loop"
+                                          :name "micros/client dispatch-message-loop"
                                           :arguments (list connection))))
       (setf (connection-message-dispatcher-thread connection) thread
             (connection-server-process connection) process)

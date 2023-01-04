@@ -2,7 +2,7 @@
 ;;
 ;; License: public domain
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defmacro do-symbols* ((var &optional (package '*package*) result-form)
                        &body body)

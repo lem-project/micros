@@ -8,7 +8,7 @@
 ;;
 
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defvar *fuzzy-duplicate-symbol-filter* :nearest-package
   "Specifies how fuzzy-matching handles \"duplicate\" symbols.

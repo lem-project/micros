@@ -1,5 +1,5 @@
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defslimefun package= (string1 string2)
   (let* ((pkg1 (guess-package string1))
@@ -37,14 +37,14 @@
 
 (defun list-class-symbols (name)
   (let* ((class (find-class name))
-         (slots (lsp-backend/mop:class-direct-slots class)))
+         (slots (micros/mop:class-direct-slots class)))
     (labels ((extract-symbol (name)
                (if (and (consp name) (eql (car name) 'setf))
                    (cadr name)
                    name))
              (slot-accessors (slot)
-               (nintersection (copy-list (lsp-backend/mop:slot-definition-readers slot))
-                              (copy-list (lsp-backend/mop:slot-definition-readers slot))
+               (nintersection (copy-list (micros/mop:slot-definition-readers slot))
+                              (copy-list (micros/mop:slot-definition-readers slot))
                               :key #'extract-symbol)))
       (list* (class-name class)
              (mapcan #'slot-accessors slots)))))

@@ -4,7 +4,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defslimefun list-quicklisp-systems ()
   "Returns the Quicklisp systems list."

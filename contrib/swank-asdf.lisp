@@ -8,7 +8,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 ;;; The best way to load ASDF is from an init file of an
@@ -17,7 +17,7 @@
 ;;; doesn't help and *asdf-path* is set, it will be loaded from that
 ;;; file.
 ;;; To set *asdf-path* put the following into ~/.swank.lisp:
-;;; (defparameter lsp-backend::*asdf-path* #p"/path/to/asdf/asdf.lisp")
+;;; (defparameter micros::*asdf-path* #p"/path/to/asdf/asdf.lisp")
   (defvar *asdf-path* nil
     "Path to asdf.lisp file, to be loaded in case (require \"asdf\") fails."))
 
@@ -37,7 +37,7 @@
     (error "Could not load ASDF.
 Please update your implementation or
 install a recent release of ASDF and in your ~~/.swank.lisp specify:
- (defparameter lsp-backend::*asdf-path* #p\"/path/containing/asdf/asdf.lisp\")")))
+ (defparameter micros::*asdf-path* #p\"/path/containing/asdf/asdf.lisp\")")))
 
 ;;; If ASDF is too old, punt.
 ;; As of January 2014, Quicklisp has been providing 2.26 for a year
@@ -352,7 +352,7 @@ install a recent release of ASDF and in your ~~/.swank.lisp specify:
           for asd-file = (asdf:system-definition-pathname dependency)
           when asd-file
           collect (list dependency
-                        (lsp-backend/backend:make-location
+                        (micros/backend:make-location
                          `(:file ,(namestring asd-file))
                          `(:position 1)
                          `(:snippet ,(format nil "(defsystem :~A" dependency)
@@ -425,9 +425,9 @@ already knows."
       (f component))))
 
 (defun make-operation (x)
-  #+#.(lsp-backend/backend:with-symbol 'make-operation 'asdf)
+  #+#.(micros/backend:with-symbol 'make-operation 'asdf)
   (asdf:make-operation x)
-  #-#.(lsp-backend/backend:with-symbol 'make-operation 'asdf)
+  #-#.(micros/backend:with-symbol 'make-operation 'asdf)
   (make-instance x))
 
 (defun asdf-component-output-files (component)

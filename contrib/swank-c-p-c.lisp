@@ -10,7 +10,7 @@
 ;;
 
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 (defslimefun completions (string default-package-name)
   "Return a list of completions for a symbol designator STRING.  

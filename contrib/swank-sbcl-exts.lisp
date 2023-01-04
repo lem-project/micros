@@ -5,7 +5,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 ;; We need to do this so users can place `slime-sbcl-exts' into their
 ;; ~/.emacs, and still use any implementation they want.
@@ -35,8 +35,8 @@
                       (string-upcase instruction))))
                  (instr-fn
                    #+(and
-                      #.(lsp-backend/backend:with-symbol '*inst-encoder* 'sb-assem)
-                      #.(lsp-backend/backend:with-symbol '*backend-instruction-set-package* 'sb-assem))
+                      #.(micros/backend:with-symbol '*inst-encoder* 'sb-assem)
+                      #.(micros/backend:with-symbol '*backend-instruction-set-package* 'sb-assem))
                    (or (gethash (find-symbol instr-name sb-assem::*backend-instruction-set-package*)
                                 sb-assem::*inst-encoder*)
                        (find-symbol (format nil "M:~A" instr-name)

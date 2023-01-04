@@ -1,13 +1,13 @@
 ;;; swank-repl.lisp --- Server side part of the Lisp listener.
 ;;
 ;; License: public domain
-(in-package :lsp-backend)
+(in-package :micros)
 
-(defpackage :lsp-backend/contrib/repl
-  (:use cl lsp-backend/backend)
+(defpackage :micros/contrib/repl
+  (:use cl micros/backend)
   (:export *send-repl-results-function*)
   (:import-from
-   :lsp-backend
+   :micros
 
    *default-worker-thread-bindings*
 
@@ -70,7 +70,7 @@
    *dedicated-output-stream-port*
    *globally-redirect-io*))
 
-(in-package :lsp-backend/contrib/repl)
+(in-package :micros/contrib/repl)
 
 (defvar *use-dedicated-output-stream* nil
   "When T swank will attempt to create a second connection to Emacs
@@ -110,7 +110,7 @@ DEDICATED-OUTPUT INPUT OUTPUT IO REPL-RESULTS"
          (out (or dedicated-output
                   (make-output-stream (make-output-function connection))))
          (io (make-two-way-stream in out))
-         (repl-results (lsp-backend:make-output-stream-for-target connection
+         (repl-results (micros:make-output-stream-for-target connection
                                                             :repl-result)))
     (typecase connection
       (multithreaded-connection
@@ -289,7 +289,7 @@ LISTENER-EVAL directly, so that spacial variables *, etc are set."
 
 (defslimefun redirect-trace-output (target)
   (setf (connection.trace-output *emacs-connection*)
-        (lsp-backend:make-output-stream-for-target *emacs-connection* target))
+        (micros:make-output-stream-for-target *emacs-connection* target))
   nil)
 
 
@@ -355,9 +355,9 @@ dynamic binding."
       (set-default-initial-binding stream-var `(quote ,stream)))))
 
 (defun prefixed-var (prefix variable-symbol)
-  "(PREFIXED-VAR \"FOO\" '*BAR*) => lsp-backend::*FOO-BAR*"
+  "(PREFIXED-VAR \"FOO\" '*BAR*) => micros::*FOO-BAR*"
   (let ((basename (subseq (symbol-name variable-symbol) 1)))
-    (intern (format nil "*~A-~A" (string prefix) basename) :lsp-backend)))
+    (intern (format nil "*~A-~A" (string prefix) basename) :micros)))
 
 (defvar *standard-output-streams*
   '(*standard-output* *error-output* *trace-output*)

@@ -11,10 +11,10 @@
 
 ;;; Administrivia
 
-(defpackage lsp-backend/sbcl
-  (:use cl lsp-backend/backend lsp-backend/source-path-parser lsp-backend/source-file-cache))
+(defpackage micros/sbcl
+  (:use cl micros/backend micros/source-path-parser micros/source-file-cache))
 
-(in-package lsp-backend/sbcl)
+(in-package micros/sbcl)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require 'sb-bsd-sockets)
@@ -26,8 +26,8 @@
                    (sb-c::insert-step-conditions 0)
                    (sb-c::insert-debug-catch 0)))
 
-(declaim (special lsp-backend:*communication-style*
-                  lsp-backend:*swank-debugger-condition*))
+(declaim (special micros:*communication-style*
+                  micros:*swank-debugger-condition*))
 
 ;;; backwards compability tests
 
@@ -55,11 +55,11 @@
             (fboundp sym)
             (funcall sym :setf :inverse ()))))))
 
-;;; lsp-backend/mop
+;;; micros/mop
 
 (import-swank-mop-symbols :sb-mop '(:slot-definition-documentation))
 
-(defun lsp-backend/mop:slot-definition-documentation (slot)
+(defun micros/mop:slot-definition-documentation (slot)
   (sb-pcl::documentation slot t))
 
 ;; stream support
@@ -121,7 +121,7 @@
 
 (defimplementation create-socket (host port &key backlog)
   (let* ((host-ent (resolve-hostname host))
-         (socket (make-instance (cond #+#.(lsp-backend/backend:with-symbol 'inet6-socket 'sb-bsd-sockets)
+         (socket (make-instance (cond #+#.(micros/backend:with-symbol 'inet6-socket 'sb-bsd-sockets)
                                       ((eql (sb-bsd-sockets:host-ent-address-type host-ent) 10)
                                        'sb-bsd-sockets:inet6-socket)
                                       (t
@@ -251,7 +251,7 @@
 #-win32
 (defun input-ready-p (stream)
   (or (not (fd-stream-input-buffer-empty-p stream))
-      #+#.(lsp-backend/backend:with-symbol 'fd-stream-fd-type 'sb-impl)
+      #+#.(micros/backend:with-symbol 'fd-stream-fd-type 'sb-impl)
       (eq :regular (sb-impl::fd-stream-fd-type stream))
       (not (sb-impl::sysread-may-block-p stream))))
 
@@ -348,7 +348,7 @@
                 ,@(cond ((and external-format (sb-int:featurep :sb-unicode))
                          `(:external-format ,external-format))
                         (t '()))
-                :serve-events ,(eq :fd-handler lsp-backend:*communication-style*)
+                :serve-events ,(eq :fd-handler micros:*communication-style*)
                   ;; SBCL < 1.0.42.43 doesn't support :SERVE-EVENTS
                   ;; argument.
                 :allow-other-keys t)))
@@ -453,17 +453,17 @@
 
 ;;; Packages
 
-#+#.(lsp-backend/backend:with-symbol 'package-local-nicknames 'sb-ext)
+#+#.(micros/backend:with-symbol 'package-local-nicknames 'sb-ext)
 (defimplementation package-local-nicknames (package)
   (sb-ext:package-local-nicknames package))
 
 ;;; Utilities
 
-#+#.(lsp-backend/backend:with-symbol 'function-lambda-list 'sb-introspect)
+#+#.(micros/backend:with-symbol 'function-lambda-list 'sb-introspect)
 (defimplementation arglist (fname)
   (sb-introspect:function-lambda-list fname))
 
-#-#.(lsp-backend/backend:with-symbol 'function-lambda-list 'sb-introspect)
+#-#.(micros/backend:with-symbol 'function-lambda-list 'sb-introspect)
 (defimplementation arglist (fname)
   (sb-introspect:function-arglist fname))
 
@@ -485,7 +485,7 @@
                     flags :key #'ensure-list))
           (call-next-method)))))
 
-#+#.(lsp-backend/backend:with-symbol 'deftype-lambda-list 'sb-introspect)
+#+#.(micros/backend:with-symbol 'deftype-lambda-list 'sb-introspect)
 (defmethod type-specifier-arglist :around (typespec-operator)
   (multiple-value-bind (arglist foundp)
       (sb-introspect:deftype-lambda-list typespec-operator)
@@ -526,13 +526,13 @@ information."
                       (sb-c:compiler-error  :error)
                       (reader-error         :read-error)
                       (error                :error)
-                      #+#.(lsp-backend/backend:with-symbol early-deprecation-warning sb-ext)
+                      #+#.(micros/backend:with-symbol early-deprecation-warning sb-ext)
                       (sb-ext::early-deprecation-warning :early-deprecation-warning)
-                      #+#.(lsp-backend/backend:with-symbol late-deprecation-warning sb-ext)
+                      #+#.(micros/backend:with-symbol late-deprecation-warning sb-ext)
                       (sb-ext::late-deprecation-warning :late-deprecation-warning)
-                      #+#.(lsp-backend/backend:with-symbol final-deprecation-warning sb-ext)
+                      #+#.(micros/backend:with-symbol final-deprecation-warning sb-ext)
                       (sb-ext::final-deprecation-warning :final-deprecation-warning)
-                      #+#.(lsp-backend/backend:with-symbol redefinition-warning
+                      #+#.(micros/backend:with-symbol redefinition-warning
                             sb-kernel)
                       (sb-kernel:redefinition-warning
                        :redefinition)
@@ -682,7 +682,7 @@ compiler state."
 (defun compiler-policy (qualities)
   "Return compiler policy qualities present in the QUALITIES alist.
 QUALITIES is an alist with (quality . value)"
-  #+#.(lsp-backend/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
+  #+#.(micros/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
   (loop with policy = (sb-ext:restrict-compiler-policy)
         for (quality) in qualities
         collect (cons quality
@@ -691,7 +691,7 @@ QUALITIES is an alist with (quality . value)"
 
 (defun (setf compiler-policy) (policy)
   (declare (ignorable policy))
-  #+#.(lsp-backend/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
+  #+#.(micros/backend:with-symbol 'restrict-compiler-policy 'sb-ext)
   (loop for (qual . value) in policy
         do (sb-ext:restrict-compiler-policy qual value)))
 
@@ -882,7 +882,7 @@ QUALITIES is an alist with (quality . value)"
             (pathname :file-without-position)
             (t :invalid)))))
 
-#+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+#+#.(micros/backend:with-symbol 'definition-source-form-number 'sb-introspect)
 (defun form-number-position (definition-source stream)
   (let* ((tlf-number (car (sb-introspect:definition-source-form-path definition-source)))
          (form-number (sb-introspect:definition-source-form-number definition-source)))
@@ -895,7 +895,7 @@ QUALITIES is an alist with (quality . value)"
                           (reverse (cdr (aref path-table form-number)))))))
         (source-path-source-position path tlf pos-map)))))
 
-#+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+#+#.(micros/backend:with-symbol 'definition-source-form-number 'sb-introspect)
 (defun file-form-number-position (definition-source)
   (let* ((code-date (sb-introspect:definition-source-file-write-date definition-source))
          (filename (sb-introspect:definition-source-pathname definition-source))
@@ -905,7 +905,7 @@ QUALITIES is an alist with (quality . value)"
       (with-input-from-string (s source-code)
         (form-number-position definition-source s)))))
 
-#+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+#+#.(micros/backend:with-symbol 'definition-source-form-number 'sb-introspect)
 (defun string-form-number-position (definition-source string)
   (with-input-from-string (s string)
     (form-number-position definition-source s)))
@@ -922,7 +922,7 @@ QUALITIES is an alist with (quality . value)"
           (or
            (and form-path
                 (or
-                 #+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+                 #+#.(micros/backend:with-symbol 'definition-source-form-number 'sb-introspect)
                  (setf (values start end)
                        (and (sb-introspect:definition-source-form-number definition-source)
                             (string-form-number-position definition-source emacs-string)))
@@ -944,7 +944,7 @@ QUALITIES is an alist with (quality . value)"
     (let* ((namestring (namestring (translate-logical-pathname pathname)))
            (pos (or (and form-path
                          (or
-                          #+#.(lsp-backend/backend:with-symbol 'definition-source-form-number 'sb-introspect)
+                          #+#.(micros/backend:with-symbol 'definition-source-form-number 'sb-introspect)
                           (and (sb-introspect:definition-source-form-number definition-source)
                                (ignore-errors (file-form-number-position definition-source)))
                           (ignore-errors
@@ -1007,7 +1007,7 @@ QUALITIES is an alist with (quality . value)"
 
 (defun setf-expander (symbol)
   (or
-   #+#.(lsp-backend/sbcl::sbcl-with-setf-inverse-meta-info)
+   #+#.(micros/sbcl::sbcl-with-setf-inverse-meta-info)
    (sb-int:info :setf :inverse symbol)
    (sb-int:info :setf :expander symbol)))
 
@@ -1055,7 +1055,7 @@ Return NIL if the symbol is unbound."
     (:type
      (describe (sb-kernel:values-specifier-type symbol)))))
 
-#+#.(lsp-backend/sbcl::sbcl-with-xref-p)
+#+#.(micros/sbcl::sbcl-with-xref-p)
 (progn
   (defmacro defxref (name &optional fn-name)
     `(defimplementation ,name (what)
@@ -1071,7 +1071,7 @@ Return NIL if the symbol is unbound."
   (defxref who-sets)
   (defxref who-references)
   (defxref who-macroexpands)
-  #+#.(lsp-backend/backend:with-symbol 'who-specializes-directly 'sb-introspect)
+  #+#.(micros/backend:with-symbol 'who-specializes-directly 'sb-introspect)
   (defxref who-specializes who-specializes-directly))
 
 (defun source-location-for-xref-data (xref-data)
@@ -1109,9 +1109,9 @@ Return NIL if the symbol is unbound."
                 (equal (second a) (second b))))))
 
 (defun ignored-xref-function-names ()
-  #-#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
+  #-#.(micros/sbcl::sbcl-with-new-stepper-p)
   '(nil sb-c::step-form sb-c::step-values)
-  #+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
+  #+#.(micros/sbcl::sbcl-with-new-stepper-p)
   '(nil))
 
 (defun function-dspec (fn)
@@ -1176,7 +1176,7 @@ Return a list of the form (NAME LOCATION)."
   (set-break-hook function))
 
 (defimplementation condition-extras (condition)
-  (cond #+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
+  (cond #+#.(micros/sbcl::sbcl-with-new-stepper-p)
         ((typep condition 'sb-impl::step-form-condition)
          `((:show-frame-source 0)))
         ((typep condition 'sb-int:reference-condition)
@@ -1202,9 +1202,9 @@ Return a list of the form (NAME LOCATION)."
   (let ((*sldb-stack-top*
           (if (and (not *debug-swank-backend*)
                    sb-debug:*stack-top-hint*)
-              #+#.(lsp-backend/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
+              #+#.(micros/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
               (sb-debug::resolve-stack-top-hint)
-              #-#.(lsp-backend/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
+              #-#.(micros/backend:with-symbol 'resolve-stack-top-hint 'sb-debug)
               sb-debug:*stack-top-hint*
               (sb-di:top-frame)))
         (sb-debug:*stack-top-hint* nil))
@@ -1214,7 +1214,7 @@ Return a list of the form (NAME LOCATION)."
                                :original-condition condition))))
       (funcall debugger-loop-fn))))
 
-#+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
+#+#.(micros/sbcl::sbcl-with-new-stepper-p)
 (progn
   (defimplementation activate-stepping (frame)
     (declare (ignore frame))
@@ -1230,14 +1230,14 @@ Return a list of the form (NAME LOCATION)."
 
 (defimplementation call-with-debugger-hook (hook fun)
   (let ((*debugger-hook* hook)
-        #+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
+        #+#.(micros/sbcl::sbcl-with-new-stepper-p)
         (sb-ext:*stepper-hook*
          (lambda (condition)
            (typecase condition
              (sb-ext:step-form-condition
               (let ((sb-debug:*stack-top-hint* (sb-di::find-stepped-frame)))
                 (sb-impl::invoke-debugger condition)))))))
-    (handler-bind (#+#.(lsp-backend/sbcl::sbcl-with-new-stepper-p)
+    (handler-bind (#+#.(micros/sbcl::sbcl-with-new-stepper-p)
                    (sb-ext:step-condition #'sb-impl::invoke-stepper))
       (call-with-break-hook hook fun))))
 
@@ -1261,7 +1261,7 @@ stack."
                               :emergency-best-effort t))
 
 (defimplementation frame-restartable-p (frame)
-  #+#.(lsp-backend/sbcl::sbcl-with-restart-frame)
+  #+#.(micros/sbcl::sbcl-with-restart-frame)
   (not (null (sb-debug:frame-has-debug-tag-p frame))))
 
 (defimplementation frame-call (frame-number)
@@ -1296,11 +1296,11 @@ stack."
                         *package*)))
     (if (getf plist :emacs-buffer)
         (emacs-buffer-source-location code-location plist)
-        #+#.(lsp-backend/backend:with-symbol 'debug-source-from 'sb-di)
+        #+#.(micros/backend:with-symbol 'debug-source-from 'sb-di)
         (ecase (sb-di:debug-source-from dsource)
           (:file (file-source-location code-location))
           (:lisp (lisp-source-location code-location)))
-        #-#.(lsp-backend/backend:with-symbol 'debug-source-from 'sb-di)
+        #-#.(micros/backend:with-symbol 'debug-source-from 'sb-di)
         (if (sb-di:debug-source-namestring dsource)
             (file-source-location code-location)
             (lisp-source-location code-location)))))
@@ -1328,7 +1328,7 @@ stack."
 (defun lisp-source-location (code-location)
   (let ((source (prin1-to-string
                  (sb-debug::code-location-source-form code-location 100)))
-        (condition lsp-backend:*swank-debugger-condition*))
+        (condition micros:*swank-debugger-condition*))
     (if (and (typep condition 'sb-impl::step-form-condition)
              (search "SB-IMPL::WITH-STEPPING-ENABLED" source
                      :test #'char-equal)
@@ -1364,7 +1364,7 @@ stack."
                          `(:snippet ,snippet)))))))
 
 (defun code-location-debug-source-name (code-location)
-  (namestring (truename (#.(lsp-backend/backend:choose-symbol
+  (namestring (truename (#.(micros/backend:choose-symbol
                             'sb-c 'debug-source-name
                             'sb-c 'debug-source-namestring)
                            (sb-di::code-location-debug-source code-location)))))
@@ -1512,7 +1512,7 @@ stack."
              '(100)
              '())))
 
-#+#.(lsp-backend/sbcl::sbcl-with-restart-frame)
+#+#.(micros/sbcl::sbcl-with-restart-frame)
 (progn
   (defimplementation return-from-frame (index form)
     (let* ((frame (nth-frame index)))
@@ -1544,7 +1544,7 @@ stack."
 ;; FIXME: this implementation doesn't unwind the stack before
 ;; re-invoking the function, but it's better than no implementation at
 ;; all.
-#-#.(lsp-backend/sbcl::sbcl-with-restart-frame)
+#-#.(micros/sbcl::sbcl-with-restart-frame)
 (progn
   (defun sb-debug-catch-tag-p (tag)
     (and (symbolp tag)
@@ -1636,7 +1636,7 @@ stack."
    `("Constants:" (:newline))
    (loop for i from sb-vm:code-constants-offset
          below
-         (#.(lsp-backend/backend:choose-symbol 'sb-kernel 'code-header-words
+         (#.(micros/backend:choose-symbol 'sb-kernel 'code-header-words
                                          'sb-kernel 'get-header-data)
             o)
          append (label-value-line i (sb-kernel:code-header-ref o i)))
@@ -1665,7 +1665,7 @@ stack."
 ;;;; Multiprocessing
 
 #+(and sb-thread
-       #.(lsp-backend/backend:with-symbol "THREAD-NAME" "SB-THREAD"))
+       #.(micros/backend:with-symbol "THREAD-NAME" "SB-THREAD"))
 (progn
   (defvar *thread-id-counter* 0)
 
@@ -1815,9 +1815,9 @@ stack."
         (cdr (assoc name alist))))))
 
 (defimplementation quit-lisp ()
-  #+#.(lsp-backend/backend:with-symbol 'exit 'sb-ext)
+  #+#.(micros/backend:with-symbol 'exit 'sb-ext)
   (sb-ext:exit)
-  #-#.(lsp-backend/backend:with-symbol 'exit 'sb-ext)
+  #-#.(micros/backend:with-symbol 'exit 'sb-ext)
   (progn
     #+sb-thread
     (dolist (thread (remove (current-thread) (all-threads)))
@@ -1866,19 +1866,19 @@ stack."
 ;;; Weak datastructures
 
 (defimplementation make-weak-key-hash-table (&rest args)
-  #+#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
+  #+#.(micros/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table :weakness :key args)
-  #-#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
+  #-#.(micros/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table args))
 
 (defimplementation make-weak-value-hash-table (&rest args)
-  #+#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
+  #+#.(micros/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table :weakness :value args)
-  #-#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
+  #-#.(micros/sbcl::sbcl-with-weak-hash-tables)
   (apply #'make-hash-table args))
 
 (defimplementation hash-table-weakness (hashtable)
-  #+#.(lsp-backend/sbcl::sbcl-with-weak-hash-tables)
+  #+#.(micros/sbcl::sbcl-with-weak-hash-tables)
   (sb-ext:hash-table-weakness hashtable))
 
 ;;; Floating point
@@ -1929,10 +1929,10 @@ stack."
         (sb-alien:free-alien a-args))))
 
   (defun runtime-pathname ()
-    #+#.(lsp-backend/backend:with-symbol
+    #+#.(micros/backend:with-symbol
             '*runtime-pathname* 'sb-ext)
     sb-ext:*runtime-pathname*
-    #-#.(lsp-backend/backend:with-symbol
+    #-#.(micros/backend:with-symbol
             '*runtime-pathname* 'sb-ext)
     (car sb-ext:*posix-argv*))
 
@@ -1991,9 +1991,9 @@ stack."
 ;;;; wrap interface implementation
 
 (defun sbcl-version>= (&rest subversions)
-  #+#.(lsp-backend/backend:with-symbol 'assert-version->= 'sb-ext)
+  #+#.(micros/backend:with-symbol 'assert-version->= 'sb-ext)
   (values (ignore-errors (apply #'sb-ext:assert-version->= subversions) t))
-  #-#.(lsp-backend/backend:with-symbol 'assert-version->= 'sb-ext)
+  #-#.(micros/backend:with-symbol 'assert-version->= 'sb-ext)
   nil)
 
 (defimplementation wrap (spec indicator &key before after replace)
@@ -2002,10 +2002,10 @@ stack."
           spec indicator)
     (sb-int:unencapsulate spec indicator))
   (sb-int:encapsulate spec indicator
-                      #-#.(lsp-backend/backend:with-symbol 'arg-list 'sb-int)
+                      #-#.(micros/backend:with-symbol 'arg-list 'sb-int)
                       (lambda (function &rest args)
                         (sbcl-wrap spec before after replace function args))
-                      #+#.(lsp-backend/backend:with-symbol 'arg-list 'sb-int)
+                      #+#.(micros/backend:with-symbol 'arg-list 'sb-int)
                       (if (sbcl-version>= 1 1 16)
                           (lambda ()
                             (sbcl-wrap spec before after replace
@@ -2037,7 +2037,7 @@ stack."
       (when after
         (funcall after (if completed retlist :exited-non-locally))))))
 
-#+#.(lsp-backend/backend:with-symbol 'comma-expr 'sb-impl)
+#+#.(micros/backend:with-symbol 'comma-expr 'sb-impl)
 (progn
   (defmethod sexp-in-bounds-p ((s sb-impl::comma) i)
     (sexp-in-bounds-p (sb-impl::comma-expr s) i))

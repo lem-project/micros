@@ -1,7 +1,7 @@
-(defpackage :lsp-backend/lsp-api
+(defpackage :micros/lsp-api
   (:use :cl)
   (:export :hover-symbol))
-(in-package :lsp-backend/lsp-api)
+(in-package :micros/lsp-api)
 
 (defun describe-variable (symbol)
   (list "Variable"
@@ -13,7 +13,7 @@
   (list "Function"
         (with-output-to-string (stream)
           (when (fboundp symbol)
-            (let ((arglist (cons symbol (lsp-backend/backend:arglist symbol))))
+            (let ((arglist (cons symbol (micros/backend:arglist symbol))))
               (write-line "```lisp" stream)
               (let ((*print-case* :downcase))
                 (format stream "~(~A~)~%" arglist))
@@ -49,9 +49,9 @@
                                 (prin1-to-string v))))))))
 
 (defun hover-symbol (symbol-name)
-  (lsp-backend::with-buffer-syntax ()
+  (micros::with-buffer-syntax ()
     (multiple-value-bind (symbol status)
-        (lsp-backend::parse-symbol symbol-name)
+        (micros::parse-symbol symbol-name)
       (when status
         (with-output-to-string (stream)
           (let ((contents

@@ -7,7 +7,7 @@
 ;; License: Public Domain
 ;;
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 ;;;; Utilities
 
@@ -651,7 +651,7 @@ As a secondary value, return whether &allow-other-keys appears somewhere."
     (dolist (method methods)
       (multiple-value-bind (kw aok)
 	  (arglist-keywords
-	   (lsp-backend/mop:method-lambda-list method))
+	   (micros/mop:method-lambda-list method))
 	(setq keywords (remove-duplicates (append keywords kw)
                                           :key #'keyword-arg.keyword)
 	      allow-other-keys (or allow-other-keys aok))))
@@ -661,7 +661,7 @@ As a secondary value, return whether &allow-other-keys appears somewhere."
   "Collect all keywords in the methods of GENERIC-FUNCTION.
 As a secondary value, return whether &allow-other-keys appears somewhere."
   (methods-keywords
-   (lsp-backend/mop:generic-function-methods generic-function)))
+   (micros/mop:generic-function-methods generic-function)))
 
 (defun applicable-methods-keywords (generic-function arguments)
   "Collect all keywords in the methods of GENERIC-FUNCTION that are
@@ -669,7 +669,7 @@ applicable for argument of CLASSES.  As a secondary value, return
 whether &allow-other-keys appears somewhere."
   (methods-keywords
    (multiple-value-bind (amuc okp)
-       (lsp-backend/mop:compute-applicable-methods-using-classes
+       (micros/mop:compute-applicable-methods-using-classes
         generic-function (mapcar #'class-of arguments))
      (if okp
          amuc
@@ -751,26 +751,26 @@ forward keywords to OPERATOR."
     (let* ((class-name (cadr class-name-form))
            (class (find-class class-name nil)))
       (when (and class
-                 (not (lsp-backend/mop:class-finalized-p class)))
+                 (not (micros/mop:class-finalized-p class)))
         ;; Try to finalize the class, which can fail if
         ;; superclasses are not defined yet
-        (ignore-errors (lsp-backend/mop:finalize-inheritance class)))
+        (ignore-errors (micros/mop:finalize-inheritance class)))
       class)))
 
 (defun extra-keywords/slots (class)
   (multiple-value-bind (slots allow-other-keys-p)
-      (if (lsp-backend/mop:class-finalized-p class)
-          (values (lsp-backend/mop:class-slots class) nil)
-          (values (lsp-backend/mop:class-direct-slots class) t))
+      (if (micros/mop:class-finalized-p class)
+          (values (micros/mop:class-slots class) nil)
+          (values (micros/mop:class-direct-slots class) t))
     (let ((slot-init-keywords
             (loop for slot in slots append
                   (mapcar (lambda (initarg)
                             (make-keyword-arg
                              initarg
-                             (lsp-backend/mop:slot-definition-name slot)
-                             (and (lsp-backend/mop:slot-definition-initfunction slot)
-                                  (lsp-backend/mop:slot-definition-initform slot))))
-                          (lsp-backend/mop:slot-definition-initargs slot)))))
+                             (micros/mop:slot-definition-name slot)
+                             (and (micros/mop:slot-definition-initfunction slot)
+                                  (micros/mop:slot-definition-initform slot))))
+                          (micros/mop:slot-definition-initargs slot)))))
       (values slot-init-keywords allow-other-keys-p))))
 
 (defun extra-keywords/make-instance (operator args)
@@ -788,12 +788,12 @@ forward keywords to OPERATOR."
                 (ignore-errors
                  (applicable-methods-keywords
                   #'initialize-instance
-                  (list (lsp-backend/mop:class-prototype class))))
+                  (list (micros/mop:class-prototype class))))
               (multiple-value-bind (shared-initialize-keywords si-aokp)
                   (ignore-errors
                    (applicable-methods-keywords
                     #'shared-initialize
-                    (list (lsp-backend/mop:class-prototype class) t)))
+                    (list (micros/mop:class-prototype class) t)))
                 (values (append slot-init-keywords
                                 allocate-instance-keywords
                                 initialize-instance-keywords
@@ -814,7 +814,7 @@ forward keywords to OPERATOR."
               (ignore-errors
                 (applicable-methods-keywords
                  #'shared-initialize
-                 (list (lsp-backend/mop:class-prototype class) t)))
+                 (list (micros/mop:class-prototype class) t)))
             ;; FIXME: much as it would be nice to include the
             ;; applicable keywords from
             ;; UPDATE-INSTANCE-FOR-DIFFERENT-CLASS, I don't really see
@@ -1006,7 +1006,7 @@ If the arglist is not available, return :NOT-AVAILABLE."))
       (return-from arglist-dispatch :not-available))
     (when (equalp (package-name (symbol-package operator)) "closer-mop")
       (let ((standard-symbol (or (find-symbol (symbol-name operator) :cl)
-                                 (find-symbol (symbol-name operator) :lsp-backend/mop))))
+                                 (find-symbol (symbol-name operator) :micros/mop))))
         (when standard-symbol
           (return-from arglist-dispatch
             (arglist-dispatch standard-symbol arguments)))))
@@ -1024,7 +1024,7 @@ If the arglist is not available, return :NOT-AVAILABLE."))
     (('defmethod (#'function-exists-p gf-name) . rest)
      (let ((gf (fdefinition gf-name)))
        (when (typep gf 'generic-function)
-         (let ((lambda-list (lsp-backend/mop:generic-function-lambda-list gf)))
+         (let ((lambda-list (micros/mop:generic-function-lambda-list gf)))
            (with-available-arglist (arglist) (decode-arglist lambda-list)
              (let ((qualifiers (loop for x in rest
                                      until (or (listp x) (empty-arg-p x))
@@ -1576,7 +1576,7 @@ datum for subsequent logics to rely on."
 
 (defun test-print-arglist ()
   (flet ((test (arglist &rest strings)
-           (let* ((*package* (find-package :lsp-backend))
+           (let* ((*package* (find-package :micros))
                   (actual (decoded-arglist-to-string
                            (decode-arglist arglist)
                            :print-right-margin 1000)))

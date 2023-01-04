@@ -5,9 +5,9 @@
 ;;
 ;; License: Public Domain
 
-(defpackage :lsp-backend/contrib/macrostep
-  (:use cl :lsp-backend)
-  (:import-from :lsp-backend
+(defpackage :micros/contrib/macrostep
+  (:use cl :micros)
+  (:import-from :micros
 		#:*macroexpand-printer-bindings*
                 #:with-buffer-syntax
 		#:with-bindings
@@ -19,7 +19,7 @@
   (:export #:macrostep-expand-1
            #:macro-form-p))
 
-(in-package :lsp-backend/contrib/macrostep)
+(in-package :micros/contrib/macrostep)
 
 (defslimefun macrostep-expand-1 (string compiler-macros? context)
   (with-buffer-syntax ()

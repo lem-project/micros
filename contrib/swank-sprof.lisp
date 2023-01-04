@@ -5,7 +5,7 @@
 ;; License: MIT
 ;;
 
-(in-package :lsp-backend)
+(in-package :micros)
 
 #+sbcl
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -52,8 +52,8 @@
 (defun filter-swank-nodes (nodes)
   (let ((swank-packages (load-time-value
                          (mapcar #'find-package
-                                 '(swank lsp-backend/rpc swank/mop
-                                   lsp-backend/match lsp-backend/backend)))))
+                                 '(swank micros/rpc swank/mop
+                                   micros/match micros/backend)))))
     (remove-if (lambda (node)
                  (let ((name (sb-sprof::node-name node)))
                    (and (symbolp name)
@@ -138,9 +138,9 @@
          (debug-info (sb-sprof::node-debug-info node)))
     (or (when (typep debug-info 'sb-di::compiled-debug-fun)
           (let* ((component (sb-di::compiled-debug-fun-component debug-info))
-                 (function #-#.(lsp-backend/backend:with-symbol '%code-entry-point 'sb-kernel)
+                 (function #-#.(micros/backend:with-symbol '%code-entry-point 'sb-kernel)
                            (sb-kernel::%code-entry-points component)
-                           #+#.(lsp-backend/backend:with-symbol '%code-entry-point 'sb-kernel)
+                           #+#.(micros/backend:with-symbol '%code-entry-point 'sb-kernel)
                            (sb-kernel:%code-entry-point component 0)))
             (when function
               (find-source-location function))))
