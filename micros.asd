@@ -1,4 +1,5 @@
 (defsystem "micros"
+  :depends-on ("cl-ppcre")
   :version "0.0.0"
   :serial t
   :components ((:file "packages")

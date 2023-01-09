@@ -1,9 +1,12 @@
 (defpackage :micros/lsp-api
   (:use :cl)
   (:export :hover-symbol
-           :completions))
+           :completions
+           :make-symbol-spec
+           :symbol-informations))
 (in-package :micros/lsp-api)
 
+;;; hover-symbol
 (defun describe-variable (symbol)
   (list "Variable"
         (with-output-to-string (stream)
@@ -75,6 +78,7 @@
       (when status
         (describe-symbol-in-markdown symbol)))))
 
+;;; completions
 (defstruct (completed-item (:type list))
   label
   classification
@@ -94,7 +98,7 @@
         :unless (char= #\- (char classification-string i))
         :collect classification))
 
-(defun signature-using-completion (symbol)
+(defun symbol-signature (symbol)
   (let ((*print-case* :downcase))
     (handler-case
         (princ-to-string (micros::arglist symbol))
@@ -106,7 +110,7 @@
       (micros::tokenize-symbol-thoroughly completed-string)
     (declare (ignore internalp))
     (let ((package (if (null package-name)
-                       default-package-name
+                       (find-package default-package-name)
                        (find-package package-name))))
       (when package
         (find-symbol symbol-name package)))))
@@ -120,9 +124,41 @@
           :for classification-detail := (format nil "~(~{~A~^, ~}~)"
                                                 (parse-classification-string classification-string))
           :for symbol := (completed-string-to-symbol completed-string package-name)
-          :for signature := (signature-using-completion symbol)
+          :for signature := (symbol-signature symbol)
           :for documentation := (describe-symbol-in-markdown symbol)
           :collect (make-completed-item :label completed-string
                                         :classification classification-detail
                                         :signature signature
                                         :documentation documentation))))
+
+;;; symbol-informations
+(defstruct (symbol-information (:type list))
+  name
+  detail
+  kind)
+
+(defstruct (symbol-spec (:type list))
+  name
+  package)
+
+(defun to-symbol (symbol-name package-name)
+  (let ((package (find-package package-name)))
+    (when package
+      (find-symbol symbol-name package))))
+
+(defun symbol-kind (symbol)
+  (cond ((boundp symbol)
+         :variable)
+        ((fboundp symbol)
+         :function)
+        ((find-class symbol nil)
+         :class)
+        ((find-package symbol)
+         :package)))
+
+(defun symbol-informations (symbol-specs)
+  (loop :for (symbol-name package) :in symbol-specs
+        :for symbol := (to-symbol symbol-name package)
+        :collect (make-symbol-information :name symbol-name
+                                          :detail (symbol-signature symbol)
+                                          :kind (symbol-kind symbol))))
