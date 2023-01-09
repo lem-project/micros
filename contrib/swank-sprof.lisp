@@ -153,5 +153,3 @@
   (sb-sprof:stop-profiling))
 
 )
-
-(provide :swank-sprof)

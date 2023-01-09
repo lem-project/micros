@@ -13,5 +13,3 @@
             (ql-system-list (find-symbol "SYSTEM-LIST" "QL")))
         (mapcar ql-dist-name (funcall ql-system-list)))
       (error "Could not find Quicklisp already loaded.")))
-
-(provide :swank-quicklisp)

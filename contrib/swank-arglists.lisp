@@ -1619,5 +1619,3 @@ datum for subsequent logics to rely on."
 
 (test-print-arglist)
 (test-arglist-ref)
-
-(provide :swank-arglists)

@@ -35,5 +35,3 @@
   (micros:ed-rpc '#:slime-make-buffer-stream-target (current-thread-id) target-identifier)
   (values (micros:make-output-stream-for-target *emacs-connection* target-identifier)
           target-identifier))
-
-(provide :swank-buffer-streams)

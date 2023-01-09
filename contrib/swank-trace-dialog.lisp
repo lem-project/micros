@@ -260,5 +260,3 @@ program.")
     (if found
         (micros::inspect-object obj)
         (error "No object found with ~a, ~a and ~a" trace-id part-id type))))
-
-(provide :swank-trace-dialog)

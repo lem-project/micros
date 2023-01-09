@@ -223,5 +223,3 @@
           do (incf non-whitespace-position)
         until (eql non-whitespace-position position)
         finally (return i)))
-
-(provide :swank-macrostep)

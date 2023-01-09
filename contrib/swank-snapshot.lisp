@@ -63,5 +63,3 @@
     (read-from-string (elt args (1+ pos)))))
 
 (in-package :swank-snapshot)
-
-(provide :swank-snapshot)

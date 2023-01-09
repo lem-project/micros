@@ -84,5 +84,3 @@
   nil)
 
 (setq micros/contrib/repl::*listener-eval-function* '%listener-eval)
-
-(provide :swank-listener-hooks)

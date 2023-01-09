@@ -311,5 +311,3 @@ says that I am starting to print an object with this id. The second says I am fi
   ;; FIXME: import/use swank-repl to avoid package qualifier.
   (setq micros/contrib/repl:*send-repl-results-function*
 	'present-repl-results-via-presentation-streams))
-
-(provide :swank-presentation-streams)

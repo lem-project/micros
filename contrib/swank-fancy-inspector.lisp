@@ -1003,5 +1003,3 @@ Do NOT pass circular lists to this function."
   (let ((*print-pprint-dispatch* (copy-pprint-dispatch)))
     (set-pprint-dispatch '(cons (member function)) nil)
     (princ-to-string list)))
-
-(provide :swank-fancy-inspector)

@@ -61,5 +61,3 @@
                              (list-class-symbols name)))))
         (export symbols)
         symbols))))
-
-(provide :swank-package-fu)

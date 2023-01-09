@@ -67,5 +67,3 @@
 (defun to-line  (object &optional (width 75))
   (with-output-to-string (*standard-output*)
     (write object :right-margin width :lines 1)))
-
-(provide :swank-clipboard)

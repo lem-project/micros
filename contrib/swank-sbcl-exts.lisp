@@ -60,5 +60,3 @@
 
 
 ) ; PROGN
-
-(provide :swank-sbcl-exts)

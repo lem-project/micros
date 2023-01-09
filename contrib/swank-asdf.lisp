@@ -529,5 +529,3 @@ already knows."
 (pushnew 'try-compile-asd-file *compile-file-for-emacs-hook*)
 
 ;;; (pushnew 'try-compile-file-with-asdf *compile-file-for-emacs-hook*)
-
-(provide :swank-asdf)

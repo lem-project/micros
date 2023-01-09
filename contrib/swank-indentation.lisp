@@ -136,5 +136,3 @@ in Emacs."
                  (macro-indentation '((name zot &key foo bar) &body body))))
   (assert (equal nil
                  (macro-indentation '(x y &key z)))))
-
-(provide :swank-indentation)

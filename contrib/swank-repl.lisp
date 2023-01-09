@@ -437,5 +437,3 @@ NIL if streams are not globally redirected.")
         ;; No more connections, revert to the real streams.
         (progn (revert-global-io-redirection)
                (setq *global-stdio-connection* nil)))))
-
-(provide :swank-repl)

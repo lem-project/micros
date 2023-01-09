@@ -291,5 +291,3 @@ For example:
          (completion-set (character-completion-set prefix matcher))
          (completions (sort completion-set #'string<)))
     (list completions (longest-compound-prefix completions #\_))))
-
-(provide :swank-c-p-c)

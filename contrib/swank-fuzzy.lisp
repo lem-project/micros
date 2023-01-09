@@ -698,5 +698,3 @@ for interactive debugging purpose."
     (loop for (sym score result) in winners do
           (format t "~&~VA  score ~8,2F  ~A"
                   max-len (highlight-completion result sym) score result))))
-
-(provide :swank-fuzzy)
