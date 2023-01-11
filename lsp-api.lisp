@@ -3,7 +3,9 @@
   (:export :hover-symbol
            :completions
            :make-symbol-spec
-           :symbol-informations))
+           :symbol-informations
+           :load-systems
+           :compile-and-load-file))
 (in-package :micros/lsp-api)
 
 ;;; hover-symbol
@@ -162,3 +164,16 @@
         :collect (make-symbol-information :name symbol-name
                                           :detail (symbol-signature symbol)
                                           :kind (symbol-kind symbol))))
+
+;;;
+(defun load-systems (system-names)
+  (ql:quickload system-names))
+
+(defun compile-and-load-file (filename)
+  (uiop:with-temporary-file (:pathname output-file :type "fasl")
+    (let* ((stream (make-broadcast-stream))
+           (*standard-output* stream)
+           (*error-output* stream))
+      (when (uiop:compile-file* filename :output-file output-file)
+        (load output-file)
+        t))))
