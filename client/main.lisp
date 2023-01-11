@@ -205,6 +205,14 @@
     (log:debug "create-process" command)
     (async-process:create-process command)))
 
+(defun receive-process-output-loop (process)
+  (loop
+    (unless (async-process:process-alive-p process)
+      (return))
+    (let ((output-string (async-process:process-receive-output process)))
+      (when output-string
+        (log:info "process output" output-string)))))
+
 (defun start-server-and-connect ()
   (let* ((port (random-available-port))
          (process (create-server-process port)))
@@ -215,6 +223,8 @@
                                           :arguments (list connection))))
       (setf (connection-message-dispatcher-thread connection) thread
             (connection-server-process connection) process)
+      (sb-thread:make-thread (lambda ()
+                               (receive-process-output-loop process)))
       connection)))
 
 (defun stop-server (connection)
