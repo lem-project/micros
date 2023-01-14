@@ -39,15 +39,3 @@
                              ;; (:file "sprof")
                              ))
                (:file "lsp-api")))
-
-(defsystem "micros/client"
-  :depends-on ("sb-concurrency"
-               "micros"
-               "usocket"
-               "alexandria"
-               "log4cl"
-               "async-process")
-  :serial t
-  :pathname "client"
-  :components ((:file "port")
-               (:file "main")))
