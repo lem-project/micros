@@ -86,7 +86,8 @@
   label
   classification
   signature
-  documentation)
+  documentation
+  sort-text)
 
 (defun parse-classification-string (classification-string)
   (loop :for classification :in '(:variable
@@ -129,10 +130,12 @@
           :for symbol := (completed-string-to-symbol completed-string package-name)
           :for signature := (symbol-signature symbol)
           :for documentation := (describe-symbol-in-markdown symbol)
+          :for index :from 0
           :collect (make-completed-item :label completed-string
                                         :classification classification-detail
                                         :signature signature
-                                        :documentation documentation))))
+                                        :documentation documentation
+                                        :sort-text (format nil "~10,'0D" index)))))
 
 ;;; symbol-informations
 (defstruct (symbol-information (:type list))
