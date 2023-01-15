@@ -55,23 +55,24 @@
                                 (prin1-to-string v))))))))
 
 (defun describe-symbol-in-markdown (symbol)
-  (with-output-to-string (stream)
-    (let ((contents
-            (remove ""
-                    (list (describe-variable symbol)
-                          (describe-function symbol)
-                          (describe-class symbol)
-                          (describe-type symbol)
-                          (describe-declaration symbol)
-                          (describe-plist symbol))
-                    :key #'second
-                    :test #'string=)))
-      (loop :for (header body) :in contents
-            :for first := t :then nil
-            :do (unless first
-                  (write-line "----------" stream))
-                (format stream "## ~A~%" header)
-                (write-line body stream)))))
+  (string-right-trim '(#\newline #\space)
+                     (with-output-to-string (stream)
+                       (let ((contents
+                               (remove ""
+                                       (list (describe-variable symbol)
+                                             (describe-function symbol)
+                                             (describe-class symbol)
+                                             (describe-type symbol)
+                                             (describe-declaration symbol)
+                                             (describe-plist symbol))
+                                       :key #'second
+                                       :test #'string=)))
+                         (loop :for (header body) :in contents
+                               :for first := t :then nil
+                               :do (unless first
+                                     (write-line "----------" stream))
+                                   (format stream "## ~A~%" header)
+                                   (write-string body stream))))))
 
 (defun hover-symbol (symbol-name)
   (micros::with-buffer-syntax ()
