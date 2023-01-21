@@ -147,7 +147,7 @@
   name
   package)
 
-(defun to-symbol (symbol-name package-name)
+(defun find-symbol* (symbol-name package-name)
   (let ((package (find-package package-name)))
     (when package
       (find-symbol symbol-name package))))
@@ -163,11 +163,11 @@
          :package)))
 
 (defun symbol-informations (symbol-specs)
-  (loop :for (symbol-name package) :in symbol-specs
-        :for symbol := (to-symbol symbol-name package)
-        :collect (make-symbol-information :name symbol-name
-                                          :detail (symbol-signature symbol)
-                                          :kind (symbol-kind symbol))))
+  (loop :for (symbol-name package-name) :in symbol-specs
+        :collect (let ((symbol (find-symbol* symbol-name package-name)))
+                   (make-symbol-information :name symbol-name
+                                            :detail (when symbol (symbol-signature symbol))
+                                            :kind (when symbol (symbol-kind symbol))))))
 
 ;;;
 (defun load-systems (system-names)
