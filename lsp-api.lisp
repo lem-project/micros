@@ -5,7 +5,10 @@
            :make-symbol-spec
            :symbol-informations
            :load-systems
-           :compile-and-load-file))
+           :compile-and-load-file
+           :eval-for-language-server
+           :eval-result-value
+           :eval-result-error))
 (in-package :micros/lsp-api)
 
 ;;; hover-symbol
@@ -105,7 +108,7 @@
 (defun symbol-signature (symbol)
   (let ((*print-case* :downcase))
     (handler-case
-        (princ-to-string (micros::arglist symbol))
+        (princ-to-string (cons symbol (micros::arglist symbol)))
       (error ()
         nil))))
 
@@ -181,3 +184,28 @@
       (when (uiop:compile-file* filename :output-file output-file)
         (load output-file)
         t))))
+
+(defun safety-read-from-string (string)
+  (handler-case (values (micros:from-string string))
+    (error (e)
+      (values nil e))))
+
+;;;
+(defstruct (eval-result (:type list))
+  value
+  error)
+
+(defun eval-for-language-server (string)
+  (micros::with-buffer-syntax ()
+    (multiple-value-bind (form error)
+        (safety-read-from-string string)
+      (if error
+          (make-eval-result :value nil
+                            :error (princ-to-string error))
+          (handler-case (eval form)
+            (error (e)
+              (make-eval-result :value nil
+                                :error (princ-to-string e)))
+            (:no-error (&rest values)
+              (make-eval-result :value (format nil "~{~S~^~%~}" values)
+                                :error nil)))))))
