@@ -8,18 +8,18 @@
 
 ;;; Administrivia
 
-(defpackage swank/clasp
-  (:use cl swank/backend))
+(defpackage micros/clasp
+  (:use cl micros/backend micros/source-path-parser micros/source-file-cache))
 
-(in-package swank/clasp)
+(in-package micros/clasp)
 
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (setq swank::*log-output* (open "/tmp/slime.log" :direction :output))
+  (setq micros::*log-output* (open "/tmp/slime.log" :direction :output))
   (setq swank:*log-events* t))
 
 (defmacro slime-dbg (fmt &rest args)
-  `(swank::log-event "slime-dbg ~a ~a~%" mp:*current-process* (apply #'format nil ,fmt ,args)))
+  `(micros::log-event "slime-dbg ~a ~a~%" mp:*current-process* (apply #'format nil ,fmt ,args)))
 
 ;; Hard dependencies.
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -49,9 +49,9 @@
 
 (defimplementation preferred-communication-style ()
   :spawn
-#|  #+threads :spawn
+  #|  #+threads :spawn
   #-threads nil
-|#
+  |#
   )
 
 (defun resolve-hostname (name)
@@ -66,7 +66,7 @@
     (handler-bind
         ((SB-BSD-SOCKETS:ADDRESS-IN-USE-ERROR (lambda (err)
                                                 (declare (ignore err))
-                                               (invoke-restart 'use-value))))
+                                                (invoke-restart 'use-value))))
       (sb-bsd-sockets:socket-bind socket (resolve-hostname host) port))
     (sb-bsd-sockets:socket-listen socket (or backlog 5))
     socket))
@@ -180,39 +180,39 @@
 (progn
   (defun poll-streams (streams timeout)
     (let* ((serve-event::*descriptor-handlers*
-            (copy-list serve-event::*descriptor-handlers*))
+             (copy-list serve-event::*descriptor-handlers*))
            (active-fds '())
            (fd-stream-alist
-            (loop for s in streams
-                  for fd = (socket-fd s)
-                  collect (cons fd s)
-                  do (serve-event:add-fd-handler fd :input
-                                                 #'(lambda (fd)
-                                                     (push fd active-fds))))))
+             (loop for s in streams
+                   for fd = (socket-fd s)
+                   collect (cons fd s)
+                   do (serve-event:add-fd-handler fd :input
+                                                  #'(lambda (fd)
+                                                      (push fd active-fds))))))
       (serve-event:serve-event timeout)
       (loop for fd in active-fds collect (cdr (assoc fd fd-stream-alist)))))
 
   (defimplementation wait-for-input (streams &optional timeout)
     (assert (member timeout '(nil t)))
     (loop
-       (cond ((check-slime-interrupts) (return :interrupt))
-             (timeout (return (poll-streams streams 0)))
-             (t
-              (when-let (ready (poll-streams streams 0.2))
-                        (return ready))))))  
+      (cond ((check-slime-interrupts) (return :interrupt))
+            (timeout (return (poll-streams streams 0)))
+            (t
+             (when-let (ready (poll-streams streams 0.2))
+                       (return ready))))))  
 
-) ; #+serve-event (progn ...
+  ) ; #+serve-event (progn ...
 
 #-serve-event
 (defimplementation wait-for-input (streams &optional timeout)
   (assert (member timeout '(nil t)))
   (loop
-   (cond ((check-slime-interrupts) (return :interrupt))
-         (timeout (return (remove-if-not #'listen streams)))
-         (t
-          (let ((ready (remove-if-not #'listen streams)))
-            (if ready (return ready))
-            (sleep 0.1))))))
+    (cond ((check-slime-interrupts) (return :interrupt))
+          (timeout (return (remove-if-not #'listen streams)))
+          (t
+           (let ((ready (remove-if-not #'listen streams)))
+             (if ready (return ready))
+             (sleep 0.1))))))
 
 
 ;;;; Compilation
@@ -265,8 +265,8 @@
     (funcall function)))
 
 (defimplementation swank-compile-file (input-file output-file
-                                       load-p external-format
-                                       &key policy)
+                                                  load-p external-format
+                                                  &key policy)
   (declare (ignore policy))
   (format t "Compiling file input-file = ~a   output-file = ~a~%" input-file output-file)
   ;; Ignore the output-file and generate our own
@@ -275,7 +275,7 @@
     (multiple-value-bind (fasl warnings-p failure-p)
         (with-compilation-hooks ()
           (compile-file input-file :output-file tmp-output-file
-                        :external-format external-format))
+                                   :external-format external-format))
       (values fasl warnings-p
               (or failure-p
                   (when load-p
@@ -467,7 +467,7 @@
 
 (defimplementation frame-locals (frame-number)
   (loop for (var . value)
-          in (clasp-debug:frame-locals (frame-from-number frame-number))
+        in (clasp-debug:frame-locals (frame-from-number frame-number))
         for i from 0
         collect (list :name var :id i :value value)))
 
@@ -483,7 +483,7 @@
   (let* ((frame (frame-from-number frame-number)))
     (eval
      `(let (,@(loop for (var . value)
-                      in (clasp-debug:frame-locals frame)
+                    in (clasp-debug:frame-locals frame)
                     collect `(,var ',value)))
         (progn ,form)))))
 
@@ -534,9 +534,9 @@
   (loop for kind in ext:*source-location-kinds*
         for locations = (ext:source-location name kind)
         when locations
-          nconc (loop for location in locations
-                      collect (list (make-dspec name location)
-                                    (translate-location location)))))
+        nconc (loop for location in locations
+                    collect (list (make-dspec name location)
+                                  (translate-location location)))))
 
 (defun source-location (object)
   (let ((location (ext:source-location object t)))
@@ -552,27 +552,28 @@
 
 ;;;; as clisp and ccl
 
-(defimplementation profile (fname)
-  (eval `(swank-monitor:monitor ,fname)))         ;monitor is a macro
+;;TODO: Make this work
+;; (defimplementation profile (fname)
+;;   (eval `(swank-monitor:monitor ,fname)))         ;monitor is a macro
 
-(defimplementation profiled-functions ()
-  swank-monitor:*monitored-functions*)
+;; (defimplementation profiled-functions ()
+;;   swank-monitor:*monitored-functions*)
 
-(defimplementation unprofile (fname)
-  (eval `(swank-monitor:unmonitor ,fname)))       ;unmonitor is a macro
+;; (defimplementation unprofile (fname)
+;;   (eval `(swank-monitor:unmonitor ,fname)))       ;unmonitor is a macro
 
-(defimplementation unprofile-all ()
-  (swank-monitor:unmonitor))
+;; (defimplementation unprofile-all ()
+;;   (swank-monitor:unmonitor))
 
-(defimplementation profile-report ()
-  (swank-monitor:report-monitoring))
+;; (defimplementation profile-report ()
+;;   (swank-monitor:report-monitoring))
 
-(defimplementation profile-reset ()
-  (swank-monitor:reset-all-monitoring))
+;; (defimplementation profile-reset ()
+;;   (swank-monitor:reset-all-monitoring))
 
-(defimplementation profile-package (package callers-p methods)
-  (declare (ignore callers-p methods))
-  (swank-monitor:monitor-all package))
+;; (defimplementation profile-package (package callers-p methods)
+;;   (declare (ignore callers-p methods))
+;;   (swank-monitor:monitor-all package))
 
 
 ;;;; Threads
@@ -673,40 +674,27 @@
   (defimplementation send (thread message)
     (let* ((mbox (mailbox thread))
            (mutex (mailbox.mutex mbox)))
-      (swank::log-event "clasp.lisp: send message ~a    mutex: ~a~%" message mutex)
-      (swank::log-event "clasp.lisp:    (lock-owner mutex) -> ~a~%" (mp:lock-owner mutex))
-      (swank::log-event "clasp.lisp:    (lock-count mutex) -> ~a~%" (mp:lock-count mutex))
       (mp:with-lock (mutex)
-        (swank::log-event "clasp.lisp:  in with-lock   (lock-owner mutex) -> ~a~%" (mp:lock-owner mutex))
-        (swank::log-event "clasp.lisp:  in with-lock   (lock-count mutex) -> ~a~%" (mp:lock-count mutex))
         (setf (mailbox.queue mbox)
               (nconc (mailbox.queue mbox) (list message)))
-        (swank::log-event "clasp.lisp: send about to broadcast~%")
         (mp:condition-variable-broadcast (mailbox.cvar mbox)))))
 
   
   (defimplementation receive-if (test &optional timeout)
-    (slime-dbg "Entered receive-if")
     (let* ((mbox (mailbox (current-thread)))
            (mutex (mailbox.mutex mbox)))
-      (slime-dbg "receive-if assert")
       (assert (or (not timeout) (eq timeout t)))
       (loop
-         (slime-dbg "receive-if check-slime-interrupts")
-         (check-slime-interrupts)
-         (slime-dbg "receive-if with-lock")
-         (mp:with-lock (mutex)
-           (let* ((q (mailbox.queue mbox))
-                  (tail (member-if test q)))
-             (when tail
-               (setf (mailbox.queue mbox) (nconc (ldiff q tail) (cdr tail)))
-               (return (car tail))))
-           (slime-dbg "receive-if when (eq")
-           (when (eq timeout t) (return (values nil t))) 
-           (slime-dbg "receive-if condition-variable-timedwait")
-           (mp:condition-variable-wait (mailbox.cvar mbox) mutex) ; timedwait 0.2
-           (slime-dbg "came out of condition-variable-timedwait")
-           (sys:check-pending-interrupts)))))
+        (check-slime-interrupts)
+        (mp:with-lock (mutex)
+          (let* ((q (mailbox.queue mbox))
+                 (tail (member-if test q)))
+            (when tail
+              (setf (mailbox.queue mbox) (nconc (ldiff q tail) (cdr tail)))
+              (return (car tail))))
+          (when (eq timeout t) (return (values nil t))) 
+          (mp:condition-variable-wait (mailbox.cvar mbox) mutex) ; timedwait 0.2
+          (sys:check-pending-interrupts)))))
 
   ) ; #+threads (progn ...
 
@@ -714,7 +702,7 @@
 (defmethod emacs-inspect ((object sys:cxx-object))
   (let ((encoded (sys:encode object)))
     (loop for (key . value) in encoded
-       append (list (string key) ": " (list :value value) (list :newline)))))
+          append (list (string key) ": " (list :value value) (list :newline)))))
 
 (defmethod emacs-inspect ((object sys:vaslist))
   (emacs-inspect (sys:list-from-vaslist object)))
