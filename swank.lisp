@@ -1698,6 +1698,28 @@ Return nil if no package matches."
         *readtable*)))
 
 
+;; see https://github.com/melisgl/named-readtables/blob/a2cb9db06e11277693e26ac104bbc2d6eb19e433/src/named-readtables.lisp#L187-L197
+;; workaround for function %frob-swank-readtable-alist
+;; NOTE: named-readtable assumes :SWANK package
+
+(defun find-readtable-alist-symbol ()
+  (find-symbol (string '#:*readtable-alist*)
+               (find-package :swank)))
+
+(defun make-swank-readtable-alist ()
+  (unless (find-package :swank)
+    (make-package :swank)
+    (intern (string '#:*readtable-alist*)
+            (find-package :swank))))
+
+(defun call-with-readtable-alist (function)
+  (make-swank-readtable-alist)
+  (let ((symbol (find-readtable-alist-symbol)))
+    (progv (list symbol) (list *readtable-alist*)
+      (multiple-value-prog1 (funcall function)
+        (setf *readtable-alist* (symbol-value symbol))))))
+
+
 ;;;; Evaluation
 
 (defvar *pending-continuations* '()
@@ -1731,8 +1753,10 @@ Errors are trapped and invoke our debugger."
            (check-type *buffer-readtable* readtable)
            ;; APPLY would be cleaner than EVAL. 
            ;; (setq result (apply (car form) (cdr form)))
-           (handler-bind ((t (lambda (c) (setf condition c))))
-             (setq result (with-slime-interrupts (eval form))))
+           (call-with-readtable-alist
+            (lambda ()
+              (handler-bind ((t (lambda (c) (setf condition c))))
+                (setq result (with-slime-interrupts (eval form))))))
            (run-hook *pre-reply-hook*)
            (setq ok t))
       (sb-ext:with-locked-hash-table (*request-thread-pair-table*)
