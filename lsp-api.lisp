@@ -87,6 +87,7 @@
 ;;; completions
 (defstruct (completed-item (:type list))
   label
+  chunks
   classification
   signature
   documentation
@@ -135,6 +136,7 @@
           :for documentation := (describe-symbol-in-markdown symbol)
           :for index :from 0
           :collect (make-completed-item :label completed-string
+                                        :chunks chunks
                                         :classification classification-detail
                                         :signature signature
                                         :documentation documentation
