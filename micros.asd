@@ -1,5 +1,5 @@
 (defsystem "micros"
-  :depends-on (:concurrent-hash-tables)
+  :depends-on (:bordeaux-threads)
   :version "0.0.0"
   :serial t
   :components ((:file "packages")

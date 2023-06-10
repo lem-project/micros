@@ -1725,28 +1725,31 @@ Return nil if no package matches."
 (defvar *pending-continuations* '()
   "List of continuations for Emacs. (thread local)")
 
-(defvar *request-thread-pair-table* (concurrent-hash-table:make-chash-table))
+(defvar *request-thread-pair-table* (make-hash-table :test 'equal))
 
 (defun get-thread-id (request-id)
-  (concurrent-hash-table:getchash request-id *request-thread-pair-table*))
+  (bt:with-lock-held ((bt:make-lock))
+    (gethash request-id *request-thread-pair-table*)))
 
 (defun guess-buffer-package (string)
   "Return a package for STRING. 
-Fall back to the current if no such package exists."
+  Fall back to the current if no such package exists."
   (or (and string (guess-package string))
       *package*))
 
 (defun eval-for-emacs (form buffer-package id)
   "Bind *BUFFER-PACKAGE* to BUFFER-PACKAGE and evaluate FORM.
-Return the result to the continuation ID.
-Errors are trapped and invoke our debugger."
+  Return the result to the continuation ID.
+  Errors are trapped and invoke our debugger."
   (let (ok result condition)
     (unwind-protect
          (let ((*buffer-package* (guess-buffer-package buffer-package))
                (*buffer-readtable* (guess-buffer-readtable buffer-package))
                (*pending-continuations* (cons id *pending-continuations*)))
-           (setf (concurrent-hash-table:getchash id *request-thread-pair-table*)
-                 (thread-id (current-thread)))
+           (bt:with-lock-held ((bt:make-lock))
+             (setf
+              (gethash id *request-thread-pair-table*)
+              (thread-id (current-thread))))
            (check-type *buffer-package* package)
            (check-type *buffer-readtable* readtable)
            ;; APPLY would be cleaner than EVAL. 
@@ -1757,7 +1760,8 @@ Errors are trapped and invoke our debugger."
                 (setq result (with-slime-interrupts (eval form))))))
            (run-hook *pre-reply-hook*)
            (setq ok t))
-      (concurrent-hash-table:remchash id *request-thread-pair-table*)
+      (bt:with-lock-held ((bt:make-lock))
+        (remhash id *request-thread-pair-table*))
       (send-to-emacs `(:return ,(current-thread)
                                ,(if ok
                                     `(:ok ,result)
@@ -1771,19 +1775,19 @@ Errors are trapped and invoke our debugger."
   (with-buffer-syntax ()
     (let ((*print-readably* nil))
       (cond ((null values) "; No value")
-            ((and (integerp (car values)) (null (cdr values)))
-             (let ((i (car values)))
-               (format nil "~A~D (~a bit~:p, #x~X, #o~O, #b~B)" 
-                       *echo-area-prefix*
-                       i (integer-length i) i i i)))
-            ((and (typep (car values) 'ratio)
-                  (null (cdr values))
-                  (ignore-errors
-                   ;; The ratio may be to large to be represented as a single float
-                   (format nil "~A~D (~:*~f)" 
-                           *echo-area-prefix*
-                           (car values)))))
-            (t (format nil "~a~{~S~^, ~}" *echo-area-prefix* values))))))
+  ((and (integerp (car values)) (null (cdr values)))
+   (let ((i (car values)))
+     (format nil "~A~D (~a bit~:p, #x~X, #o~O, #b~B)" 
+             *echo-area-prefix*
+             i (integer-length i) i i i)))
+  ((and (typep (car values) 'ratio)
+        (null (cdr values))
+        (ignore-errors
+         ;; The ratio may be to large to be represented as a single float
+         (format nil "~A~D (~:*~f)" 
+                 *echo-area-prefix*
+                 (car values)))))
+  (t (format nil "~a~{~S~^, ~}" *echo-area-prefix* values))))))
 
 (defmacro values-to-string (values)
   `(format-values-for-echo-area (multiple-value-list ,values)))
