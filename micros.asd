@@ -1,5 +1,5 @@
 (defsystem "micros"
-  :depends-on (:bordeaux-threads)
+  :depends-on ()
   :version "0.0.0"
   :serial t
   :components ((:file "packages")
