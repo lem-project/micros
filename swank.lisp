@@ -13,19 +13,6 @@
 (in-package :micros)
 ;;;; Top-level variables, constants, macros
 
-(defmacro with-locked-hash-table ((hash-table) &body body)
-  "Limits concurrent accesses to HASH-TABLE for the duration of BODY.
-If HASH-TABLE is synchronized, BODY will execute with exclusive
-ownership of the table. If HASH-TABLE is not synchronized, BODY will
-execute with other WITH-LOCKED-HASH-TABLE bodies excluded -- exclusion
-of hash-table accesses not surrounded by WITH-LOCKED-HASH-TABLE is
-unspecified."
-  ;; Needless to say, this also excludes some internal bits, but
-  ;; getting there is too much detail when "unspecified" says what
-  ;; is important -- unpredictable, but harmless.
-  `(bt:with-recursive-lock-held((hash-table-lock ,hash-table))
-     ,@body))
-
 (defconstant cl-package (find-package :cl)
   "The COMMON-LISP package.")
 
@@ -1738,11 +1725,10 @@ Return nil if no package matches."
 (defvar *pending-continuations* '()
   "List of continuations for Emacs. (thread local)")
 
-(defvar *request-thread-pair-table* (make-hash-table))
+(defvar *request-thread-pair-table* (concurrent-hash-table:make-chash-table))
 
 (defun get-thread-id (request-id)
-  (with-locked-hash-table (*request-thread-pair-table*)
-    (gethash request-id *request-thread-pair-table*)))
+  (concurrent-hash-table:getchash request-id *request-thread-pair-table*))
 
 (defun guess-buffer-package (string)
   "Return a package for STRING. 
@@ -1759,9 +1745,8 @@ Errors are trapped and invoke our debugger."
          (let ((*buffer-package* (guess-buffer-package buffer-package))
                (*buffer-readtable* (guess-buffer-readtable buffer-package))
                (*pending-continuations* (cons id *pending-continuations*)))
-           (with-locked-hash-table (*request-thread-pair-table*)
-             (setf (gethash id *request-thread-pair-table*)
-                   (thread-id (current-thread))))
+           (setf (concurrent-hash-table:getchash id *request-thread-pair-table*)
+                 (thread-id (current-thread)))
            (check-type *buffer-package* package)
            (check-type *buffer-readtable* readtable)
            ;; APPLY would be cleaner than EVAL. 
@@ -1772,8 +1757,7 @@ Errors are trapped and invoke our debugger."
                 (setq result (with-slime-interrupts (eval form))))))
            (run-hook *pre-reply-hook*)
            (setq ok t))
-      (with-locked-hash-table (*request-thread-pair-table*)
-        (remhash id *request-thread-pair-table*))
+      (concurrent-hash-table:remchash id *request-thread-pair-table*)
       (send-to-emacs `(:return ,(current-thread)
                                ,(if ok
                                     `(:ok ,result)
