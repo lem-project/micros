@@ -42,7 +42,6 @@
 			     ;; (:file "snapshot")
 			     ;; (:file "sprof")
 			     ))
-	       #+sbcl
 	       (:file "lsp-api")))
 
 

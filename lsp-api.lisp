@@ -12,11 +12,18 @@
 (in-package :micros/lsp-api)
 
 ;;; hover-symbol
+#+sbcl
 (defun describe-variable (symbol)
   (list "Variable"
         (with-output-to-string (stream)
           (when (boundp symbol)
             (sb-impl::describe-variable symbol stream)))))
+
+#-sbcl
+(defun describe-variable (symbol)
+  (list "Variable"
+        (with-output-to-string (stream)
+          (when (boundp symbol) ""))))
 
 (defun describe-function (symbol)
   (list "Function"
@@ -31,20 +38,41 @@
                 (when doc
                   (write-line doc stream))))))))
 
+#+sbcl
 (defun describe-class (symbol)
   (list "Class"
         (with-output-to-string (stream)
           (sb-impl::describe-class symbol nil stream))))
 
+#-sbcl
+(defun describe-class (symbol)
+  (list "Class"
+        (with-output-to-string (stream)
+          "")))
+
+#+sbcl
 (defun describe-type (symbol)
   (list "Type"
         (with-output-to-string (stream)
           (sb-impl::describe-type symbol stream))))
 
+#-sbcl
+(defun describe-type (symbol)
+  (list "Type"
+        (with-output-to-string (stream)
+          "")))
+
+#+sbcl
 (defun describe-declaration (symbol)
   (list "Declaration"
         (with-output-to-string (stream)
           (sb-impl::describe-declaration symbol stream))))
+
+#-sbcl
+(defun describe-declaration (symbol)
+  (list "Declaration"
+        (with-output-to-string (stream)
+          "")))
 
 (defun describe-plist (symbol)
   (list "Symbol-plist:"
