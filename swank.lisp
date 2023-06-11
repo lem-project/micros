@@ -1726,10 +1726,12 @@ Return nil if no package matches."
   "List of continuations for Emacs. (thread local)")
 
 (defvar *request-thread-pair-table* (make-hash-table :test 'equal))
+(defvar *request-thread-pair-table-lock* (make-lock))
 
 (defun get-thread-id (request-id)
-  (call-with-lock-held (make-lock)
-                       (gethash request-id *request-thread-pair-table*)))
+  (call-with-lock-held *request-thread-pair-table-lock*
+                       (lambda ()
+                         (gethash request-id *request-thread-pair-table*))))
 
 (defun guess-buffer-package (string)
   "Return a package for STRING. 
@@ -1746,10 +1748,11 @@ Return nil if no package matches."
          (let ((*buffer-package* (guess-buffer-package buffer-package))
                (*buffer-readtable* (guess-buffer-readtable buffer-package))
                (*pending-continuations* (cons id *pending-continuations*)))
-           (call-with-lock-held (make-lock)
-                                (setf
-                                 (gethash id *request-thread-pair-table*)
-                                 (thread-id (current-thread))))
+           (call-with-lock-held *request-thread-pair-table-lock*
+                                (lambda ()
+                                  (setf
+                                   (gethash id *request-thread-pair-table*)
+                                   (thread-id (current-thread)))))
            (check-type *buffer-package* package)
            (check-type *buffer-readtable* readtable)
            ;; APPLY would be cleaner than EVAL. 
@@ -1760,7 +1763,7 @@ Return nil if no package matches."
                 (setq result (with-slime-interrupts (eval form))))))
            (run-hook *pre-reply-hook*)
            (setq ok t))
-      (call-with-lock-held (make-lock)
+      (call-with-lock-held *request-thread-pair-table-lock*
                            (remhash id *request-thread-pair-table*))
       (send-to-emacs `(:return ,(current-thread)
                                ,(if ok
