@@ -1764,7 +1764,8 @@ Return nil if no package matches."
            (run-hook *pre-reply-hook*)
            (setq ok t))
       (call-with-lock-held *request-thread-pair-table-lock*
-                           (remhash id *request-thread-pair-table*))
+                           (lambda ()
+                             (remhash id *request-thread-pair-table*)))
       (send-to-emacs `(:return ,(current-thread)
                                ,(if ok
                                     `(:ok ,result)
