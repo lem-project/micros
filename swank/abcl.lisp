@@ -9,26 +9,26 @@
 ;;; are disclaimed.
 ;;;
 
-(defpackage swank/abcl
-  (:use cl swank/backend)
-  (:import-from :java
-                #:jcall #:jstatic
-                #:jmethod
-                #:jfield 
-                #:jconstructor
-                #:jnew-array #:jarray-length #:jarray-ref #:jnew-array-from-array
-                #:jclass #:jnew #:java-object 
-                ;; be conservative and add any import java functions only for later lisps
-                #+#.(swank/backend:with-symbol 'jfield-name 'java) #:jfield-name
-                #+#.(swank/backend:with-symbol 'jinstance-of-p 'java) #:jinstance-of-p
-                #+#.(swank/backend:with-symbol 'jclass-superclass 'java) #:jclass-superclass
-                #+#.(swank/backend:with-symbol 'jclass-interfaces 'java) #:jclass-interfaces
-                #+#.(swank/backend:with-symbol 'java-exception 'java) #:java-exception
-                #+#.(swank/backend:with-symbol 'jobject-class 'java) #:jobject-class
-                #+#.(swank/backend:with-symbol 'jclass-name 'java) #:jclass-name
-                #+#.(swank/backend:with-symbol 'java-object-p 'java) #:java-object-p))
+(defpackage micros/abcl
+            (:use cl micros/backend micros/source-path-parser micros/source-file-cache)
+            (:import-from :java
+                          #:jcall #:jstatic
+                          #:jmethod
+                          #:jfield 
+                          #:jconstructor
+                          #:jnew-array #:jarray-length #:jarray-ref #:jnew-array-from-array
+                          #:jclass #:jnew #:java-object 
+                          ;; be conservative and add any import java functions only for later lisps
+                          #+#.(micros/backend:with-symbol 'jfield-name 'java) #:jfield-name
+                          #+#.(micros/backend:with-symbol 'jinstance-of-p 'java) #:jinstance-of-p
+                          #+#.(micros/backend:with-symbol 'jclass-superclass 'java) #:jclass-superclass
+                          #+#.(micros/backend:with-symbol 'jclass-interfaces 'java) #:jclass-interfaces
+                          #+#.(micros/backend:with-symbol 'java-exception 'java) #:java-exception
+                          #+#.(micros/backend:with-symbol 'jobject-class 'java) #:jobject-class
+                          #+#.(micros/backend:with-symbol 'jclass-name 'java) #:jclass-name
+                          #+#.(micros/backend:with-symbol 'java-object-p 'java) #:java-object-p))
 
-(in-package swank/abcl)
+(in-package micros/abcl)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require :collect) ;just so that it doesn't spoil the flying letters
@@ -67,7 +67,7 @@
 ;;; and potentially with other REPLs, we export a functional toggle
 ;;; for the user to call after loading these definitions.
 (defun enable-cl-inspect-in-emacs ()
-  (swank::wrap 'cl:inspect :use-slime :replace 'swank::inspect-in-emacs))
+  (micros::wrap 'cl:inspect :use-slime :replace 'micros::inspect-in-emacs))
 
 ;; ??? repair bare print object so inspector titles show java class
 (defun %print-unreadable-object-java-too (object stream type identity body)
@@ -97,7 +97,7 @@
 
 ;;; TODO: move such invocations out of toplevel?  
 (eval-when (:load-toplevel)
-  (unless (get 'sys::%print-unreadable-object 'swank/backend::slime-wrap) 
+  (unless (get 'sys::%print-unreadable-object 'micros/backend::slime-wrap) 
     (wrap 'sys::%print-unreadable-object :more-informative :replace '%print-unreadable-object-java-too)))
 
 (defimplementation call-with-compilation-hooks (function)
@@ -160,8 +160,8 @@
    standard-slot-definition ;;dummy
    cl:method
    cl:standard-class
-   #+#.(swank/backend:with-symbol
-           'compute-applicable-methods-using-classes 'mop)
+   #+#.(micros/backend:with-symbol
+        'compute-applicable-methods-using-classes 'mop)
    mop:compute-applicable-methods-using-classes
    ;; standard-class readers
    mop:class-default-initargs
@@ -206,8 +206,8 @@
    slot-boundp-using-class
    slot-value-using-class
    set-slot-value-using-class
-   #+#.(swank/backend:with-symbol
-           'slot-makunbound-using-class 'mop)
+   #+#.(micros/backend:with-symbol
+        'slot-makunbound-using-class 'mop)
    mop:slot-makunbound-using-class))
 
 ;;;; TCP Server
@@ -457,8 +457,8 @@
                             :key (lambda (frame)
                                    (first (sys:frame-to-list frame)))))
             (car sys::*saved-backtrace*)))
-         #+#.(swank/backend:with-symbol *debug-condition* 'ext)
-         (ext::*debug-condition* swank::*swank-debugger-condition*))
+         #+#.(micros/backend:with-symbol *debug-condition* 'ext)
+         (ext::*debug-condition* micros::*swank-debugger-condition*))
     (funcall debugger-loop-fn)))
 
 (defun backtrace (start end)
@@ -476,21 +476,21 @@
     (backtrace start end)))
 
 ;; Don't count on JSS being loaded, but if it is then there's some more stuff we can do
-#+#.(swank/backend:with-symbol 'invoke-restargs 'jss)
+#+#.(micros/backend:with-symbol 'invoke-restargs 'jss)
 (defun jss-p ()
   (and (member "JSS" *modules* :test 'string=) (intern "INVOKE-RESTARGS" "JSS")))
 
-#+#.(swank/backend:with-symbol 'invoke-restargs 'jss)
+#+#.(micros/backend:with-symbol 'invoke-restargs 'jss)
 (defun matches-jss-call (form)
   (flet ((gensymp (s) (and (symbolp s) (null (symbol-package s))))
          (invokep (s)  (and (symbolp s) (eq s (jss-p)))))
-    (let ((method
-            (swank/match::select-match 
-             form
-             (((LAMBDA ((#'gensymp a) &REST (#'gensymp b)) 
-                 ((#'invokep fun) (#'stringp c) (#'gensymp d) (#'gensymp e) . args)) . args) '=> c)
-             (other nil))))
-      method)))
+        (let ((method
+               (micros/match::select-match 
+                form
+                (((LAMBDA ((#'gensymp a) &REST (#'gensymp b)) 
+                          ((#'invokep fun) (#'stringp c) (#'gensymp d) (#'gensymp e) . args)) . args) '=> c)
+                (other nil))))
+          method)))
 
 #-abcl-introspect
 (defimplementation print-frame (frame stream)
@@ -517,7 +517,7 @@
                   (format stream "(#~s ~{~s~^~})" (second form) (list* (third  form) (fourth form)))
                   (loop initially  (write-char #\( stream)
                         for (el . rest) on form
-                        for method =  (swank/abcl::matches-jss-call el)
+                        for method =  (micros/abcl::matches-jss-call el)
                         do
                            (cond (method 
                                   (format stream "(#~s ~{~s~^~})" method (cdr el)))
@@ -1054,8 +1054,8 @@
                        ,(if *slime-inspector-hyperspec-in-browser* 
                             '(lambda(a v) (eww a))
                             'browse-url-browser-function)))
-                        (slime-hyperdoc-lookup ,name))))
-    (swank::eval-in-emacs form t)))
+                 (slime-hyperdoc-lookup ,name))))
+    (micros::eval-in-emacs form t)))
 ;;; END FIXME move into generalized Swank infrastructure, or add to contrib mechanism
 
 ;;; Although by convention toString() is supposed to be a
@@ -1083,10 +1083,10 @@
                     (with-output-to-string (desc) (describe o desc))))))))
 
 (defmethod emacs-inspect ((string string))
-  (swank::lcons* 
+  (micros::lcons* 
    '(:label "Value: ")  `(:value ,string ,(concatenate 'string "\"" string "\""))  '(:newline)
    #+abcl-introspect ;; ??? This doesn't appear depend on ABCL-INTROSPECT.  Why disable?
-   `(:action "[Edit in emacs buffer]" ,(lambda() (swank::ed-in-emacs `(:string ,string))))
+   `(:action "[Edit in emacs buffer]" ,(lambda() (micros::ed-in-emacs `(:string ,string))))
    '(:newline)
    (if (ignore-errors (jclass string))
        `(:line "Names java class" ,(jclass string))
@@ -1097,7 +1097,7 @@
        `(:multiple
          (:label "Abbreviates java class: ")
          ,(let ((it (funcall (intern "LOOKUP-CLASS-NAME" :jss) string :return-ambiguous t :muffle-warning t)))
-           `(:value ,(jclass it)))
+            `(:value ,(jclass it)))
          (:newline))
        "")
    (if (ignore-errors (find-package (string-upcase string)))
@@ -1110,24 +1110,24 @@
                                       (boundp found)
                                       (symbol-plist found)
                                       (ignore-errors (find-class found))))
-                          collect found)))
+                        collect found)))
      (if symbols
          `(:multiple (:label "Names symbols: ") 
                      ,@(loop for s in symbols
                              collect
-                             (Let ((*package* (find-package :keyword))) 
-                               `(:value ,s ,(prin1-to-string s))) collect " ") (:newline))
+                                (Let ((*package* (find-package :keyword))) 
+                                  `(:value ,s ,(prin1-to-string s))) collect " ") (:newline))
          ""))
    (call-next-method)))
 
-#+#.(swank/backend:with-symbol 'java-exception 'java)
+#+#.(micros/backend:with-symbol 'java-exception 'java)
 (defmethod emacs-inspect ((o java:java-exception))
   (append (call-next-method)
           (list '(:newline) '(:label "Stack trace")
-                      '(:newline)
-                      (let ((w (jnew "java.io.StringWriter"))) 
-                        (jcall "printStackTrace" (java:java-exception-cause o) (jnew "java.io.PrintWriter" w))
-                        (jcall "toString" w)))))
+                '(:newline)
+                (let ((w (jnew "java.io.StringWriter"))) 
+                  (jcall "printStackTrace" (java:java-exception-cause o) (jnew "java.io.PrintWriter" w))
+                  (jcall "toString" w)))))
 
 (defmethod emacs-inspect ((slot mop::slot-definition))
   `("Name: "
@@ -1336,10 +1336,10 @@
       ,@(when path (list `(:label ,"Loaded from: ")
                          `(:value ,path)
                          " "
-                         `(:action "[open in emacs buffer]" ,(lambda() (swank::ed-in-emacs `( ,path)))) '(:newline)))
+                         `(:action "[open in emacs buffer]" ,(lambda() (micros::ed-in-emacs `( ,path)))) '(:newline)))
       ,@(if has-superclasses 
             (list* '(:label "Superclasses: ") (butlast (loop for super = (jclass-superclass class) then (jclass-superclass super)
-                            while super collect (list :value super (jcall "getName" super)) collect ", "))))
+                                                             while super collect (list :value super (jcall "getName" super)) collect ", "))))
       ,@(if has-interfaces
             (list* '(:newline) '(:label "Implements Interfaces: ")
                    (butlast (loop for i across (jclass-interfaces class) collect (list :value i (jcall "getName" i)) collect ", "))))
@@ -1364,34 +1364,34 @@
                   for reader = (sys::dsd-reader slotdef)
                   for value = (eval `(,reader ,structure))
                   append
-                  `("  " (:label ,(string-downcase (string name))) ": " (:value ,value) (:newline))))
+                     `("  " (:label ,(string-downcase (string name))) ": " (:value ,value) (:newline))))
         `("No slots available for inspection."))))
 
-#+#.(swank/backend:with-symbol 'get-java-field 'jss)
+#+#.(micros/backend:with-symbol 'get-java-field 'jss)
 (defmethod emacs-inspect ((object sys::structure-class))
-  (let* ((name (jss::get-java-field object "name" t))
-         (def (get name  'system::structure-definition)))
-  `((:label "Class: ") (:value ,object) (:newline)
-    (:label "Raw defstruct definition: ") (:value ,def  ,(let ((*print-array* nil)) (prin1-to-string def))) (:newline)
-   ,@(parts-for-structure-def  name)
-    ;; copy-paste from swank fancy inspector
-    ,@(when (swank-mop:specializer-direct-methods object)
-        `((:label "It is used as a direct specializer in the following methods:")
-          (:newline)
-          ,@(loop
-              for method in (specializer-direct-methods object)
-              for method-spec = (swank::method-for-inspect-value method)
-              collect "  "
-              collect `(:value ,method ,(string-downcase (string (car method-spec))))
-              collect `(:value ,method ,(format nil " (~{~a~^ ~})" (cdr method-spec)))
-              append (let ((method method))
-                       `(" " (:action "[remove]"
-                                      ,(lambda () (remove-method (swank-mop::method-generic-function method) method)))))
-              collect '(:newline)
-              if (documentation method t)
-                collect "    Documentation: " and
-              collect (swank::abbrev-doc  (documentation method t)) and
-              collect '(:newline)))))))
+           (let* ((name (jss::get-java-field object "name" t))
+                  (def (get name  'system::structure-definition)))
+             `((:label "Class: ") (:value ,object) (:newline)
+               (:label "Raw defstruct definition: ") (:value ,def  ,(let ((*print-array* nil)) (prin1-to-string def))) (:newline)
+               ,@(parts-for-structure-def  name)
+               ;; copy-paste from swank fancy inspector
+               ,@(when (specializer-direct-methods object)
+                   `((:label "It is used as a direct specializer in the following methods:")
+                     (:newline)
+                     ,@(loop
+                        for method in (specializer-direct-methods object)
+                        for method-spec = (micros::method-for-inspect-value method)
+                        collect "  "
+                        collect `(:value ,method ,(string-downcase (string (car method-spec))))
+                        collect `(:value ,method ,(format nil " (~{~a~^ ~})" (cdr method-spec)))
+                        append (let ((method method))
+                                 `(" " (:action "[remove]"
+                                                ,(lambda () (remove-method (method-generic-function method) method)))))
+                        collect '(:newline)
+                        if (documentation method t)
+                        collect "    Documentation: " and
+                        collect (micros::abbrev-doc  (documentation method t)) and
+                        collect '(:newline)))))))
 
 (defun parts-for-structure-def-slot (def)
   `((:label ,(string-downcase (sys::dsd-name def))) " reader: " (:value ,(sys::dsd-reader def) ,(string-downcase (string (sys::dsdreader def))))
@@ -1516,7 +1516,8 @@
     (funcall fn)))
 
 ;;;
-#+#.(swank/backend:with-symbol 'package-local-nicknames 'ext)
+#+sbcl
+#+#.(micros/backend:with-symbol 'package-local-nicknames 'ext)
 (defimplementation package-local-nicknames (package)
   (ext:package-local-nicknames package))
 
