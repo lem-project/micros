@@ -13,10 +13,10 @@
 ;;; The LLGPL is also available online at
 ;;; http://opensource.franz.com/preamble.html
 
-(defpackage swank/ccl
-  (:use cl swank/backend))
+(defpackage micros/ccl
+  (:use cl micros/backend))
 
-(in-package swank/ccl)
+(in-package micros/ccl)
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (assert (and (= ccl::*openmcl-major-version* 1)
@@ -31,7 +31,7 @@
     (unless ok
       (warn "~a~%" err))))
 
-;;; swank-mop
+;;; micros-mop
 
 (import-to-swank-mop
  '( ;; classes
@@ -294,27 +294,27 @@
 
 ;;; Profiling (alanr: lifted from swank-clisp)
 
-(defimplementation profile (fname)
-  (eval `(swank-monitor:monitor ,fname)))		;monitor is a macro
+;; (defimplementation profile (fname)
+;;   (eval `(swank-monitor:monitor ,fname)))		;monitor is a macro
 
-(defimplementation profiled-functions ()
-  swank-monitor:*monitored-functions*)
+;; (defimplementation profiled-functions ()
+;;   swank-monitor:*monitored-functions*)
 
-(defimplementation unprofile (fname)
-  (eval `(swank-monitor:unmonitor ,fname)))	;unmonitor is a macro
+;; (defimplementation unprofile (fname)
+;;   (eval `(swank-monitor:unmonitor ,fname)))	;unmonitor is a macro
 
-(defimplementation unprofile-all ()
-  (swank-monitor:unmonitor))
+;; (defimplementation unprofile-all ()
+;;   (swank-monitor:unmonitor))
 
-(defimplementation profile-report ()
-  (swank-monitor:report-monitoring))
+;; (defimplementation profile-report ()
+;;   (swank-monitor:report-monitoring))
 
-(defimplementation profile-reset ()
-  (swank-monitor:reset-all-monitoring))
+;; (defimplementation profile-reset ()
+;;   (swank-monitor:reset-all-monitoring))
 
-(defimplementation profile-package (package callers-p methods)
-  (declare (ignore callers-p methods))
-  (swank-monitor:monitor-all package))
+;; (defimplementation profile-package (package callers-p methods)
+;;   (declare (ignore callers-p methods))
+;;   (swank-monitor:monitor-all package))
 
 ;;; Debugging
 
@@ -329,9 +329,9 @@
 ;; such as *emacs-connection*.
 (defun find-repl-thread ()
   (let* ((*break-on-signals* nil)
-         (conn (swank::default-connection)))
-    (and (swank::multithreaded-connection-p conn)
-         (swank::mconn.repl-thread conn))))
+         (conn (micros::default-connection)))
+    (and (micros::multithreaded-connection-p conn)
+         (micros::mconn.repl-thread conn))))
 
 (defimplementation call-with-debugger-hook (hook fun)
   (let ((*debugger-hook* hook)
