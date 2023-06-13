@@ -2334,7 +2334,7 @@ Operation was KERNEL::DIVISION, operands (1 0).\"
                             :format-arguments args))
     (symbol (apply #'make-condition datum args))))
 
-(defslimefun simple-break (&optional (datum "Interrupt from Emacs") &rest args)
+(defslimefun simple-break (&optional (datum "Interrupt from Editor") &rest args)
   (with-simple-restart (continue "Continue from break.")
     (invoke-slime-debugger (coerce-to-condition datum args))))
 
