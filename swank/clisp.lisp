@@ -34,10 +34,10 @@
 
 ;;; [1] http://cvs.sourceforge.net/viewcvs.py/clocc/clocc/src/tools/metering/
 
-(defpackage swank/clisp
-  (:use cl swank/backend))
+(defpackage micros/clisp
+  (:use cl micros/backend))
 
-(in-package swank/clisp)
+(in-package micros/clisp)
 
 (eval-when (:compile-toplevel)
   (unless (string< "2.44" (lisp-implementation-version))
@@ -58,14 +58,14 @@
                                         :clos))))
     "True in those CLISP images which have a complete MOP implementation."))
 
-#+#.(cl:if swank/clisp::*have-mop* '(cl:and) '(cl:or))
-(progn
-  (import-swank-mop-symbols :clos '(:slot-definition-documentation))
+;; #+#.(cl:if micros/clisp::*have-mop* '(cl:and) '(cl:or))
+;; (progn
+;;   (import-swank-mop-symbols :clos '(:slot-definition-documentation))
 
-  (defun swank-mop:slot-definition-documentation (slot)
-    (clos::slot-definition-documentation slot)))
+;;   (defun micros-mop:slot-definition-documentation (slot)
+;;     (clos::slot-definition-documentation slot)))
 
-#-#.(cl:if swank/clisp::*have-mop* '(and) '(or))
+#-#.(cl:if micros/clisp::*have-mop* '(and) '(or))
 (defclass swank-mop:standard-slot-definition ()
   ()
   (:documentation
@@ -585,27 +585,27 @@ Return two values: NAME and VALUE"
 
 ;;;; Profiling
 
-(defimplementation profile (fname)
-  (eval `(swank-monitor:monitor ,fname)))         ;monitor is a macro
+;; (defimplementation profile (fname)
+;;   (eval `(swank-monitor:monitor ,fname)))         ;monitor is a macro
 
-(defimplementation profiled-functions ()
-  swank-monitor:*monitored-functions*)
+;; (defimplementation profiled-functions ()
+;;   swank-monitor:*monitored-functions*)
 
-(defimplementation unprofile (fname)
-  (eval `(swank-monitor:unmonitor ,fname)))       ;unmonitor is a macro
+;; (defimplementation unprofile (fname)
+;;   (eval `(swank-monitor:unmonitor ,fname)))       ;unmonitor is a macro
 
-(defimplementation unprofile-all ()
-  (swank-monitor:unmonitor))
+;; (defimplementation unprofile-all ()
+;;   (swank-monitor:unmonitor))
 
-(defimplementation profile-report ()
-  (swank-monitor:report-monitoring))
+;; (defimplementation profile-report ()
+;;   (swank-monitor:report-monitoring))
 
-(defimplementation profile-reset ()
-  (swank-monitor:reset-all-monitoring))
+;; (defimplementation profile-reset ()
+;;   (swank-monitor:reset-all-monitoring))
 
-(defimplementation profile-package (package callers-p methods)
-  (declare (ignore callers-p methods))
-  (swank-monitor:monitor-all package))
+;; (defimplementation profile-package (package callers-p methods)
+;;   (declare (ignore callers-p methods))
+;;   (swank-monitor:monitor-all package))
 
 ;;;; Handle compiler conditions (find out location of error etc.)
 
@@ -615,12 +615,12 @@ Return two values: NAME and VALUE"
   `(let ((*error-output* (make-string-output-stream))
          (*compile-verbose* t))
      (multiple-value-prog1
-      (compile-file ,@args)
-      (handler-case
-       (with-input-from-string
-        (*standard-input* (get-output-stream-string *error-output*))
-        ,@body)
-       (sys::simple-end-of-file () nil)))))
+         (compile-file ,@args)
+       (handler-case
+           (with-input-from-string
+               (*standard-input* (get-output-stream-string *error-output*))
+             ,@body)
+         (sys::simple-end-of-file () nil)))))
 
 (defvar *orig-c-warn* (symbol-function 'system::c-warn))
 (defvar *orig-c-style-warn* (symbol-function 'system::c-style-warn))
@@ -715,26 +715,27 @@ Execute BODY with NAME's function slot set to FUNCTION."
                              (format nil "(~S () ~A)" 'lambda string))))
       t)))
 
+
 ;;;; Portable XREF from the CMU AI repository.
 
-(setq pxref::*handle-package-forms* '(cl:in-package))
+;; (setq pxref::*handle-package-forms* '(cl:in-package))
 
-(defmacro defxref (name function)
-  `(defimplementation ,name (name)
-    (xref-results (,function name))))
+;; (defmacro defxref (name function)
+;;   `(defimplementation ,name (name)
+;;     (xref-results (,function name))))
 
-(defxref who-calls      pxref:list-callers)
-(defxref who-references pxref:list-readers)
-(defxref who-binds      pxref:list-setters)
-(defxref who-sets       pxref:list-setters)
-(defxref list-callers   pxref:list-callers)
-(defxref list-callees   pxref:list-callees)
+;; (defxref who-calls      pxref:list-callers)
+;; (defxref who-references pxref:list-readers)
+;; (defxref who-binds      pxref:list-setters)
+;; (defxref who-sets       pxref:list-setters)
+;; (defxref list-callers   pxref:list-callers)
+;; (defxref list-callees   pxref:list-callees)
 
-(defun xref-results (symbols)
-  (let ((xrefs '()))
-    (dolist (symbol symbols)
-      (push (fspec-location symbol symbol) xrefs))
-    xrefs))
+;; (defun xref-results (symbols)
+;;   (let ((xrefs '()))
+;;     (dolist (symbol symbols)
+;;       (push (fspec-location symbol symbol) xrefs))
+;;     xrefs))
 
 (when (find-package :swank-loader)
   (setf (symbol-function (intern "USER-INIT-FILE" :swank-loader))

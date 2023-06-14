@@ -16,6 +16,8 @@
 			     (:file "clasp")
 			     #+ccl
 			     (:file "ccl")
+			     #+clisp
+			     (:file "clisp")
 			     (:file "gray")
 			     (:file "match")
 			     (:file "rpc")))
@@ -26,6 +28,7 @@
 			     (:file "micros-c-p-c" :depends-on ("micros-util"))
 			     (:file "micros-arglists" :depends-on ("micros-c-p-c"))
 			     (:file "micros-fuzzy" :depends-on ("micros-util" "micros-c-p-c"))
+			     #-clisp
 			     (:file "micros-fancy-inspector" :depends-on ("micros-util"))
 			     (:file "micros-presentations" :depends-on ("micros-repl"))
 			     (:file "micros-presentation-streams" :depends-on ("micros-presentations"))
