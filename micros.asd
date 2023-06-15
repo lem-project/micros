@@ -16,8 +16,8 @@
                              (:file "clasp")
                              #+ccl
                              (:file "ccl")
-                              #+clisp
-			                       (:file "clisp")
+			     #+clisp
+			     (:file "clisp")
                              (:file "gray")
                              (:file "match")
                              (:file "rpc")))
