@@ -5,19 +5,29 @@
 (defvar *null-value* (gensym))
 (defvar *evaluated-values-table* (make-hash-table))
 (defvar *evaluated-id-counter* 0)
+(defvar *mutex* (micros/backend:make-lock :name "pretty-eval"))
 
 (defun add (values)
-  (let ((id (incf *evaluated-id-counter*)))
-    (setf (gethash id *evaluated-values-table*)
-          values)
-    id))
+  (micros/backend:call-with-lock-held
+   *mutex*
+   (lambda ()
+     (let ((id (incf *evaluated-id-counter*)))
+       (setf (gethash id *evaluated-values-table*)
+             values)
+       id))))
 
 (defun get-by-id (id)
-  (let ((values (gethash id *evaluated-values-table* *null-value*)))
-    values))
+  (micros/backend:call-with-lock-held
+   *mutex*
+   (lambda ()
+     (let ((values (gethash id *evaluated-values-table* *null-value*)))
+       values))))
 
 (defun remove-by-id (id)
-  (remhash id *evaluated-values-table*))
+  (micros/backend:call-with-lock-held
+   *mutex*
+   (lambda ()
+     (remhash id *evaluated-values-table*))))
 
 (micros::defslimefun pretty-eval (string)
   (micros::with-buffer-syntax ()
