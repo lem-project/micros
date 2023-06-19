@@ -3776,6 +3776,6 @@ Collisions are caused because package information is ignored."
   (let ((class (find-class class-name nil)))
     (when class
       (labels ((recursive (class)
-                 (cons (class-name class)
+                 (cons (symbol-name (class-name class))
                        (mapcar #'recursive (micros/mop:class-direct-subclasses class)))))
         (recursive class)))))
