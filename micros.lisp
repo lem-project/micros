@@ -3773,7 +3773,9 @@ Collisions are caused because package information is ignored."
 ;;;; Experimental features
 
 (defslimefun compute-class-inheritance-tree (class-name)
-  (labels ((recursive (class)
-             (cons (class-name class)
-                   (mapcar #'recursive (micros/mop:class-direct-subclasses class)))))
-    (recursive (find-class class-name))))
+  (let ((class (find-class class-name nil)))
+    (when class
+      (labels ((recursive (class)
+                 (cons (class-name class)
+                       (mapcar #'recursive (micros/mop:class-direct-subclasses class)))))
+        (recursive class)))))
