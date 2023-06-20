@@ -3773,9 +3773,13 @@ Collisions are caused because package information is ignored."
 ;;;; Experimental features
 
 (defslimefun compute-class-inheritance-tree (class-name)
-  (let ((class (find-class class-name nil)))
+  (let ((class (find-class (read-from-string class-name) nil)))
     (when class
       (labels ((recursive (class)
-                 (cons (symbol-name (class-name class))
+                 (cons (let ((*package* *swank-io-package*))
+                         (prin1-to-string (class-name class)))
                        (mapcar #'recursive (micros/mop:class-direct-subclasses class)))))
         (recursive class)))))
+
+(defslimefun find-class-from-string (class-name)
+  (find-class (read-from-string class-name) nil))
