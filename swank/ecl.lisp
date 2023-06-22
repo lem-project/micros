@@ -8,10 +8,10 @@
 
 ;;; Administrivia
 
-(defpackage swank/ecl
-  (:use cl swank/backend))
+(defpackage micros/ecl
+  (:use cl micros/backend micros/source-path-parser micros/source-file-cache))
 
-(in-package swank/ecl)
+(in-package micros/ecl)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun ecl-version ()
@@ -490,20 +490,9 @@
   (and
    (symbolp x)
    (member (symbol-package x)
-           (list #.(find-package :swank)
-                 #.(find-package :swank/backend)
-                 #.(ignore-errors (find-package :swank-mop))
-                 #.(ignore-errors (find-package :swank-loader))))
+           (list #.(find-package :micros)
+                 #.(find-package :micros/backend)))
    t))
-
-(defun is-swank-source-p (name)
-  (setf name (pathname name))
-  (pathname-match-p
-   name
-   (make-pathname :defaults swank-loader::*source-directory*
-                  :name (pathname-name name)
-                  :type (pathname-type name)
-                  :version (pathname-version name))))
 
 (defun is-ignorable-fun-p (x)
   (or
