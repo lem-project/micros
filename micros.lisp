@@ -1,15 +1,3 @@
-;;;; swank.lisp --- Server for SLIME commands.
-;;;
-;;; This code has been placed in the Public Domain.  All warranties
-;;; are disclaimed.
-;;;
-;;; This file defines the "Swank" TCP server for Emacs to talk to. The
-;;; code in this file is purely portable Common Lisp. We do require a
-;;; smattering of non-portable functions in order to write the server,
-;;; so we have defined them in `micros/backend.lisp' and implemented
-;;; them separately for each Lisp implementation. These extensions are
-;;; available to us here via the `micros/backend' package.
-
 (in-package :micros)
 ;;;; Top-level variables, constants, macros
 
@@ -3780,10 +3768,20 @@ Collisions are caused because package information is ignored."
       (force-output stream)
       (background-message "flow-control-test: ~d" i))))
 
-;; Local Variables:
-;; coding: latin-1-unix
-;; indent-tabs-mode: nil
-;; outline-regexp: ";;;;;*"
-;; End:
 
-;;; swank.lisp ends here
+
+;;;; Experimental features
+
+(defslimefun compute-class-inheritance-tree (class-name package-name)
+  (let ((class (find-class (let ((*package* (find-package package-name)))
+                             (read-from-string class-name))
+                           nil)))
+    (when class
+      (labels ((recursive (class)
+                 (cons (let ((*package* *swank-io-package*))
+                         (prin1-to-string (class-name class)))
+                       (mapcar #'recursive (micros/mop:class-direct-subclasses class)))))
+        (recursive class)))))
+
+(defslimefun find-class-from-string (class-name)
+  (find-class (read-from-string class-name) nil))

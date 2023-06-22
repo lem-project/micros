@@ -35,7 +35,7 @@
                              (:file "micros-mrepl")
                              (:file "micros-trace-dialog")
                              (:file "micros-macrostep")
-                             (:file "micros-quicklisp")
+                             (:file "micros-systems")
                              (:file "micros-pretty-eval")
                              ;; (:file "micros-asdf")
                              ;; (:file "micros-buffer-streams")
