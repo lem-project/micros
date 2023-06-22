@@ -30,6 +30,8 @@
   (when (probe-file "sys:profile.fas")
     (require :profile)
     (pushnew :profile *features*))
+  (when (find-symbol "TEMPORARY-DIRECTORY" "EXT")
+    (pushnew :temporary-directory *features*))
   (when (probe-file "sys:serve-event")
     (require :serve-event)
     (pushnew :serve-event *features*)))
@@ -103,7 +105,7 @@
     (fixnum socket)
     (two-way-stream (socket-fd (two-way-stream-input-stream socket)))
     (sb-bsd-sockets:socket (sb-bsd-sockets:socket-file-descriptor socket))
-    (file-stream (si:file-stream-fd socket))))
+    (file-stream (ext:file-stream-file-descriptor socket))))
 
 (defvar *external-format-to-coding-system*
   '((:latin-1
@@ -160,7 +162,7 @@
 
 
 (defimplementation getpid ()
-  (si:getpid))
+  (clasp-posix:getpid))
 
 (defimplementation set-default-directory (directory)
   (ext:chdir (namestring directory))  ; adapts *DEFAULT-PATHNAME-DEFAULTS*.
@@ -264,22 +266,25 @@
       (((or error warning) #'handle-compiler-condition))
     (funcall function)))
 
+(defun mkstemp (name)
+  (ext:mkstemp #+temporary-directory
+               (namestring (make-pathname :name name
+                                          :defaults (ext:temporary-directory)))
+               #-temporary-directory
+               (concatenate 'string "tmp:" name)))
+
 (defimplementation swank-compile-file (input-file output-file
                                                   load-p external-format
                                                   &key policy)
   (declare (ignore policy))
-  (format t "Compiling file input-file = ~a   output-file = ~a~%" input-file output-file)
-  ;; Ignore the output-file and generate our own
-  (let ((tmp-output-file (compile-file-pathname (si:mkstemp "TMP:clasp-swank-compile-file-"))))
-    (format t "Using tmp-output-file: ~a~%" tmp-output-file)
-    (multiple-value-bind (fasl warnings-p failure-p)
-        (with-compilation-hooks ()
-          (compile-file input-file :output-file tmp-output-file
-                                   :external-format external-format))
-      (values fasl warnings-p
-              (or failure-p
-                  (when load-p
-                    (not (load fasl))))))))
+  (multiple-value-bind (fasl warnings-p failure-p)
+      (with-compilation-hooks ()
+        (compile-file input-file :output-file output-file
+                                 :external-format external-format))
+    (values fasl warnings-p
+            (or failure-p
+                (when load-p
+                  (not (load fasl)))))))
 
 (defvar *tmpfile-map* (make-hash-table :test #'equal))
 
@@ -297,7 +302,7 @@
   (with-compilation-hooks ()
     (let ((*buffer-name* buffer)        ; for compilation hooks
           (*buffer-start-position* position))
-      (let ((tmp-file (si:mkstemp "TMP:clasp-swank-tmpfile-"))
+      (let ((tmp-file (mkstemp "clasp-swank-tmpfile-"))
             (fasl-file)
             (warnings-p)
             (failure-p))
@@ -325,12 +330,12 @@
 
 (defimplementation arglist (name)
   (multiple-value-bind (arglist foundp)
-      (sys:function-lambda-list name)     ;; Uses bc-split
+      (ext:function-lambda-list name)     ;; Uses bc-split
     (if foundp arglist :not-available)))
 
 (defimplementation function-name (f)
   (typecase f
-    (generic-function (clos::generic-function-name f))
+    (generic-function (clos:generic-function-name f))
     (function (ext:compiled-function-name f))))
 
 ;; FIXME
@@ -460,10 +465,28 @@
 (defimplementation frame-source-location (frame-number)
   (let ((csl (clasp-debug:frame-source-position (frame-from-number frame-number))))
     (if (clasp-debug:code-source-line-pathname csl)
-        (make-location (list :file (namestring (clasp-debug:code-source-line-pathname csl)))
+        (make-location (list :file (namestring (translate-logical-pathname (clasp-debug:code-source-line-pathname csl))))
                        (list :line (clasp-debug:code-source-line-line-number csl))
                        '(:align t))
         `(:error ,(format nil "No source for frame: ~a" frame-number)))))
+
+(defimplementation activate-stepping (frame)
+  (declare (ignore frame))
+ (core:set-breakstep))
+
+(defimplementation sldb-stepper-condition-p (condition)
+  (typep condition 'clasp-debug:step-form))
+
+(defimplementation sldb-step-into ()
+  (invoke-restart 'clasp-debug:step-into))
+
+(defimplementation sldb-step-next ()
+  (invoke-restart 'clasp-debug:step-over))
+
+(defimplementation sldb-step-out ()
+  ;; FIXME: This stops stepping entirely. Clasp does not have step out yet.
+  (invoke-restart 'continue))
+
 
 (defimplementation frame-locals (frame-number)
   (loop for (var . value)
@@ -495,7 +518,7 @@
 
 #+clasp-working
 (defimplementation command-line-args ()
-  (loop for n from 0 below (si:argc) collect (si:argv n)))
+  (loop for n below (ext:argc) collect (ext:argv n)))
 
 
 ;;;; Inspector
@@ -521,7 +544,7 @@
                  `(:align t)))
 
 (defun translate-location (location)
-  (make-location (list :file (namestring (ext:source-location-pathname location)))
+  (make-location (list :file (namestring (translate-logical-pathname (ext:source-location-pathname location))))
                  (list :position (ext:source-location-offset location))
                  '(:align t)))
 
@@ -595,7 +618,7 @@
       (mp:with-lock (*thread-id-map-lock*)
         ;; Does TARGET-THREAD have an id already?
         (maphash (lambda (id thread-pointer)
-                   (let ((thread (si:weak-pointer-value thread-pointer)))
+                   (let ((thread (ext:weak-pointer-value thread-pointer)))
                      (cond ((not thread)
                             (remhash id *thread-id-map*))
                            ((eq thread target-thread)
@@ -603,14 +626,14 @@
                  *thread-id-map*)
         ;; TARGET-THREAD not found in *THREAD-ID-MAP*
         (let ((id (incf *thread-id-counter*))
-              (thread-pointer (si:make-weak-pointer target-thread)))
+              (thread-pointer (ext:make-weak-pointer target-thread)))
           (setf (gethash id *thread-id-map*) thread-pointer)
           id))))
 
   (defimplementation find-thread (id)
     (mp:with-lock (*thread-id-map-lock*)
       (let* ((thread-ptr (gethash id *thread-id-map*))
-             (thread (and thread-ptr (si:weak-pointer-value thread-ptr))))
+             (thread (and thread-ptr (ext:weak-pointer-value thread-ptr))))
         (unless thread
           (remhash id *thread-id-map*))
         thread)))
@@ -712,3 +735,12 @@
 #+package-local-nicknames
 (defimplementation package-local-nicknames (package)
   (ext:package-local-nicknames package))
+
+
+;;; Floating point
+
+(defimplementation float-nan-p (float)
+  (ext:float-nan-p float))
+
+(defimplementation float-infinity-p (float)
+  (ext:float-infinity-p float))
