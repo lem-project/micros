@@ -4,7 +4,7 @@
   :serial t
   :components ((:file "packages")
                (:module "sbcl"
-                :pathname "swank"
+                :pathname "backend"
                 :components ((:file "backend")
                              (:file "source-path-parser")
                              (:file "source-file-cache")
