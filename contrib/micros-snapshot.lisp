@@ -1,9 +1,9 @@
 
-(defpackage :micros/contrib/snapshot
+(defpackage :micros/snapshot
   (:use cl)
   (:export restore-snapshot save-snapshot background-save-snapshot)
   (:import-from swank defslimefun))
-(in-package :micros/contrib/snapshot)
+(in-package :micros/snapshot)
 
 (defslimefun save-snapshot (image-file)
   (micros/backend:save-image image-file 
@@ -52,7 +52,7 @@
 	 (stream (make-fd-stream fd nil))
 	 (connection (make-connection nil stream style)))
     (let ((*emacs-connection* connection))
-      (when repl (micros/contrib/repl:create-repl nil))
+      (when repl (micros/repl:create-repl nil))
       (background-message "~A" "Lisp image restored"))
     (serve-requests connection)
     (simple-repl)))

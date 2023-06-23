@@ -7,7 +7,7 @@
 
 (in-package :micros)
 
-(defpackage :micros/contrib/buffer-streams
+(defpackage :micros/buffer-streams
   (:use :cl)
   (:import-from :swank
                 defslimefun
@@ -25,7 +25,7 @@
                 *event-hook*)
   (:export make-buffer-output-stream))
 
-(in-package :micros/contrib/buffer-streams)
+(in-package :micros/buffer-streams)
 
 (defun get-temporary-identifier ()
   (intern (symbol-name (gensym "BUFFER"))

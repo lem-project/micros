@@ -3,7 +3,7 @@
 ;; License: public domain
 (in-package :micros)
 
-(defpackage :micros/contrib/repl
+(defpackage :micros/repl
   (:use cl micros/backend)
   (:export *send-repl-results-function*)
   (:import-from
@@ -70,7 +70,7 @@
    *dedicated-output-stream-port*
    *globally-redirect-io*))
 
-(in-package :micros/contrib/repl)
+(in-package :micros/repl)
 
 (defvar *use-dedicated-output-stream* nil
   "When T swank will attempt to create a second connection to Emacs

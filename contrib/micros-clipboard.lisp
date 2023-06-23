@@ -3,12 +3,12 @@
 ;; Written by Helmut Eller in 2008.
 ;; License: Public Domain
 
-(defpackage :micros/contrib/clipboard
+(defpackage :micros/clipboard
   (:use :cl)
   (:import-from :micros :defslimefun :with-buffer-syntax :dcase)
   (:export :add :delete-entry :entries :entry-to-ref :ref))
 
-(in-package :micros/contrib/clipboard)
+(in-package :micros/clipboard)
 
 (defstruct clipboard entries (counter 0))
 

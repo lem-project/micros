@@ -69,7 +69,7 @@
 (defun %listener-eval (string)
   (clear-user-input)
   (with-buffer-syntax ()
-    (micros/contrib/repl::track-package
+    (micros/repl::track-package
      (lambda ()
        (let ((*slime-repl-suppress-output* :unset)
 	     (*slime-repl-advance-history* :unset))
@@ -80,7 +80,7 @@
 		   /// //  // /  / values))
 	   (setq +++ ++  ++ +  + last-form)
 	   (unless (eq *slime-repl-suppress-output* t)
-	     (funcall micros/contrib/repl::*send-repl-results-function* values)))))))
+	     (funcall micros/repl::*send-repl-results-function* values)))))))
   nil)
 
-(setq micros/contrib/repl::*listener-eval-function* '%listener-eval)
+(setq micros/repl::*listener-eval-function* '%listener-eval)

@@ -1,4 +1,4 @@
-(defpackage :micros/contrib/trace-dialog
+(defpackage :micros/trace-dialog
   (:use :cl)
   (:import-from :micros :defslimefun :from-string :to-string)
   (:export #:clear-trace-tree
@@ -22,7 +22,7 @@
            #:find-trace-part
            #:find-trace))
 
-(in-package :micros/contrib/trace-dialog)
+(in-package :micros/trace-dialog)
 
 (defparameter *record-backtrace* nil
   "Record a backtrace of the last 20 calls for each trace.

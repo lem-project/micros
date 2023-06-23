@@ -5,7 +5,7 @@
 ;;
 ;; License: Public Domain
 
-(defpackage :micros/contrib/macrostep
+(defpackage :micros/macrostep
   (:use cl :micros)
   (:import-from :micros
 		#:*macroexpand-printer-bindings*
@@ -19,7 +19,7 @@
   (:export #:macrostep-expand-1
            #:macro-form-p))
 
-(in-package :micros/contrib/macrostep)
+(in-package :micros/macrostep)
 
 (defslimefun macrostep-expand-1 (string compiler-macros? context)
   (with-buffer-syntax ()

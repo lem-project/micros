@@ -1,6 +1,6 @@
-(defpackage :micros/contrib/pretty-eval
+(defpackage :micros/pretty-eval
   (:use :cl :micros))
-(in-package :micros/contrib/pretty-eval)
+(in-package :micros/pretty-eval)
 
 (defvar *null-value* (gensym))
 (defvar *evaluated-values-table* (make-hash-table))

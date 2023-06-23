@@ -238,4 +238,4 @@ The secondary value indicates the absence of an entry."
 
 (defslimefun init-presentations ()
   ;; FIXME: import/use swank-repl to avoid package qualifier.
-  (setq micros/contrib/repl:*send-repl-results-function* 'present-repl-results))
+  (setq micros/repl:*send-repl-results-function* 'present-repl-results))
