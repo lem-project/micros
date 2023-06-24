@@ -3787,8 +3787,7 @@ Collisions are caused because package information is ignored."
   (find-class (read-from-string class-name) nil))
 
 ;;; Feature to make printed objects selectable
-
-;; TODO: thread-safe
+(defvar *printed-object-lock* (make-lock :name "printed-object"))
 (defvar *printed-object-table* (make-hash-table))
 (defvar *printed-object-id-counter* 0)
 
@@ -3796,14 +3795,36 @@ Collisions are caused because package information is ignored."
   (incf *printed-object-id-counter*))
 
 (defun get-printed-object-by-id (id)
-  (gethash id *printed-object-table*))
+  (call-with-lock-held *printed-object-lock*
+                       (lambda ()
+                         (gethash id *printed-object-table*))))
+
+(defun alloc-object-id (object)
+  (call-with-lock-held *printed-object-lock*
+                       (lambda ()
+                         (let ((id (generate-printed-object-id)))
+                           (setf (gethash id *printed-object-table*) object)
+                           id))))
+
+(defun send-write-object-event (object &optional (type :standard-output))
+  (check-type type (member :standard-output :repl-result))
+  (let ((string (prin1-to-string object))
+        (id (alloc-object-id object)))
+    (force-output)
+    (send-to-emacs `(:write-object ,string ,id ,type))))
 
 (defslimefun micros-print (object)
-  (let ((string (prin1-to-string object))
-        (id (generate-printed-object-id)))
-    (setf (gethash id *printed-object-table*) object)
-    (send-to-emacs `(:write-object ,string ,id))))
+  (cond ((typep *standard-output* 'micros/gray::slime-output-stream)
+         (send-write-object-event object))
+        (t
+         (prin1 object))))
 
 (defslimefun inspect-printed-object (id)
   (let ((object (get-printed-object-by-id id)))
     (inspect-object object)))
+
+(defslimefun clear-printed-objects ()
+  (call-with-lock-held *printed-object-lock*
+                       (lambda ()
+                         (clrhash *printed-object-table*)))
+  nil)
