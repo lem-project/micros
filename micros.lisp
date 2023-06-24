@@ -1025,7 +1025,7 @@ The processing is done in the extent of the toplevel restart."
          (interrupt-worker-thread connection thread-id))
         ((:interrupt-thread request-id)
          (interrupt-worker-thread connection (get-thread-id request-id)))
-        (((:write-string
+        (((:write-string :write-object
            :debug :debug-condition :debug-activate :debug-return :channel-send
            :presentation-start :presentation-end
            :new-package :new-features :ed :indentation-update
@@ -3785,3 +3785,25 @@ Collisions are caused because package information is ignored."
 
 (defslimefun find-class-from-string (class-name)
   (find-class (read-from-string class-name) nil))
+
+;;; Feature to make printed objects selectable
+
+;; TODO: thread-safe
+(defvar *printed-object-table* (make-hash-table))
+(defvar *printed-object-id-counter* 0)
+
+(defun generate-printed-object-id ()
+  (incf *printed-object-id-counter*))
+
+(defun get-printed-object-by-id (id)
+  (gethash id *printed-object-table*))
+
+(defslimefun micros-print (object)
+  (let ((string (prin1-to-string object))
+        (id (generate-printed-object-id)))
+    (setf (gethash id *printed-object-table*) object)
+    (send-to-emacs `(:write-object ,string ,id))))
+
+(defslimefun inspect-printed-object (id)
+  (let ((object (get-printed-object-by-id id)))
+    (inspect-object object)))
