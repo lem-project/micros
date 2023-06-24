@@ -3794,7 +3794,7 @@ Collisions are caused because package information is ignored."
 (defun generate-printed-object-id ()
   (incf *printed-object-id-counter*))
 
-(defun get-printed-object-by-id (id)
+(defun %get-printed-object-by-id (id)
   (call-with-lock-held *printed-object-lock*
                        (lambda ()
                          (gethash id *printed-object-table*))))
@@ -3827,7 +3827,7 @@ Collisions are caused because package information is ignored."
            (each-prints #'prin1 objects)))))
 
 (defslimefun inspect-printed-object (id)
-  (let ((object (get-printed-object-by-id id)))
+  (let ((object (%get-printed-object-by-id id)))
     (inspect-object object)))
 
 (defslimefun clear-printed-objects ()
@@ -3835,3 +3835,6 @@ Collisions are caused because package information is ignored."
                        (lambda ()
                          (clrhash *printed-object-table*)))
   nil)
+
+(defslimefun get-printed-object-by-id (id)
+  (%get-printed-object-by-id id))
