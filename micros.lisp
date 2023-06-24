@@ -3813,11 +3813,18 @@ Collisions are caused because package information is ignored."
     (force-output)
     (send-to-emacs `(:write-object ,string ,id ,type))))
 
-(defslimefun micros-print (object)
-  (cond ((typep *standard-output* 'micros/gray::slime-output-stream)
-         (send-write-object-event object))
-        (t
-         (prin1 object))))
+(defslimefun micros-print (&rest objects)
+  (flet ((each-prints (function objects)
+           (loop :for first := t :then nil
+                 :for object :in objects
+                 :do (unless first
+                       (write-char #\space))
+                     (funcall function object))
+           (terpri)))
+    (cond ((typep *standard-output* 'micros/gray::slime-output-stream)
+           (each-prints #'send-write-object-event objects))
+          (t
+           (each-prints #'prin1 objects)))))
 
 (defslimefun inspect-printed-object (id)
   (let ((object (get-printed-object-by-id id)))
