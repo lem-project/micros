@@ -44,8 +44,8 @@
            (after-hook (retlist)
              (decf *depth*)
              (print-indentation)
-             (format t "~A returned " name)
-             (send-write-objects-event retlist)
+             (format t "~A returned" name)
+             (send-write-objects-event (uiop:ensure-list retlist))
              (terpri)))
       (micros/backend:wrap name 'micros-trace
                            :before #'before-hook
@@ -64,3 +64,9 @@
             (let ((*package* micros::*swank-io-package*))
               (prin1-to-string name)))
           *traces*))
+
+(micros/swank-api:defslimefun toggle-trace (name)
+  (let ((name (coerce-to-symbol name)))
+    (if (already-traced-p name)
+        (micros-untrace name)
+        (micros-trace name))))
