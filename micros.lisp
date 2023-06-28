@@ -1069,7 +1069,17 @@ The processing is done in the extent of the toplevel restart."
         (singlethreaded-connection
          (dispatch-event c event)))
       (maybe-slow-down))))
+
+(defun lem-connection ()
+  ; TODO: determine connection
+  (default-connection))
   
+;; This function is for sending events to lem's editor thread.
+(defun send-to-self-connection-thread (event)
+  (let ((*emacs-connection* (default-connection))
+        (*send-counter* 0))
+    (send-to-emacs event)))
+
 
 ;;;;;; Flow control
 
@@ -3811,7 +3821,22 @@ Collisions are caused because package information is ignored."
   (let ((string (prin1-to-string object))
         (id (alloc-object-id object)))
     (force-output)
-    (send-to-emacs `(:write-object ,string ,id ,type))))
+    (send-to-self-connection-thread `(:write-object ,string ,id ,type))))
+
+(defun editor-output-stream-p (value)
+  (typep value (find-symbol "EDITOR-OUTPUT-STREAM" '#:lem)))
+
+(defun call-with-editor-stream (function)
+  (cond ((typep *standard-output* 'micros/gray::slime-output-stream)
+         (funcall function))
+        ((editor-output-stream-p *standard-output*)
+         (let ((*standard-output* (mconn.user-output (lem-connection))))
+           (funcall function)))
+        (t
+         (funcall function))))
+
+(defmacro with-editor-stream (() &body body)
+  `(call-with-editor-stream (lambda () ,@body)))
 
 (defslimefun micros-print (&rest objects)
   (flet ((each-prints (function objects)
@@ -3821,10 +3846,8 @@ Collisions are caused because package information is ignored."
                        (write-char #\space))
                      (funcall function object))
            (terpri)))
-    (cond ((typep *standard-output* 'micros/gray::slime-output-stream)
-           (each-prints #'send-write-object-event objects))
-          (t
-           (each-prints #'prin1 objects)))))
+    (with-editor-stream ()
+      (each-prints #'send-write-object-event objects))))
 
 (defslimefun inspect-printed-object (id)
   (let ((object (%get-printed-object-by-id id)))
