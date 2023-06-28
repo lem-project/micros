@@ -53,13 +53,13 @@
                            :before #'before-hook
                            :after #'after-hook)
       (add-trace name)
-      (values))))
+      (format nil "~A is now traced." name))))
 
 (micros/swank-api:defslimefun micros-untrace (name)
   (let ((name (coerce-to-symbol name)))
     (micros/backend:unwrap name 'micros-trace)
     (remove-trace name)
-    (values)))
+    (format nil "~A is now untraced." name)))
 
 (micros/swank-api:defslimefun micros-trace-list ()
   (mapcar (lambda (name)
