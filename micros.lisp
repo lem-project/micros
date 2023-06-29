@@ -3861,3 +3861,12 @@ Collisions are caused because package information is ignored."
 
 (defslimefun get-printed-object-by-id (id)
   (%get-printed-object-by-id id))
+
+;;;
+(defvar *micros-break-value*)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'watch))
+(defmacro watch (form)
+  `(let ((*micros-break-value* ,form))
+     (break "!!! micros-break !!!")))
