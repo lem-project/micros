@@ -38,7 +38,7 @@
     (flet ((before-hook (args)
              (micros::with-editor-stream ()
                (print-indentation)
-               (format t "(~A" name)
+               (format t "(~S" name)
                (send-write-objects-event args)
                (format t ")~%")
                (incf *depth*)))
@@ -49,9 +49,12 @@
                (format t "~A returned" name)
                (send-write-objects-event (uiop:ensure-list retlist))
                (terpri))))
-      (micros/backend:wrap name 'micros-trace
-                           :before #'before-hook
-                           :after #'after-hook)
+      (handler-case
+          (micros/backend:wrap name 'micros-trace
+                               :before #'before-hook
+                               :after #'after-hook)
+        (error (e)
+          (return-from micros-trace (format nil "ERROR: ~A could not be traced." name))))
       (add-trace name)
       (format nil "~A is now traced." name))))
 
