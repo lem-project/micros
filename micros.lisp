@@ -1025,7 +1025,7 @@ The processing is done in the extent of the toplevel restart."
          (interrupt-worker-thread connection thread-id))
         ((:interrupt-thread request-id)
          (interrupt-worker-thread connection (get-thread-id request-id)))
-        (((:write-string :write-object
+        (((:write-string :write-object :print-watching-value
            :debug :debug-condition :debug-activate :debug-return :channel-send
            :presentation-start :presentation-end
            :new-package :new-features :ed :indentation-update
@@ -2168,8 +2168,6 @@ after Emacs causes a restart to be invoked."
           (send-to-emacs
            (list* :debug (current-thread-id) level
                   (debugger-info-for-emacs 0 *sldb-initial-frames*)))
-          (send-to-emacs 
-           (list :debug-activate (current-thread-id) level nil))
           (loop 
            (handler-case 
                (dcase (wait-for-event 
@@ -3870,3 +3868,11 @@ Collisions are caused because package information is ignored."
 (defmacro watch (form)
   `(let ((*micros-break-value* ,form))
      (break "!!! micros-break !!!")))
+
+(defslimefun fetch-watching-value-and-continue ()
+  (let ((source-location (micros:frame-source-location 0))
+        (values (multiple-value-list (eval-in-frame '*micros-break-value* 0))))
+    (send-to-emacs `(:print-watching-value
+                     ,source-location
+                     ,(format-values-for-echo-area values)))
+    (micros:sldb-continue)))
