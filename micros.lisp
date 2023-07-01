@@ -3867,7 +3867,8 @@ Collisions are caused because package information is ignored."
   (export 'watch))
 (defmacro watch (form)
   `(let ((*micros-break-value* ,form))
-     (break "!!! micros-break !!!")))
+     (break "!!! micros-break !!!")
+     *micros-break-value*))
 
 (defslimefun fetch-watching-value-and-continue ()
   (let ((source-location (micros:frame-source-location 0))
