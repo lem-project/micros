@@ -3876,4 +3876,5 @@ Collisions are caused because package information is ignored."
     (send-to-emacs `(:print-watching-value
                      ,source-location
                      ,(format-values-for-echo-area values)))
-    (micros:sldb-continue)))
+    (when (= 1 *sldb-level*)
+      (micros:sldb-continue))))
