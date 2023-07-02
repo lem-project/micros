@@ -29,7 +29,7 @@
    (lambda ()
      (remhash id *evaluated-values-table*))))
 
-(micros::defslimefun pretty-eval (string)
+(micros/swank-api:defslimefun pretty-eval (string)
   (micros::with-buffer-syntax ()
     (let* ((values (multiple-value-list (eval (from-string string))))
            (id (add values)))
@@ -37,7 +37,7 @@
       (list :value (micros::format-values-for-echo-area values)
             :id id))))
 
-(micros::defslimefun inspect-evaluation-value (id)
+(micros/swank-api:defslimefun inspect-evaluation-value (id)
   (let ((values (get-by-id id)))
     (unless (eq values *null-value*)
       (micros::with-buffer-syntax ()
@@ -46,6 +46,11 @@
           (micros::inspect-object (if (= 1 (length values))
                                       (first values)
                                       values)))))))
+
+(micros/swank-api:defslimefun get-evaluation-value (id)
+  (let ((values (get-by-id id)))
+    (unless (eq values *null-value*)
+      (first values))))
 
 (micros::defslimefun remove-evaluated-values (id)
   (remove-by-id id)
