@@ -3845,7 +3845,8 @@ Collisions are caused because package information is ignored."
                      (funcall function object))
            (terpri)))
     (with-editor-stream ()
-      (each-prints #'send-write-object-event objects))))
+      (each-prints #'send-write-object-event objects)))
+  (apply #'values objects))
 
 (defslimefun inspect-printed-object (id)
   (let ((object (%get-printed-object-by-id id)))
