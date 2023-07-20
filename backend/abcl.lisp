@@ -1527,12 +1527,11 @@
 
 #+abcl-introspect
 (eval-when (:load-toplevel :execute)
-  (loop for s in swank-backend::*interface-functions*
-        for impl = (get s 'swank-backend::implementation)
+  (loop for s in micros/backend::*interface-functions*
+        for impl = (get s 'micros/backend:::implementation)
         do (when (and impl (not (compiled-function-p impl)))
              (let ((name (gensym)))
                (compile name  impl)
                (let ((compiled (symbol-function name)))
                  (system::%set-lambda-name compiled (second (sys::lambda-name impl)))
-                 (setf (get s 'swank-backend::implementation) compiled))))))
-
+                 (setf (get s 'micros/backend::implementation) compiled))))))

@@ -2586,7 +2586,9 @@ Record compiler notes signalled as `compiler-condition's."
 ;;;; Loading
 
 (defslimefun load-file (filename)
-  (to-string (load (filename-to-pathname filename))))
+  (if (equal "asd" (pathname-type filename))
+      (to-string (asdf:load-asd (filename-to-pathname filename)))
+      (to-string (load (filename-to-pathname filename)))))
 
 
 ;;;; Macroexpansion
