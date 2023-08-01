@@ -4,6 +4,7 @@
   "Returns the Quicklisp and ASDF systems list."
   (unless (member :quicklisp *features*)
     (error "Could not find Quicklisp already loaded."))
+  (asdf:ensure-source-registry)
   (let ((asdf-systems
           (sort (loop :for system-name :being :each :hash-key :of asdf/source-registry:*source-registry*
                       :collect system-name)
