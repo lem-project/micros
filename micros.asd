@@ -40,6 +40,7 @@
                              (:file "micros-systems")
                              (:file "micros-pretty-eval")
                              (:file "micros-trace")
+                             (:file "micros-test-runner")
                              ;; (:file "micros-asdf")
                              ;; (:file "micros-buffer-streams")
                              ;; (:file "clipboard")
