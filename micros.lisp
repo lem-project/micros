@@ -2599,7 +2599,8 @@ Record compiler notes signalled as `compiler-condition's."
     (*print-escape* . t)
     (*print-lines* . nil)
     (*print-level* . nil)
-    (*print-length* . nil)))
+    (*print-length* . nil)
+    (*print-case* . :downcase)))
 
 (defun apply-macro-expander (expander string)
   (with-buffer-syntax ()
