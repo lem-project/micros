@@ -51,4 +51,7 @@
                              ))
                (:file "lsp-api")))
 
-
+(defsystem "micros/walker"
+  :serial t
+  :pathname "walker"
+  :components ((:file "walker")))
