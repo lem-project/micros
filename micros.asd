@@ -48,7 +48,6 @@
                              ;; (:file "listener-hooks" :depends-on ("micros-repl"))
                              ;; (:file "snapshot")
                              ;; (:file "sprof")
-                             ))
+                             (:module "walker"
+                              :components ((:file "walker")))))
                (:file "lsp-api")))
-
-
