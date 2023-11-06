@@ -952,42 +952,29 @@
   (call-next-method))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun collect-highlight-paths (form path)
-  (let ((ast (walk (make-instance 'walker) form '() '())))
-    (handler-case (visit (make-instance 'path-finder :target-path path) ast)
-      (exit-visitor (c)
-        (typecase (exit-visitor-value c)
-          ((or block-name-form
-               let-binding-form
-               lexical-variable
-               lambda-list-variable-form
-               flet-binding-form
-               local-function-form
-               call-local-function-form)
-           (let ((visitor (make-instance 'binding-collector
-                                         :target-binding (ast-binding (exit-visitor-value c)))))
-             (visit visitor ast)
-             (visitor-found-paths visitor))))))))
+(defparameter *record-test-cases* nil)
+(defvar *test-cases* '())
 
-(defun test ()
-  (labels ((test-1 (input-form target-path expected-found-paths)
-             (let ((actual-found-paths (collect-highlight-paths input-form target-path)))
-               (assert (equal expected-found-paths
-                              actual-found-paths)))))
-    (test-1 '(block fooo (return-from fooo 1))
-            '(1 2)
-            '((1 2) (1)))
-    (test-1 '(block fooo (return-from fooo 1))
-            '(1)
-            '((1 2) (1)))
-    (test-1 '(block fooo
-              (return-from fooo 1)
-              (return-from fooo 2))
-            '(1)
-            '((1 3) (1 2) (1)))
-    (test-1 '(block fooo 1 2 (return-from fooo 1))
-            '(1 4)
-            '((1 4) (1)))))
+(defun collect-highlight-paths (form path)
+  (let ((result (let ((ast (walk (make-instance 'walker) form '() '())))
+                  (handler-case (visit (make-instance 'path-finder :target-path path) ast)
+                    (exit-visitor (c)
+                      (typecase (exit-visitor-value c)
+                        ((or block-name-form
+                             let-binding-form
+                             lexical-variable
+                             lambda-list-variable-form
+                             flet-binding-form
+                             local-function-form
+                             call-local-function-form)
+                         (let ((visitor (make-instance 'binding-collector
+                                                       :target-binding (ast-binding (exit-visitor-value c)))))
+                           (visit visitor ast)
+                           (visitor-found-paths visitor)))))))))
+    (when *record-test-cases*
+      (push `((collect-highlight-paths ,form ,path) ,result)
+            *test-cases*))
+    result))
 
 (defun read-from-string-with-buffer-syntax (string package-name)
   (micros::with-buffer-syntax (package-name)
