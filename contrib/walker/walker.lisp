@@ -1,8 +1,6 @@
 (defpackage #:micros/walker
   (:use #:cl)
-  (:export #:ast-equal
-           #:walker
-           #:walk))
+  (:export #:collect-highlight-paths))
 (in-package #:micros/walker)
 
 (define-condition unimplemented ()
@@ -954,7 +952,7 @@
   (call-next-method))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun collect-references (form path)
+(defun collect-highlight-paths (form path)
   (let ((ast (walk (make-instance 'walker) form '() '())))
     (handler-case (visit (make-instance 'path-finder :target-path path) ast)
       (exit-visitor (c)
@@ -973,7 +971,7 @@
 
 (defun test ()
   (labels ((test-1 (input-form target-path expected-found-paths)
-             (let ((actual-found-paths (collect-references input-form target-path)))
+             (let ((actual-found-paths (collect-highlight-paths input-form target-path)))
                (assert (equal expected-found-paths
                               actual-found-paths)))))
     (test-1 '(block fooo (return-from fooo 1))
@@ -997,7 +995,7 @@
 
 (micros::defslimefun highlight (form-string path package-name)
   (let ((form (read-from-string-with-buffer-syntax form-string package-name)))
-    (handler-case (collect-references form path)
+    (handler-case (collect-highlight-paths form path)
       (:no-error (paths)
         (list :ok paths))
       (unimplemented (c)
