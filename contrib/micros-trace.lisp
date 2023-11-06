@@ -53,7 +53,7 @@
           (micros/backend:wrap name 'micros-trace
                                :before #'before-hook
                                :after #'after-hook)
-        (error (e)
+        (error ()
           (return-from micros-trace (format nil "ERROR: ~A could not be traced." name))))
       (add-trace name)
       (format nil "~A is now traced." name))))
