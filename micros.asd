@@ -51,3 +51,10 @@
                              (:module "walker"
                               :components ((:file "walker")))))
                (:file "lsp-api")))
+
+(defsystem "micros/tests"
+  :depends-on ("rove" "micros")
+  :serial t
+  :components ((:module "contrib"
+                :components ((:module "walker"
+                              :components ((:file "tests")))))))
