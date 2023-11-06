@@ -5,6 +5,10 @@
            #:walk))
 (in-package #:micros/walker)
 
+(define-condition unimplemented ()
+  ((context :initarg :context
+            :reader unimplemented-context)))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun proper-list-p (x)
     (and (listp x)
@@ -586,7 +590,7 @@
                    :read-only-p (walk walker read-only-p env (cons 2 path)))))
 
 (defmethod walk-form ((walker walker) (name (eql 'locally)) form env path)
-  (error "unimplemented"))
+  (error 'unimplemented :context name))
 
 (defmethod walk-form ((walker walker) (name (eql 'macrolet)) form env path)
   (with-walker-bindings (definitions &body body) (rest form)
@@ -629,7 +633,7 @@
                    :body (walk-forms walker forms env path 1))))
 
 (defmethod walk-form ((walker walker) (name (eql 'progv)) form env path)
-  (error "unimplemented"))
+  (error 'unimplemented :context name))
 
 (defmethod walk-form ((walker walker) (name (eql 'quote)) form env path)
   (with-walker-bindings (value) (rest form)
@@ -648,13 +652,13 @@
                                     :collect (walk walker value env (cons (1+ n) path))))))
 
 (defmethod walk-form ((walker walker) (name (eql 'symbol-macrolet)) form env path)
-  (error "unimplemented"))
+  (error 'unimplemented :context name))
 
 (defmethod walk-form ((walker walker) (name (eql 'tagbody)) form env path)
-  (error "unimplemented"))
+  (error 'unimplemented :context name))
 
 (defmethod walk-form ((walker walker) (name (eql 'go)) form env path)
-  (error "unimplemented"))
+  (error 'unimplemented :context name))
 
 (defmethod walk-form ((walker walker) (name (eql 'the)) form env path)
   (with-walker-bindings (value-type form) (rest form)
@@ -680,7 +684,7 @@
                                           env
                                           path
                                           (1+ body-pos)))
-        (error "unimplemented"))))
+        (error 'unimplemented :context (prin1 form)))))
 
 (defmethod walk-macro ((walker walker) form env path expansion)
   (walk-macro-1 walker
@@ -702,7 +706,7 @@
               (walk-macro walker form env path expansion)
               (let ((name (first form)))
                 (if (consp name)
-                    (error "unimplemented") ; TODO: lambda form
+                    (error 'unimplemented :context "((lambda ...) ...)") ; TODO: lambda form
                     (let ((binding (lookup-function-binding env name))
                           (arguments (loop :for arg :in (rest form)
                                            :for n :from 1
@@ -993,4 +997,8 @@
 
 (micros::defslimefun highlight (form-string path package-name)
   (let ((form (read-from-string-with-buffer-syntax form-string package-name)))
-    (collect-references form path)))
+    (handler-case (collect-references form path)
+      (:no-error (paths)
+        (list :ok paths))
+      (unimplemented (c)
+        (list :error (format nil "unimplemented: ~A" (unimplemented-context c)))))))
