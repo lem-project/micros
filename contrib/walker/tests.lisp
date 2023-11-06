@@ -1677,7 +1677,13 @@
         (BLOCK FOO (RETURN-FROM FOO 20) (RETURN-FROM FOO 30))
         (RETURN-FROM FOO 40))
       (1))
-     ((1 4) (1 2) (1)))))
+     ((1 4) (1 2) (1)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (DEFUN F (X Y) X Y X Y) (6)) ((6) (4) (1 2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (DEFUN F (X Y) X Y X Y) (5)) ((5) (3) (0 2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (DEFUN F (X Y) X Y X Y) (4)) ((6) (4) (1 2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (DEFUN F (X Y) X Y X Y) (3)) ((5) (3) (0 2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (DEFUN F (X Y) X Y X Y) (1 2)) ((6) (4) (1 2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (DEFUN F (X Y) X Y X Y) (0 2)) ((5) (3) (0 2)))))
 
 (deftest random
   (loop :for (act-form expected) :in *test-cases*

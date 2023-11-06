@@ -104,7 +104,7 @@
 ;; ast
 (defclass ast (<printable>)
   ((path :initarg :path
-         :initform (error "Missing :path")
+         :initform nil
          :reader ast-path)))
 
 (defgeneric ast-equal (ast1 ast2))
@@ -752,7 +752,6 @@
                      :name name
                      :lambda-list lambda-list
                      :body (make-instance 'implict-progn-form
-                                          :path (cons 3 path)
                                           :forms (walk-forms walker body env path 3))
                      :path (cons 0 path)))))
 
