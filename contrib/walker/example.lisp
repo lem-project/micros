@@ -97,3 +97,9 @@
 
 (defmethod add :before ((x integer) (y integer))
   (print (list x y)))
+
+
+((lambda (a b)
+   (+ a b))
+ 1
+ 2)

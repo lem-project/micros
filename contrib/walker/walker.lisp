@@ -254,6 +254,13 @@
    (arguments :initarg :arguments
               :reader ast-arguments)))
 
+(defclass lambda-call-form (ast)
+  ((lambda-form :initarg :lambda-form
+                :type lambda-form
+                :reader ast-lambda-form)
+   (arguments :initarg :arguments
+              :reader ast-arguments)))
+
 (defclass dynamic-variable (ast)
   ((symbol :initarg :symbol
            :reader ast-symbol)))
@@ -666,6 +673,14 @@
                 env
                 (micros/backend:arglist (first form))))
 
+(defmethod walk-lambda-call-form ((walker walker) form env path)
+  (with-walker-bindings (lambda-form &rest args) form
+    (make-instance 'lambda-call-form
+                   :lambda-form (walk-lambda-form walker lambda-form env (cons 0 path))
+                   :arguments (loop :for arg :in args
+                                    :for n :from 1
+                                    :collect (walk walker arg env (cons n path))))))
+
 (defmethod walk-form ((walker walker) name form env path)
   (let ((macrolet-binding (lookup-macrolet-binding env name)))
     (if macrolet-binding
@@ -679,7 +694,7 @@
               (walk-macro walker form env path expansion)
               (let ((name (first form)))
                 (if (consp name)
-                    (error 'unimplemented :context "((lambda ...) ...)") ; TODO: lambda form
+                    (walk-lambda-call-form walker form env path)
                     (let ((binding (lookup-function-binding env name))
                           (arguments (loop :for arg :in (rest form)
                                            :for n :from 1
@@ -819,6 +834,10 @@
   (visit-foreach visitor (ast-arguments ast)))
 
 (defmethod visit (visitor (ast call-local-function-form))
+  (visit-foreach visitor (ast-arguments ast)))
+
+(defmethod visit (visitor (ast lambda-call-form))
+  (visit visitor (ast-lambda-form ast))
   (visit-foreach visitor (ast-arguments ast)))
 
 (defmethod visit (visitor (ast dynamic-variable))
