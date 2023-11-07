@@ -88,3 +88,12 @@
   (let ((a 0))
     (with-foo ((aaa ))
       a)))
+
+(defmethod add (x y)
+  (+ x y))
+
+(defmethod add ((x integer) (y integer))
+  (+ x y))
+
+(defmethod add :before ((x integer) (y integer))
+  (print (list x y)))

@@ -52,7 +52,8 @@
                               :components ((:file "package")
                                            (:file "types")
                                            (:file "walker")
-                                           (:file "defun-form")))))
+                                           (:file "defun-form")
+                                           (:file "defmethod-form")))))
                (:file "lsp-api")))
 
 (defsystem "micros/tests"
