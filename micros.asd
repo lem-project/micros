@@ -49,12 +49,14 @@
                              ;; (:file "snapshot")
                              ;; (:file "sprof")
                              (:module "walker"
-                              :components ((:file "walker")))))
+                              :components ((:file "package")
+                                           (:file "types")
+                                           (:file "walker")
+                                           (:file "defun-form")))))
                (:file "lsp-api")))
 
 (defsystem "micros/tests"
   :depends-on ("rove" "micros")
   :serial t
-  :components ((:module "contrib"
-                :components ((:module "walker"
-                              :components ((:file "tests")))))))
+  :pathname "contrib/walker/tests/"
+  :components ((:file "tests")))
