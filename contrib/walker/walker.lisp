@@ -1,23 +1,8 @@
-(defpackage #:micros/walker
-  (:use #:cl)
-  (:export #:collect-highlight-paths))
 (in-package #:micros/walker)
 
 (define-condition unimplemented ()
   ((context :initarg :context
             :reader unimplemented-context)))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun proper-list-p (x)
-    (and (listp x)
-         (null (cdr (last x))))))
-
-(deftype proper-list (&optional (element-type '*))
-  (declare (ignore element-type))
-  '(and list (satisfies proper-list-p)))
-
-(deftype variable-symbol ()
-  '(and symbol (not keyword)))
 
 ;; copy from alexandria:parse-body
 (defun parse-body (body &key documentation whole)
@@ -298,16 +283,6 @@
          :type implict-progn-form
          :reader ast-body)))
 
-(defclass defun-form (ast)
-  ((name :initarg :name
-         :type variable-symbol
-         :reader ast-name)
-   (lambda-list :initarg :lambda-list
-                :reader ast-lambda-list)
-   (body :initarg :body
-         :type implict-progn-form
-         :reader ast-body)))
-
 ;; walker
 (defclass walker () ())
 
@@ -465,18 +440,18 @@
                    walked-lambda-list)))
       (loop :with state := nil
             :for n :from 0
-            :for ll :in lambda-list
-            :do (case ll
+            :for arg :in lambda-list
+            :do (case arg
                   ((&aux &key &rest &body &optional)
-                   (setf state ll))
+                   (setf state arg))
                   (otherwise
                    (ecase state
                      ((&rest &body)
-                      (assert-type ll 'variable-symbol)
-                      (add (make-instance 'lexical-variable-binding :name ll)
+                      (assert-type arg 'variable-symbol)
+                      (add (make-instance 'lexical-variable-binding :name arg) ; TODO: special variable
                            (cons n path)))
                      ((&key &optional &aux)
-                      (let* ((var-value (uiop:ensure-list ll))
+                      (let* ((var-value (uiop:ensure-list arg))
                              (var (first var-value))
                              (value (second var-value)))
                         (assert-type var 'variable-symbol)
@@ -485,14 +460,14 @@
                                   (walk walker value env (list* 1 n path)))))
                           (when initial-value
                             (push initial-value initial-forms))
-                          (add (make-instance 'lexical-variable-binding
+                          (add (make-instance 'lexical-variable-binding ; TODO: special variable
                                               :name var
                                               :value initial-value)
-                               (if (consp ll)
+                               (if (consp arg)
                                    (list* 0 n path)
                                    (cons n path))))))
                      ((nil)
-                      (add (make-instance 'lexical-variable-binding :name ll)
+                      (add (make-instance 'lexical-variable-binding :name arg) ; TODO: special variable
                            (cons n path))))))))
     (values (make-instance 'lambda-list-form
                            :variables (nreverse walked-lambda-list)
@@ -741,20 +716,6 @@
         (t
          (walk-form walker (first form) form env path))))
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmethod walk-form ((walker walker) (name (eql 'defun)) form env path)
-  (with-walker-bindings (name lambda-list &body body) (rest form)
-    (multiple-value-bind (lambda-list env)
-        (walk-lambda-list walker lambda-list env (cons 2 path))
-      (make-instance 'defun-form
-                     :name name
-                     :lambda-list lambda-list
-                     :body (make-instance 'implict-progn-form
-                                          :forms (walk-forms walker body env path 3))
-                     :path (cons 0 path)))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgeneric visit (visitor ast))
@@ -876,10 +837,6 @@
   (visit-foreach visitor (ast-forms ast)))
 
 (defmethod visit (visitor (ast macrolet-form))
-  (visit visitor (ast-body ast)))
-
-(defmethod visit (visitor (ast defun-form))
-  (visit visitor (ast-lambda-list ast))
   (visit visitor (ast-body ast)))
 
 ;;
