@@ -183,13 +183,6 @@
    (body :initarg :body
          :reader ast-body)))
 
-(defclass let*-form (ast)
-  ((bindings :initarg :bindings
-             :type (proper-list let-binding-form)
-             :reader ast-bindings)
-   (body :initarg :body
-         :reader ast-body)))
-
 (defclass flet-binding-form (ast)
   ((binding :initarg :binding :reader ast-binding)
    (lambda-list :initarg :lambda-list :reader ast-lambda-list)
@@ -198,12 +191,6 @@
 (defclass flet-form (ast)
   ((bindings :initarg :bindings
              :type (proper-list flet-binding-form)
-             :reader ast-bindings)
-   (body :initarg :body
-         :reader ast-body)))
-
-(defclass labels-form (ast)
-  ((bindings :initarg :bindings
              :reader ast-bindings)
    (body :initarg :body
          :reader ast-body)))
@@ -424,7 +411,7 @@
                            :collect (make-instance 'lexical-function-binding
                                                    :name name)))
            (env (extend-env* env bindings)))
-      (make-instance 'labels-form
+      (make-instance 'flet-form
                      :bindings (loop :for definition :in definitions
                                      :for binding :in bindings
                                      :for n :from 0
@@ -553,7 +540,7 @@
       (multiple-value-bind (forms declare-form)
           (parse-body body)
         ;; TODO: declare
-        (make-instance 'let*-form
+        (make-instance 'let-form
                        :path (cons 0 path)
                        :bindings bindings
                        :body (walk-forms walker
@@ -793,19 +780,11 @@
   (visit-foreach visitor (ast-bindings ast))
   (visit-foreach visitor (ast-body ast)))
 
-(defmethod visit (visitor (ast let*-form))
-  (visit-foreach visitor (ast-bindings ast))
-  (visit-foreach visitor (ast-body ast)))
-
 (defmethod visit (visitor (ast flet-binding-form))
   (visit visitor (ast-lambda-list ast))
   (visit-foreach visitor (ast-body ast)))
 
 (defmethod visit (visitor (ast flet-form))
-  (visit-foreach visitor (ast-bindings ast))
-  (visit-foreach visitor (ast-body ast)))
-
-(defmethod visit (visitor (ast labels-form))
   (visit-foreach visitor (ast-bindings ast))
   (visit-foreach visitor (ast-body ast)))
 
