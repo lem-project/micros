@@ -923,8 +923,10 @@
                              flet-binding-form
                              local-function-form
                              call-local-function-form)
-                         (let ((visitor (make-instance 'binding-collector
-                                                       :target-binding (ast-binding (exit-visitor-value c)))))
+                         (let ((visitor
+                                 (make-instance 'binding-collector
+                                                :target-binding (ast-binding
+                                                                 (exit-visitor-value c)))))
                            (visit visitor ast)
                            (visitor-found-paths visitor)))))))))
     (when *record-test-cases*
