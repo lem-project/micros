@@ -55,6 +55,7 @@
           :reader binding-value
           :writer (setf binding-value))))
 
+(defclass special-variable-binding (binding) ())
 (defclass lexical-variable-binding (binding) ())
 (defclass lexical-function-binding (binding) ())
 (defclass block-binding (binding) ())
@@ -68,14 +69,15 @@
 (defun extend-env* (env bindings)
   (append bindings env))
 
-(defun lookup-binding (env name type)
+(defun lookup-binding (env name &rest types)
   (loop :for binding :in env
-        :when (and (typep binding type)
+        :when (and (some (lambda (type) (typep binding type))
+                         types)
                    (eq name (binding-name binding)))
         :return binding))
 
-(defun lookup-lexical-binding (env name)
-  (lookup-binding env name 'lexical-variable-binding))
+(defun lookup-variable (env name)
+  (lookup-binding env name 'lexical-variable-binding 'special-variable-binding))
 
 (defun lookup-function-binding (env name)
   (lookup-binding env name 'lexical-function-binding))
@@ -139,7 +141,8 @@
                   :reader ast-initial-forms)))
 
 (defclass lambda-form (ast)
-  ((lambda-list :initarg :lambda-list :reader ast-lambda-list)
+  ((documentation :initarg :documentation :reader ast-documentation)
+   (lambda-list :initarg :lambda-list :reader ast-lambda-list)
    (body :initarg :body :reader ast-body)))
 
 (defclass multiple-value-call-form (ast)
@@ -248,9 +251,10 @@
    (arguments :initarg :arguments
               :reader ast-arguments)))
 
-(defclass dynamic-variable (ast)
-  ((symbol :initarg :symbol
-           :reader ast-symbol)))
+(defclass special-variable (ast)
+  ((binding :initarg :binding
+            :type special-variable-binding
+            :reader ast-binding)))
 
 (defclass lexical-variable (ast)
   ((binding :initarg :binding
@@ -277,8 +281,37 @@
          :type implict-progn-form
          :reader ast-body)))
 
+;;
+(defstruct declaration-spec
+  specials)
+
+(defun parse-declaration-specifiers (declare-forms)
+  (let ((specials '()))
+    (dolist (declare-form declare-forms)
+      (assert (eq 'declare (first declare-form)))
+      (dolist (specifier (rest declare-form))
+        (assert-type specifier 'proper-list)
+        (case (first specifier)
+          ((special)
+           (setf specials (append specials (rest specifier)))))))
+    (make-declaration-spec :specials specials)))
+
 ;; walker
-(defclass walker () ())
+(defclass walker ()
+  ((special-variable-table :initform (make-hash-table :test 'eq)
+                           :reader walker-special-variable-table)))
+
+(defmethod get-special-variable-binding ((walker walker) symbol)
+  (or (gethash symbol (walker-special-variable-table walker))
+      (setf (gethash symbol (walker-special-variable-table walker))
+            (make-instance 'special-variable-binding :name symbol))))
+
+(defun make-variable (walker declaration-spec name &optional value)
+  (declare (ignore value))
+  (if (and declaration-spec
+           (member name (declaration-spec-specials declaration-spec)))
+      (get-special-variable-binding walker name)
+      (make-instance 'lexical-variable-binding :name name)))
 
 (defgeneric walk-form (walker name form env path))
 
@@ -423,7 +456,7 @@
                      :body (walk-forms walker body env path 2)
                      :path (cons 0 path)))))
 
-(defmethod walk-lambda-list ((walker walker) lambda-list env path)
+(defmethod walk-lambda-list ((walker walker) lambda-list env path &key declaration-spec)
   (let ((walked-lambda-list '())
         (initial-forms '()))
     (flet ((add (binding path)
@@ -442,7 +475,7 @@
                    (ecase state
                      ((&rest &body)
                       (assert-type arg 'variable-symbol)
-                      (add (make-instance 'lexical-variable-binding :name arg) ; TODO: special variable
+                      (add (make-variable walker declaration-spec arg)
                            (cons n path)))
                      ((&key &optional &aux)
                       (let* ((var-value (uiop:ensure-list arg))
@@ -454,14 +487,12 @@
                                   (walk walker value env (list* 1 n path)))))
                           (when initial-value
                             (push initial-value initial-forms))
-                          (add (make-instance 'lexical-variable-binding ; TODO: special variable
-                                              :name var
-                                              :value initial-value)
+                          (add (make-variable walker declaration-spec var initial-value)
                                (if (consp arg)
                                    (list* 0 n path)
                                    (cons n path))))))
                      ((nil)
-                      (add (make-instance 'lexical-variable-binding :name arg) ; TODO: special variable
+                      (add (make-variable walker declaration-spec arg)
                            (cons n path))))))))
     (values (make-instance 'lambda-list-form
                            :variables (nreverse walked-lambda-list)
@@ -472,13 +503,20 @@
 (defmethod walk-lambda-form ((walker walker) form env path)
   (assert-type (first form) '(member lambda #+sbcl sb-int:named-lambda))
   (with-walker-bindings (lambda-list &body body) (rest form)
-    (multiple-value-bind (lambda-list env)
-        (walk-lambda-list walker lambda-list env (cons 1 path))
-      ;; TODO: declare
-      (make-instance 'lambda-form
-                     :lambda-list lambda-list
-                     :body (walk-forms walker body env path 2)
-                     :path (cons 0 path)))))
+    (multiple-value-bind (body declare-forms documentation)
+        (parse-body body :documentation t)
+      (let ((declaration-spec (parse-declaration-specifiers declare-forms)))
+        (multiple-value-bind (lambda-list env)
+            (walk-lambda-list walker
+                              lambda-list
+                              env
+                              (cons 1 path)
+                              :declaration-spec declaration-spec)
+          (make-instance 'lambda-form
+                         :documentation documentation
+                         :lambda-list lambda-list
+                         :body (walk-forms walker body env path (+ 2 (length declare-forms)))
+                         :path (cons 0 path)))))))
 
 (defmethod walk-form ((walker walker) (name (eql 'function)) form env path)
   (with-walker-bindings (thing) (rest form)
@@ -697,14 +735,19 @@
                                          :path (cons 0 path)))))))))))
 
 (defmethod walk-variable ((walker walker) symbol env path)
-  (declare (ignore walker))
   ;; TODO
   ;; - symbol-macro
   ;; - constant
-  (let ((binding (lookup-lexical-binding env symbol)))
-    (if binding
-        (make-instance 'lexical-variable :binding binding :path path)
-        (make-instance 'dynamic-variable :symbol symbol :path path))))
+  (let ((binding (lookup-variable env symbol)))
+    (typecase binding
+      (lexical-variable-binding
+       (make-instance 'lexical-variable :binding binding :path path))
+      (special-variable-binding
+       (make-instance 'special-variable :binding binding :path path))
+      (null
+       (make-instance 'special-variable
+                      :binding (get-special-variable-binding walker symbol)
+                      :path path)))))
 
 (defun walk (walker form env path)
   (cond ((null form)
@@ -819,7 +862,7 @@
   (visit visitor (ast-lambda-form ast))
   (visit-foreach visitor (ast-arguments ast)))
 
-(defmethod visit (visitor (ast dynamic-variable))
+(defmethod visit (visitor (ast special-variable))
   (values))
 
 (defmethod visit (visitor (ast lexical-variable))
@@ -856,15 +899,16 @@
 (defclass binding-collector (visitor)
   ((target-binding :initarg :target-binding
                    :initform (error "Missing :target-binding")
-                   :reader visitor-target-binding)
+                   :reader binding-collector-target-binding)
    (found-paths :initform '()
-                :accessor visitor-found-paths)))
+                :accessor binding-collector-found-paths)))
 
 (defun visit-binding-collector (visitor ast)
-  (when (eq (visitor-target-binding visitor)
+  (when (eq (binding-collector-target-binding visitor)
             (ast-binding ast))
-    (push (ast-path ast)
-          (visitor-found-paths visitor))))
+    (when (ast-path ast)
+      (push (ast-path ast)
+            (binding-collector-found-paths visitor)))))
 
 (defmethod visit ((visitor binding-collector) (ast let-binding-form))
   (visit-binding-collector visitor ast)
@@ -879,6 +923,10 @@
   (call-next-method))
 
 (defmethod visit ((visitor binding-collector) (ast lexical-variable))
+  (visit-binding-collector visitor ast)
+  (call-next-method))
+
+(defmethod visit ((visitor binding-collector) (ast special-variable))
   (visit-binding-collector visitor ast)
   (call-next-method))
 
@@ -917,6 +965,7 @@
                         ((or block-name-form
                              let-binding-form
                              lexical-variable
+                             special-variable
                              lambda-list-variable-form
                              flet-binding-form
                              local-function-form
@@ -926,7 +975,7 @@
                                                 :target-binding (ast-binding
                                                                  (exit-visitor-value c)))))
                            (visit visitor ast)
-                           (visitor-found-paths visitor)))))))))
+                           (binding-collector-found-paths visitor)))))))))
     (when *record-test-cases*
       (push `((collect-highlight-paths ,form ,path) ,result)
             *test-cases*))

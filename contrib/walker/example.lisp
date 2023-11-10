@@ -103,3 +103,13 @@
    (+ a b))
  1
  2)
+
+(let ((a 0))
+  a
+  ((lambda (a)
+     (declare (special a))
+     a))
+  ((lambda (a)
+     (declare (special a))
+     a))
+  a)

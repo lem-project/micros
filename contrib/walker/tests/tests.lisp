@@ -372,7 +372,7 @@
         (MULTIPLE-VALUE-PROG1 A B A)
         (UNWIND-PROTECT A (THE INTEGER B) C))
       (3 7))
-     NIL)
+     ((3 7)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (LAMBDA (X A B C &KEY (Y X) Z &AUX (FOO 10)) X Y Z FOO) (0 1))
      ((2) (1 5 1) (0 1)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (LAMBDA (X A B C &KEY (Y X) Z &AUX (FOO 10)) X Y Z FOO) (1 1))
@@ -549,7 +549,7 @@
           (F X)
           #'F))
       (1 2 2))
-     NIL)
+     ((1 2 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (FLET ((F ()
                ))
@@ -560,7 +560,7 @@
           (F X)
           #'F))
       (1 2 2))
-     NIL)
+     ((1 2 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (FLET ((F ()
                ))
@@ -808,7 +808,7 @@
           B
           C))
       (5 2))
-     NIL)
+     ((5 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (LET ((A 0))
         (DO ((X 1 (1+ X)))
@@ -819,7 +819,7 @@
           B
           C))
       (6 2))
-     NIL)
+     ((6 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (LET ((A 0))
         (WITH-HOGE NIL A B C))
@@ -871,7 +871,7 @@
           B
           C))
       (6 2))
-     NIL)
+     ((6 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (LET ((A 0))
         (DO ((X 1 (1+ X)))
@@ -882,7 +882,7 @@
           B
           C))
       (5 2))
-     NIL)
+     ((5 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (LET ((A 0))
         (DO ((X 1 (1+ X)))
@@ -1130,7 +1130,7 @@
           (F X)
           #'F))
       (1 2 2))
-     NIL)
+     ((1 2 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (FLET ((F ()
                ))
@@ -1141,7 +1141,7 @@
           (F X)
           #'F))
       (1 2 2))
-     NIL)
+     ((1 2 2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (FLET ((F ()
                ))
@@ -1318,7 +1318,7 @@
         (MULTIPLE-VALUE-PROG1 A B A)
         (UNWIND-PROTECT A (THE INTEGER B) C))
       (3 7))
-     NIL)
+     ((3 7)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       (LET ((A 0) (B 1))
         (LOAD-TIME-VALUE A B)
@@ -1728,9 +1728,18 @@
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
       ((LAMBDA (MICROS/WALKER::A MICROS/WALKER::B) (+ MICROS/WALKER::A MICROS/WALKER::B)) 1 2)
       (0 1 0))
-     ((1 2 0) (0 1 0)))))
+     ((1 2 0) (0 1 0)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LET ((COMMON-LISP-USER::A 0))
+        COMMON-LISP-USER::A
+        ((LAMBDA (COMMON-LISP-USER::A) (DECLARE (SPECIAL COMMON-LISP-USER::A)) COMMON-LISP-USER::A))
+        ((LAMBDA (COMMON-LISP-USER::A) (DECLARE (SPECIAL COMMON-LISP-USER::A)) COMMON-LISP-USER::A))
+        COMMON-LISP-USER::A)
+      (3 0 3))
+     ((3 0 4) (0 1 0 4) (3 0 3) (0 1 0 3)))))
 
 (deftest random
   (loop :for (act-form expected) :in *test-cases*
+        :for n :from 0
         :do (ok (equal expected (apply (first act-form) (rest act-form)))
-                (format nil "~S" act-form))))
+                (format nil "~D ~S" n act-form))))
