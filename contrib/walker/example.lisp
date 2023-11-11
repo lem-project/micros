@@ -113,3 +113,6 @@
      (declare (special a))
      a))
   a)
+
+(with-open-file (in filename)
+  (read-line in))

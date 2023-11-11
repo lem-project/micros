@@ -22,6 +22,10 @@
         (go :declarations)))
     (values body (nreverse decls) doc)))
 
+(defun string-prefix-p (prefix string)
+  (and (<= (length prefix) (length string))
+       (string= prefix string :end2 (length prefix))))
+
 (defmacro walker-assert (predicate)
   `(assert ,predicate))
 
@@ -88,6 +92,8 @@
 (defun lookup-block-binding (env name)
   (lookup-binding env name 'block-binding))
 
+(defclass <with-binding-form> () ())
+
 ;; ast
 (defclass ast (<printable>)
   ((path :initarg :path
@@ -127,7 +133,7 @@
    (body :initarg :body
          :reader ast-body)))
 
-(defclass lambda-list-variable-form (ast)
+(defclass lambda-list-variable-form (ast <with-binding-form>)
   ((binding :initarg :binding
             :type binding
             :reader ast-binding)))
@@ -173,7 +179,7 @@
   ((tag :initarg :tag :reader ast-tag)
    (value :initarg :value :reader ast-value)))
 
-(defclass let-binding-form (ast)
+(defclass let-binding-form (ast <with-binding-form>)
   ((binding :initarg :binding
             :reader ast-binding)
    (value :initarg :value
@@ -186,7 +192,7 @@
    (body :initarg :body
          :reader ast-body)))
 
-(defclass flet-binding-form (ast)
+(defclass flet-binding-form (ast <with-binding-form>)
   ((binding :initarg :binding :reader ast-binding)
    (lambda-list :initarg :lambda-list :reader ast-lambda-list)
    (body :initarg :body :reader ast-body)))
@@ -208,7 +214,7 @@
    (cleanup-forms :initarg :cleanup-forms
                   :reader ast-cleanup-forms)))
 
-(defclass block-name-form (ast)
+(defclass block-name-form (ast <with-binding-form>)
   ((binding :initarg :binding
             :reader ast-binding)))
 
@@ -238,7 +244,7 @@
    (arguments :initarg :arguments
               :reader ast-arguments)))
 
-(defclass call-local-function-form (ast)
+(defclass call-local-function-form (ast <with-binding-form>)
   ((binding :initarg :binding
             :reader ast-binding)
    (arguments :initarg :arguments
@@ -251,17 +257,17 @@
    (arguments :initarg :arguments
               :reader ast-arguments)))
 
-(defclass special-variable (ast)
+(defclass special-variable (ast <with-binding-form>)
   ((binding :initarg :binding
             :type special-variable-binding
             :reader ast-binding)))
 
-(defclass lexical-variable (ast)
+(defclass lexical-variable (ast <with-binding-form>)
   ((binding :initarg :binding
             :type lexical-variable-binding
             :reader ast-binding)))
 
-(defclass local-function-form (ast)
+(defclass local-function-form (ast <with-binding-form>)
   ((binding :initarg :binding
             :type lexical-function-binding
             :reader ast-binding)))
@@ -278,6 +284,16 @@
 
 (defclass macrolet-form (ast)
   ((body :initarg :body
+         :type implict-progn-form
+         :reader ast-body)))
+
+(defclass with-single-binding-form (ast <with-binding-form>)
+  ((binding :initarg :binding
+            :reader ast-binding)
+   (binding-args :initarg :binding-args
+                 :type (proper-list ast)
+                 :reader ast-binding-args)
+   (body :initarg :body
          :type implict-progn-form
          :reader ast-body)))
 
@@ -679,17 +695,46 @@
                    :cleanup-forms (walk-forms walker cleanup-forms env path 2)
                    :path (cons 0 path))))
 
+(defmethod walk-with-single-binding-form ((walker walker) form path env)
+  (with-walker-bindings (binding-form &body body) (rest form)
+    (with-walker-bindings (var &rest binding-args) binding-form
+      (assert-type var 'variable-symbol)
+      (multiple-value-bind (body declare-forms)
+          (parse-body body)
+        (let* ((declaration-spec (parse-declaration-specifiers declare-forms))
+               (binding (make-variable walker declaration-spec var)))
+          (make-instance 'with-single-binding-form
+                         :path (list* 0 1 path)
+                         :binding binding
+                         :binding-args (loop :for arg :in binding-args
+                                             :for n :from 1
+                                             :collect (walk walker arg env (list* n 1 path)))
+                         :body (make-instance 'implict-progn-form
+                                              :path path
+                                              :forms (walk-forms walker
+                                                                 body
+                                                                 (extend-env env binding)
+                                                                 path
+                                                                 2))))))))
+
 (defun walk-macro-1 (walker form path env lambda-list)
-  (let* ((body-pos (position '&body lambda-list)))
-    (if body-pos
-        (make-instance 'implict-progn-form
-                       :path path
-                       :forms (walk-forms walker
-                                          (nthcdr body-pos (rest form))
-                                          env
-                                          path
-                                          (1+ body-pos)))
-        (error 'unimplemented :context form))))
+  (let ((body-pos (position '&body lambda-list)))
+    (cond (;; (with-* (var &rest forms) &body body)
+           (and (string-prefix-p "WITH-" (string (first form)))
+                (<= 2 (length form))
+                (typep (first (second form)) 'variable-symbol)
+                (<= 1 body-pos))
+           (walk-with-single-binding-form walker form path env))
+          (t
+           (if body-pos
+               (make-instance 'implict-progn-form
+                              :path path
+                              :forms (walk-forms walker
+                                                 (nthcdr body-pos (rest form))
+                                                 env
+                                                 path
+                                                 (1+ body-pos)))
+               (error 'unimplemented :context form))))))
 
 (defmethod walk-macro ((walker walker) form env path expansion)
   (walk-macro-1 walker
@@ -880,6 +925,10 @@
 (defmethod visit (visitor (ast macrolet-form))
   (visit visitor (ast-body ast)))
 
+(defmethod visit (visitor (ast with-single-binding-form))
+  (visit-foreach visitor (ast-binding-args ast))
+  (visit visitor (ast-body ast)))
+
 ;;
 (define-condition exit-visitor ()
   ((value :initarg :value
@@ -903,44 +952,12 @@
    (found-paths :initform '()
                 :accessor binding-collector-found-paths)))
 
-(defun visit-binding-collector (visitor ast)
+(defmethod visit :before ((visitor binding-collector) (ast <with-binding-form>))
   (when (eq (binding-collector-target-binding visitor)
             (ast-binding ast))
     (when (ast-path ast)
       (push (ast-path ast)
             (binding-collector-found-paths visitor)))))
-
-(defmethod visit ((visitor binding-collector) (ast let-binding-form))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
-
-(defmethod visit ((visitor binding-collector) (ast flet-binding-form))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
-
-(defmethod visit ((visitor binding-collector) (ast lambda-list-variable-form))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
-
-(defmethod visit ((visitor binding-collector) (ast lexical-variable))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
-
-(defmethod visit ((visitor binding-collector) (ast special-variable))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
-
-(defmethod visit ((visitor binding-collector) (ast local-function-form))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
-
-(defmethod visit ((visitor binding-collector) (ast block-name-form))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
-
-(defmethod visit ((visitor binding-collector) (ast call-local-function-form))
-  (visit-binding-collector visitor ast)
-  (call-next-method))
 
 ;; path-finder
 (defclass path-finder (visitor)
@@ -962,14 +979,7 @@
                   (handler-case (visit (make-instance 'path-finder :target-path path) ast)
                     (exit-visitor (c)
                       (typecase (exit-visitor-value c)
-                        ((or block-name-form
-                             let-binding-form
-                             lexical-variable
-                             special-variable
-                             lambda-list-variable-form
-                             flet-binding-form
-                             local-function-form
-                             call-local-function-form)
+                        (<with-binding-form>
                          (let ((visitor
                                  (make-instance 'binding-collector
                                                 :target-binding (ast-binding
