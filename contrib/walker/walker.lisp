@@ -689,7 +689,7 @@
                                           env
                                           path
                                           (1+ body-pos)))
-        (error 'unimplemented :context (prin1 form)))))
+        (error 'unimplemented :context form))))
 
 (defmethod walk-macro ((walker walker) form env path expansion)
   (walk-macro-1 walker
