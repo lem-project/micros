@@ -116,3 +116,14 @@
 
 (with-open-file (in filename)
   (read-line in))
+
+(let ((x 0))
+  (loop (f x)))
+
+(loop :with x := 0
+      :with y := x
+      :with z := (f x y))
+
+(loop :with x := 0
+      :return :it
+      :return (f x))

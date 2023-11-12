@@ -717,7 +717,7 @@
                                                                  path
                                                                  2))))))))
 
-(defun walk-macro-1 (walker form path env lambda-list)
+(defun walk-macro (walker form path env lambda-list)
   (let ((body-pos (position '&body lambda-list)))
     (cond (;; (with-* (var &rest forms) &body body)
            (and (string-prefix-p "WITH-" (string (first form)))
@@ -736,13 +736,6 @@
                                                  (1+ body-pos)))
                (error 'unimplemented :context form))))))
 
-(defmethod walk-macro ((walker walker) form env path expansion)
-  (walk-macro-1 walker
-                form
-                path
-                env
-                (micros/backend:arglist (first form))))
-
 (defmethod walk-lambda-call-form ((walker walker) form env path)
   (with-walker-bindings (lambda-form &rest args) form
     (make-instance 'lambda-call-form
@@ -754,14 +747,11 @@
 (defmethod walk-form ((walker walker) name form env path)
   (let ((macrolet-binding (lookup-macrolet-binding env name)))
     (if macrolet-binding
-        (walk-macro-1 walker
-                      form
-                      path
-                      env
-                      (macrolet-binding-lambda-list macrolet-binding))
+        (walk-macro walker form path env (macrolet-binding-lambda-list macrolet-binding))
         (multiple-value-bind (expansion expanded) (macroexpand-1 form)
+          (declare (ignore expansion))
           (if expanded
-              (walk-macro walker form env path expansion)
+              (walk-macro walker form path env (micros/backend:arglist (first form)))
               (let ((name (first form)))
                 (if (consp name)
                     (walk-lambda-call-form walker form env path)

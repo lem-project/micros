@@ -1736,7 +1736,69 @@
         ((LAMBDA (COMMON-LISP-USER::A) (DECLARE (SPECIAL COMMON-LISP-USER::A)) COMMON-LISP-USER::A))
         COMMON-LISP-USER::A)
       (3 0 3))
-     ((3 0 4) (0 1 0 4) (3 0 3) (0 1 0 3)))))
+     ((3 0 4) (0 1 0 4) (3 0 3) (0 1 0 3)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LET ((X 0))
+        (LOOP (F X)))
+      (1 1 2))
+     ((1 1 2) (0 0 1)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LET ((X 0))
+        (LOOP (F X)))
+      (0 0 1))
+     ((1 1 2) (0 0 1)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :WITH Y := X
+            :WITH Z := (F X Y))
+      (2 12))
+     ((6) (2 12)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :WITH Y := X
+            :WITH Z := (F X Y))
+      (1 12))
+     ((2) (8) (1 12)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :WITH Y := X
+            :WITH Z := (F X Y))
+      (8))
+     ((2) (8) (1 12)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :WITH Y := X
+            :WITH Z := (F X Y))
+      (10))
+     ((10)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :WITH Y := X
+            :WITH Z := (F X Y))
+      (6))
+     ((6) (2 12)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :WITH Y := X
+            :WITH Z := (F X Y))
+      (2))
+     ((2) (8) (1 12)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :DO (F X))
+      (1 6))
+     ((1 6) (2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH X := 0
+            :DO (F X))
+      (2))
+     ((1 6) (2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (LOOP :WITH X := 0 :RETURN :IT :RETURN (F X)) (6))
+     NIL)
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (LOOP :WITH X := 0 :RETURN :IT :RETURN (F X)) (1 8))
+     ((1 8) (2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (LOOP :WITH X := 0 :RETURN :IT :RETURN (F X)) (2))
+     ((1 8) (2)))))
 
 (deftest random
   (loop :for (act-form expected) :in *test-cases*
