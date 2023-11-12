@@ -134,3 +134,46 @@
 
 (loop :with ((x y) . z) := (f)
       :with a := (+ x y z))
+
+(loop :for x :in '(1 2 3) :do (print x))
+(loop :with foo
+      :for x :in '(1 2 3) :do (print x))
+(loop :with foo := nil
+      :for x :in '(1 2 3) :do (print x))
+(loop :with fn := #'cddr :and a
+      :for x :in (list a) :by fn :do (print x))
+
+(loop :for x :on '(1 2 3) :do (print x))
+(loop :with foo
+      :for x :on '(1 2 3) :do (print x))
+(loop :with foo := nil
+      :for x :on '(1 2 3) :do (print x))
+(loop :with fn := #'cddr :and a
+      :for x :on (list a) :by fn :do (print x))
+(loop :for x := 1
+      :do (f x))
+(loop :for x := 1 :then (f x)
+      :do (f x))
+(loop :for (x . y) := (f)
+      :do (f x y))
+
+(loop for k being each hash-key in (plist-hash-table '((:a) 1 (:b) 2))
+      do (print k))
+
+(let ((v 0))
+  (loop for k being each hash-key in (plist-hash-table '((:a) 1 (:b) 2))
+        using (hash-value v)
+        do (print (cons k v)))
+  v)
+
+(loop for v being the hash-value in *ht*
+      do (print v))
+(loop for v being each hash-values of *ht* using (hash-key k)
+      do (format t "~a=>~a~%" k v))
+
+(loop :for name :being :each :external-symbol
+      :do (print name))
+
+(let ((package-name (f)))
+  (loop :for name :being :each :external-symbol :in package-name
+        :do (print name)))

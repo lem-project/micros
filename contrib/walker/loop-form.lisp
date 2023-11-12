@@ -18,6 +18,8 @@
    (fianl-clauses :initarg :final-clauses
                   :type (proper-list final-clause)
                   :reader loop-form-final-clauses)
+   (for-as-clauses :initarg :for-as-clauses
+                   :reader loop-form-for-as-clauses)
    (doing-forms :initarg :doing-forms
                 :type (proper-list ast)
                 :reader loop-form-doing-forms)
@@ -49,6 +51,43 @@
 (defclass it-form (ast)
   ())
 
+(defclass <for-as-in-on-list-clause> (ast)
+  ((d-vars :initarg :d-vars
+           :reader ast-d-vars)
+   (in-on :initarg :in-on
+          :reader ast-in-on)
+   (by :initarg :by
+       :reader ast-by)))
+
+(defclass for-as-in-list-clause (<for-as-in-on-list-clause>) ())
+(defclass for-as-on-list-clause (<for-as-in-on-list-clause>) ())
+
+(defclass for-as-equals-then-clause (ast)
+  ((d-vars :initarg :d-vars
+            :reader ast-d-vars)
+   (equals :initarg :equals
+           :reader ast-equals)
+   (then :initarg :then
+         :reader ast-then)))
+
+(defclass for-as-across-clause (ast)
+  ((d-vars :initarg :d-vars
+           :reader ast-d-vars)
+   (across :initarg :across
+           :reader ast-across)))
+
+(defclass for-as-hash-clause (ast)
+  ((d-vars :initarg :d-vars
+           :reader ast-d-vars)
+   (hash-table :initarg :hash-table
+               :reader ast-hash-table)))
+
+(defclass for-as-package-clause (ast)
+  ((d-vars :initarg :d-vars
+           :reader ast-d-vars)
+   (package :initarg :package
+            :reader ast-package)))
+
 (defun walk-d-var-spec (walker d-var-spec env path)
   (cond ((null d-var-spec)
          '())
@@ -74,12 +113,13 @@
 
 (defmethod walk-complex-loop-form ((walker walker) form env path)
   (assert (and (proper-list-p form) (eq 'loop (first form))))
-  (let ((pos 0)
+  (let ((pos 1)
         (exps (rest form))
         (named-binding nil)
         (with-clauses '())
         (initial-clauses '())
         (final-clauses '())
+        (for-as-clauses '())
         (doing-forms '())
         (return-forms '()))
     (labels ((lookahead ()
@@ -88,16 +128,18 @@
                (walker-assert (not (null exps)))
                (incf pos)
                (pop exps))
-             (accept (name)
-               (when (and (typep (lookahead) '(or symbol string))
-                          (string= name (lookahead)))
+             (match (names)
+               (when (symbolp (lookahead))
+                 (loop :for name :in names
+                       :thereis (string= name (lookahead)))))
+             (accept (&rest names)
+               (when (match names)
                  (next)
                  t))
-             (exact-var ()
-               (let ((var (next)))
-                 (assert-type var 'variable-symbol)
-                 var))
-
+             (exact (&rest names)
+               (walker-assert (match names))
+               (next)
+               t)
              (d-var-spec (path)
                (let ((d-var-spec (next)))
                  (walk-d-var-spec walker d-var-spec env path)))
@@ -118,19 +160,20 @@
              (with-clause ()
                (when (accept :with)
                  (let ((clauses
-                           (loop :for d-vars := (d-var-spec (cons (1+ pos) path))
-                                 :do (type-spec)
-                                 :collect (make-instance
-                                           'with-clause
-                                           :path nil ; TODO
-                                           :d-vars d-vars
-                                           :value (when (accept :=)
-                                                    (let ((value (walk walker
-                                                                       (next)
-                                                                       env
-                                                                       (cons pos path))))
-                                                      value)))
-                                 :while (accept :and))))
+                         (loop :for d-vars := (d-var-spec (cons pos path))
+                               :do (type-spec)
+                               :collect (make-instance
+                                         'with-clause
+                                         :path nil ; TODO
+                                         :d-vars d-vars
+                                         :value (when (accept :=)
+                                                  (let* ((pos pos)
+                                                         (value (walk walker
+                                                                      (next)
+                                                                      env
+                                                                      (cons pos path))))
+                                                    value)))
+                               :while (accept :and))))
                    (setf env
                          (extend-env* env
                                       (mapcan (lambda (clause)
@@ -142,8 +185,7 @@
                    (accumulation)
                    (conditional)
                    (termination-test)
-                   (initial-final)
-                   ))
+                   (initial-final)))
              (main-clause* ()
                (loop :while (main-clause)))
              (initial-final ()
@@ -154,16 +196,16 @@
                       (push (make-instance 'final-clause :forms (compound-forms))
                             final-clauses))))
              (unconditional ()
-               (cond ((or (accept :do)
-                          (accept :doing))
+               (cond ((accept :do :doing)
                       (setf doing-forms (append doing-forms (compound-forms))))
                      ((accept :return)
-                      (if (accept :it)
-                          (push (make-instance 'it-form :path (cons pos path))
-                                return-forms)
-                          (let ((form (next)))
-                            (push (walk walker form env (cons pos path))
-                                  return-forms))))))
+                      (let ((pos pos))
+                        (if (accept :it)
+                            (push (make-instance 'it-form :path (cons pos path))
+                                  return-forms)
+                            (let ((form (next)))
+                              (push (walk walker form env (cons pos path))
+                                    return-forms)))))))
              (accumulation ()
                ;; TODO
                )
@@ -174,26 +216,107 @@
                ;; TODO
                )
              (for-as-clause ()
-               (loop :while (or (accept :for) (accept :as))
+               (loop :while (accept :for :as)
                      :collect (for-as-subclause)))
              (for-as-subclause ()
-               (let ((var (exact-var)))
+               (let ((for-pos (1- pos))
+                     (d-vars (d-var-spec (cons pos path))))
                  (type-spec)
-                 (let ((binding (make-instance 'lexical-variable-binding :name var)))
-                   (declare (ignore binding))
-                   (cond ((accept :in)
-                          )
-                         ((accept :on)
-                          )
-                         ((accept :=)
-                          )
-                         ((accept :across)
-                          )
-                         ((accept :being)
-                          )
-                         (t
-                          ;; TODO: error
-                          )))))
+                 (cond ((accept :in)
+                        (for-as-in-list for-pos d-vars))
+                       ((accept :on)
+                        (for-as-on-list for-pos d-vars))
+                       ((accept :=)
+                        (for-as-equals-then for-pos d-vars))
+                       ((accept :across)
+                        (for-as-across for-pos d-vars))
+                       ((accept :being)
+                        (setf d-vars (for-as-being for-pos d-vars)))
+                       (t
+                        ;; TODO: error
+                        ;; TODO: from, to, downfrom, downto, above, by
+                        ))
+                 (setf env (extend-env* env (mapcar #'ast-binding d-vars)))))
+
+             (for-as-in-on-list (ast-class for-pos d-vars)
+               (let* ((in (walk walker (next) env (cons (+ for-pos 3) path)))
+                      (by (when (accept :by)
+                            (walk walker (next) env (cons (+ for-pos 5) path)))))
+                 (push (make-instance ast-class
+                                      :path (cons for-pos path)
+                                      :d-vars d-vars
+                                      :in-on in
+                                      :by by)
+                       for-as-clauses)))
+             (for-as-in-list (for-pos d-vars)
+               (for-as-in-on-list 'for-as-in-list-clause for-pos d-vars))
+             (for-as-on-list (for-pos d-vars)
+               (for-as-in-on-list 'for-as-on-list-clause for-pos d-vars))
+             (for-as-equals-then (for-pos d-vars)
+               (let* ((env (extend-env* env (mapcar #'ast-binding d-vars)))
+                      (in (walk walker (next) env (cons (+ for-pos 3) path)))
+                      (by (when (accept :then)
+                            (walk walker (next) env (cons (+ for-pos 5) path)))))
+                 (push (make-instance 'for-as-equals-then-clause
+                                      :path (cons for-pos path)
+                                      :d-vars d-vars
+                                      :equals in
+                                      :then by)
+                       for-as-clauses)))
+             (for-as-across (for-pos d-vars)
+               (let ((across (walk walker (next) env (cons (+ for-pos 3) path))))
+                 (push (make-instance 'for-as-across-clause
+                                      :path (cons for-pos path)
+                                      :d-vars d-vars
+                                      :across across)
+                       for-as-clauses)))
+
+             (for-as-being-hash (for-pos d-vars other-var-keyword)
+               (let* ((hash-table-pos pos)
+                      (hash-table (walk walker (next) env (cons hash-table-pos path))))
+                 (when (accept :using)
+                   (let ((using-pos pos)
+                         (using (next)))
+                     (with-walker-bindings (hash-value other-var) using
+                       (walker-assert (and (symbolp hash-value)
+                                           (string= hash-value other-var-keyword)))
+                       (assert-type other-var 'variable-symbol)
+                       (push (make-instance
+                              'd-var
+                              :binding (make-instance 'lexical-variable-binding
+                                                      :name other-var)
+                              :path (list* 1 using-pos path))
+                             d-vars))))
+                 (push (make-instance 'for-as-hash-clause
+                                      :path (cons for-pos path)
+                                      :d-vars d-vars
+                                      :hash-table hash-table)
+                       for-as-clauses))
+               d-vars)
+             (for-as-package (for-pos d-vars)
+               (push (make-instance 'for-as-package-clause
+                                    :path (cons for-pos path)
+                                    :d-vars d-vars
+                                    :package (when (accept :in :of)
+                                               (let ((package-pos pos))
+                                                 (walk walker
+                                                       (next)
+                                                       env
+                                                       (cons package-pos path)))))
+                     for-as-clauses))
+             (for-as-being (for-pos d-vars)
+               (exact :each :the)
+               (cond ((accept :hash-key :hash-keys)
+                      (exact :in :of)
+                      (for-as-being-hash for-pos d-vars :hash-value))
+                     ((accept :hash-value :hash-values)
+                      (exact :in :of)
+                      (for-as-being-hash for-pos d-vars :hash-key))
+                     (t
+                      (exact :symbol :symbols :present-symbol :present-symbols
+                             :external-symbol :external-symbols)
+                      (for-as-package for-pos d-vars)
+                      d-vars)))
              (type-spec ()
                (cond ((member (lookahead) '(t nil fixnum float))
                       (next)
@@ -204,7 +327,8 @@
                      (t
                       nil)))
              (compound-forms ()
-               (let ((exp (next)))
+               (let ((pos pos)
+                     (exp (next)))
                  (walker-assert (consp exp))
                  (cons (walk walker exp env (cons pos path))
                        (loop :for exp := (lookahead)
@@ -219,6 +343,7 @@
                      :with-clauses (nreverse with-clauses)
                      :initial-clauses (nreverse initial-clauses)
                      :final-clauses (nreverse final-clauses)
+                     :for-as-clauses (nreverse for-as-clauses)
                      :doing-forms (nreverse doing-forms)
                      :return-forms (nreverse return-forms)))))
 
@@ -238,12 +363,14 @@
   (visit-foreach visitor (loop-form-with-clauses ast))
   (visit-foreach visitor (loop-form-initial-clauses ast))
   (visit-foreach visitor (loop-form-final-clauses ast))
+  (visit-foreach visitor (loop-form-for-as-clauses ast))
   (visit-foreach visitor (loop-form-doing-forms ast))
   (visit-foreach visitor (loop-form-return-forms ast)))
 
 (defmethod visit (visitor (ast with-clause))
   (visit-foreach visitor (ast-d-vars ast))
-  (visit visitor (ast-value ast)))
+  (when (ast-value ast)
+    (visit visitor (ast-value ast))))
 
 (defmethod visit (visitor (ast initial-clause))
   (visit-foreach visitor (ast-forms ast)))
@@ -253,6 +380,29 @@
 
 (defmethod visit (visitor (ast it-form))
   nil)
+
+(defmethod visit (visitor (ast <for-as-in-on-list-clause>))
+  (visit-foreach visitor (ast-d-vars ast))
+  (visit visitor (ast-in-on ast))
+  (when (ast-by ast) (visit visitor (ast-by ast))))
+
+(defmethod visit (visitor (ast for-as-equals-then-clause))
+  (visit-foreach visitor (ast-d-vars ast))
+  (visit visitor (ast-equals ast))
+  (when (ast-then ast) (visit visitor (ast-then ast))))
+
+(defmethod visit (visitor (ast for-as-across-clause))
+  (visit-foreach visitor (ast-d-vars ast))
+  (visit visitor (ast-across ast)))
+
+(defmethod visit (visitor (ast for-as-hash-clause))
+  (visit-foreach visitor (ast-d-vars ast))
+  (visit visitor (ast-hash-table ast)))
+
+(defmethod visit (visitor (ast for-as-package-clause))
+  (visit-foreach visitor (ast-d-vars ast))
+  (when (ast-package ast)
+    (visit visitor (ast-package ast))))
 
 (defmethod visit (visitor (ast simple-loop-form))
   (visit visitor (ast-body ast)))
