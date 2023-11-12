@@ -4,6 +4,10 @@
   ((context :initarg :context
             :reader unimplemented-context)))
 
+(defun unimplemented (context &key form path)
+  (cerror "continue" 'unimplemented :context context)
+  (make-instance 'unknown-form :form form :path path))
+
 ;; copy from alexandria:parse-body
 (defun parse-body (body &key documentation whole)
   (let ((doc nil)
@@ -114,6 +118,10 @@
        (loop :for slot :in (micros/mop:class-direct-slots (class-of object1))
              :always (ast-equal (slot-value object1 (micros/mop:slot-definition-name slot))
                                 (slot-value object2 (micros/mop:slot-definition-name slot))))))
+
+(defclass unknown-form (ast)
+  ((form :initarg :form
+         :reader ast-form)))
 
 (defclass constant-form (ast)
   ((value :initarg :value
@@ -611,7 +619,7 @@
                    :read-only-p (walk walker read-only-p env (cons 2 path)))))
 
 (defmethod walk-form ((walker walker) (name (eql 'locally)) form env path)
-  (error 'unimplemented :context name))
+  (unimplemented name :form form :path path))
 
 (defmethod walk-form ((walker walker) (name (eql 'macrolet)) form env path)
   (with-walker-bindings (definitions &body body) (rest form)
@@ -654,7 +662,7 @@
                    :body (walk-forms walker forms env path 1))))
 
 (defmethod walk-form ((walker walker) (name (eql 'progv)) form env path)
-  (error 'unimplemented :context name))
+  (unimplemented name :form form :path path))
 
 (defmethod walk-form ((walker walker) (name (eql 'quote)) form env path)
   (with-walker-bindings (value) (rest form)
@@ -673,13 +681,13 @@
                                     :collect (walk walker value env (cons (1+ n) path))))))
 
 (defmethod walk-form ((walker walker) (name (eql 'symbol-macrolet)) form env path)
-  (error 'unimplemented :context name))
+  (unimplemented name :form form :path path))
 
 (defmethod walk-form ((walker walker) (name (eql 'tagbody)) form env path)
-  (error 'unimplemented :context name))
+  (unimplemented name :form form :path path))
 
 (defmethod walk-form ((walker walker) (name (eql 'go)) form env path)
-  (error 'unimplemented :context name))
+  (unimplemented name :form form :path path))
 
 (defmethod walk-form ((walker walker) (name (eql 'the)) form env path)
   (with-walker-bindings (value-type form) (rest form)
@@ -734,7 +742,7 @@
                                                  env
                                                  path
                                                  (1+ body-pos)))
-               (error 'unimplemented :context form))))))
+               (unimplemented form :form form :path path))))))
 
 (defmethod walk-lambda-call-form ((walker walker) form env path)
   (with-walker-bindings (lambda-form &rest args) form
@@ -805,6 +813,9 @@
 (defun visit-foreach (visitor ast-list)
   (dolist (ast ast-list)
     (visit visitor ast)))
+
+(defmethod visit (visitor (ast unknown-form))
+  nil)
 
 (defmethod visit (visitor (ast constant-form))
   nil)
@@ -965,7 +976,9 @@
 (defvar *test-cases* '())
 
 (defun collect-highlight-paths (form path)
-  (let ((result (let ((ast (walk (make-instance 'walker) form '() '())))
+  (let ((result (let ((ast
+                        (handler-bind ((unimplemented #'continue))
+                          (walk (make-instance 'walker) form '() '()))))
                   (handler-case (visit (make-instance 'path-finder :target-path path) ast)
                     (exit-visitor (c)
                       (typecase (exit-visitor-value c)
