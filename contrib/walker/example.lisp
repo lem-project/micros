@@ -127,3 +127,10 @@
 (loop :with x := 0
       :return :it
       :return (f x))
+
+(loop :with (x . y) := (f)
+      :with a := x
+      :with b := y)
+
+(loop :with ((x y) . z) := (f)
+      :with a := (+ x y z))

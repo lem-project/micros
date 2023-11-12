@@ -25,9 +25,14 @@
                  :type (proper-list ast)
                  :reader loop-form-return-forms)))
 
-(defclass with-clause (ast <with-binding-form>)
+(defclass d-var (ast <with-binding-form>)
   ((binding :initarg :binding
-            :reader ast-binding)
+            :reader ast-binding)))
+
+(defclass with-clause (ast)
+  ((d-vars :initarg :d-vars
+           :type (proper-list d-var)
+           :reader ast-d-vars)
    (value :initarg :value
           :reader ast-value)))
 
@@ -43,6 +48,29 @@
 
 (defclass it-form (ast)
   ())
+
+(defun walk-d-var-spec (walker d-var-spec env path)
+  (cond ((null d-var-spec)
+         '())
+        ((atom d-var-spec)
+         (assert-type d-var-spec 'variable-symbol)
+         (list (make-instance 'd-var
+                              :binding (make-instance 'lexical-variable-binding
+                                                      :name d-var-spec)
+                              :path path)))
+        (t
+         (loop :for (elt . rest) :on d-var-spec
+               :for n :from 0
+               :append (walk-d-var-spec walker elt env (cons n path)) :into acc
+               :finally (if (null rest)
+                            (return acc)
+                            (return
+                              (append acc
+                                      (walk-d-var-spec walker
+                                                       rest
+                                                       env
+                                                       ;; Represents the path of b in (a . b)
+                                                       (cons (+ n 2) path)))))))))
 
 (defmethod walk-complex-loop-form ((walker walker) form env path)
   (assert (and (proper-list-p form) (eq 'loop (first form))))
@@ -70,6 +98,10 @@
                  (assert-type var 'variable-symbol)
                  var))
 
+             (d-var-spec (path)
+               (let ((d-var-spec (next)))
+                 (walk-d-var-spec walker d-var-spec env path)))
+
              (name-clause ()
                (when (accept :named)
                  (let ((named (next)))
@@ -85,14 +117,13 @@
                (loop :while (variable-clause)))
              (with-clause ()
                (when (accept :with)
-                 (let ((with-clauses*
-                           (loop :for var := (exact-var) ; TODO: d-var-spec
+                 (let ((clauses
+                           (loop :for d-vars := (d-var-spec (cons (1+ pos) path))
                                  :do (type-spec)
                                  :collect (make-instance
                                            'with-clause
-                                           :path (cons pos path)
-                                           :binding (make-instance 'lexical-variable-binding
-                                                                   :name var)
+                                           :path nil ; TODO
+                                           :d-vars d-vars
                                            :value (when (accept :=)
                                                     (let ((value (walk walker
                                                                        (next)
@@ -100,8 +131,12 @@
                                                                        (cons pos path))))
                                                       value)))
                                  :while (accept :and))))
-                   (setf env (extend-env* env (mapcar #'ast-binding with-clauses*)))
-                   (setf with-clauses (append with-clauses with-clauses*)))))
+                   (setf env
+                         (extend-env* env
+                                      (mapcan (lambda (clause)
+                                                (mapcar #'ast-binding (ast-d-vars clause)))
+                                              clauses)))
+                   (setf with-clauses (append with-clauses clauses)))))
              (main-clause ()
                (or (unconditional)
                    (accumulation)
@@ -196,6 +231,9 @@
                                             :path path
                                             :forms (walk-forms walker forms env path 1))))))
 
+(defmethod visit (visitor (ast d-var))
+  nil)
+
 (defmethod visit (visitor (ast loop-form))
   (visit-foreach visitor (loop-form-with-clauses ast))
   (visit-foreach visitor (loop-form-initial-clauses ast))
@@ -204,6 +242,7 @@
   (visit-foreach visitor (loop-form-return-forms ast)))
 
 (defmethod visit (visitor (ast with-clause))
+  (visit-foreach visitor (ast-d-vars ast))
   (visit visitor (ast-value ast)))
 
 (defmethod visit (visitor (ast initial-clause))

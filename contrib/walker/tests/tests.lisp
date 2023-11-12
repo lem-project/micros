@@ -1798,7 +1798,61 @@
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (LOOP :WITH X := 0 :RETURN :IT :RETURN (F X)) (1 8))
      ((1 8) (2)))
     ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS (LOOP :WITH X := 0 :RETURN :IT :RETURN (F X)) (2))
-     ((1 8) (2)))))
+     ((1 8) (2)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH ((X Y) . Z) := (F)
+            :WITH A := (+ X Y Z))
+      (3 8))
+     ((2 2) (3 8)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH ((X Y) . Z) := (F)
+            :WITH A := (+ X Y Z))
+      (2 8))
+     ((1 0 2) (2 8)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH ((X Y) . Z) := (F)
+            :WITH A := (+ X Y Z))
+      (1 8))
+     ((0 0 2) (1 8)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH ((X Y) . Z) := (F)
+            :WITH A := (+ X Y Z))
+      (2 2))
+     ((2 2) (3 8)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH ((X Y) . Z) := (F)
+            :WITH A := (+ X Y Z))
+      (1 0 2))
+     ((1 0 2) (2 8)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH ((X Y) . Z) := (F)
+            :WITH A := (+ X Y Z))
+      (0 0 2))
+     ((0 0 2) (1 8)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH (X . Y) := (F)
+            :WITH A := X
+            :WITH B := Y)
+      (12))
+     ((2 2) (12)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH (X . Y) := (F)
+            :WITH A := X
+            :WITH B := Y)
+      (8))
+     ((0 2) (8)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH (X . Y) := (F)
+            :WITH A := X
+            :WITH B := Y)
+      (2 2))
+     ((2 2) (12)))
+    ((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+      (LOOP :WITH (X . Y) := (F)
+            :WITH A := X
+            :WITH B := Y)
+      (0 2))
+     ((0 2) (8)))))
 
 (deftest random
   (loop :for (act-form expected) :in *test-cases*
