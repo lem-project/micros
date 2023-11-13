@@ -177,3 +177,16 @@
 (let ((package-name (f)))
   (loop :for name :being :each :external-symbol :in package-name
         :do (print name)))
+
+(loop :for x := 1 :then (+ y 1)
+      :and y := x :then (+ x 1))
+
+(loop :for x := 1 :then (+ y 1)
+      :and y := 2 :then (+ x 1)
+      :repeat 2
+      :collect (cons x y))
+
+(loop :for x :in '(1 2 3) :by y
+      :and y := #'cddr
+      :repeat 2
+      :collect x)
