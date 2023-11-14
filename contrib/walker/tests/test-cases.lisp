@@ -2198,3 +2198,1283 @@
         :DO (PRINT NAME))
   (2))
  ((1 7) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X :IN '(1 2 3) :BY Y
+        :AND Y := #'CDDR
+        :DO (PRINT X))
+  (1 12))
+ ((1 12) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X :IN '(1 2 3) :BY Y
+        :AND Y := #'CDDR
+        :DO (PRINT X))
+  (8))
+ ((8) (6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X :IN '(1 2 3) :BY Y
+        :AND Y := #'CDDR
+        :DO (PRINT X))
+  (6))
+ ((8) (6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X :IN '(1 2 3) :BY Y
+        :AND Y := #'CDDR
+        :DO (PRINT X))
+  (2))
+ ((1 12) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := 2 :THEN (+ X 1)
+        :DO (CONS X Y))
+  (2 14))
+ ((2 14) (8) (1 6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := 2 :THEN (+ X 1)
+        :DO (CONS X Y))
+  (1 14))
+ ((1 14) (1 12) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := 2 :THEN (+ X 1)
+        :DO (CONS X Y))
+  (1 12))
+ ((1 14) (1 12) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := 2 :THEN (+ X 1)
+        :DO (CONS X Y))
+  (8))
+ ((2 14) (8) (1 6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := 2 :THEN (+ X 1)
+        :DO (CONS X Y))
+  (1 6))
+ ((2 14) (8) (1 6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := 2 :THEN (+ X 1)
+        :DO (CONS X Y))
+  (2))
+ ((1 14) (1 12) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := X :THEN (+ X 1))
+  (1 12))
+ ((1 12) (10) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := X :THEN (+ X 1))
+  (8))
+ ((8) (1 6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := X :THEN (+ X 1))
+  (1 6))
+ ((8) (1 6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LOOP :FOR X := 1 :THEN (+ Y 1)
+        :AND Y := X :THEN (+ X 1))
+  (2))
+ ((1 12) (10) (2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 8 10))
+ ((1 8 10) (2 10)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 10))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 10))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 10))
+ ((1 8 10) (2 10)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 8 9))
+ ((1 8 9) (2 9)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 9))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 9))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 9))
+ ((1 8 9) (2 9)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 8 8))
+ ((1 8 8) (2 8)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 8))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 8))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 8))
+ ((1 8 8) (2 8)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 8 7))
+ ((1 8 7) (2 7)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 7))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 7))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 7))
+ ((1 8 7) (2 7)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 10 6))
+ ((1 10 6) (2 6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (8 6))
+ ((8 6) (0 2 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 6))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 6))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 6))
+ ((1 10 6) (2 6)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 8 5))
+ ((1 8 5) (2 5)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 5))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 5))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 5))
+ ((1 8 5) (2 5)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 8 4))
+ ((1 8 4) (2 4)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 4))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 4))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 4))
+ ((1 8 4) (2 4)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 6 3))
+ ((1 6 3) (2 3)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 3))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 3))
+ ((1 6 3) (2 3)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (1 8 2))
+ ((1 8 2) (2 2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (6 2))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (4 2))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 2))
+ ((1 8 2) (2 2)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (0 2 1))
+ ((8 6) (0 2 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (0 1 1))
+ ((6 10) (6 9) (6 8) (6 7) (6 6) (6 5) (6 4) (6 2) (0 1 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (0 0 1))
+ ((4 10) (4 9) (4 8) (4 7) (4 6) (4 5) (4 4) (4 3) (4 2) (0 0 1)))
+((MICROS/WALKER:COLLECT-HIGHLIGHT-PATHS
+  (LET ((START (F)) (END (G)) (STEP (H)))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :TO
+          END :BY STEP
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :ABOVE
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :DOWNFROM START :TO
+          END
+          :DO (PRINT X))
+    (LOOP :FOR X :FROM START :DOWNTO
+          END
+          :DO (PRINT X)))
+  (2 2))
+ ((1 8 2) (2 2)))

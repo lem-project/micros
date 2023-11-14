@@ -183,10 +183,34 @@
 
 (loop :for x := 1 :then (+ y 1)
       :and y := 2 :then (+ x 1)
-      :repeat 2
-      :collect (cons x y))
+      :do (cons x y))
 
-(loop :for x :in '(1 2 3) :by y
-      :and y := #'cddr
-      :repeat 2
-      :collect x)
+(let ((start (f))
+      (end (g))
+      (step (h)))
+  (loop :for x :from start :to end
+        :do (print x))
+
+  (loop :for x :from start
+        :do (print x))
+
+  (loop :for x :from start :to end
+        :do (print x))
+
+  (loop :for x :from start :to end
+        :do (print x))
+
+  (loop :for x :from start :to end :by step
+        :do (print x))
+
+  (loop :for x :from start :downto end
+        :do (print x))
+
+  (loop :for x :from start :above end
+        :do (print x))
+
+  (loop :for x :downfrom start :to end
+        :do (print x))
+
+  (loop :for x :from start :downto end
+        :do (print x)))

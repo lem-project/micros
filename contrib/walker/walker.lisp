@@ -972,7 +972,7 @@
   (call-next-method))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defparameter *record-test-cases* t)
+(defparameter *record-test-cases* nil)
 (defvar *test-cases* '())
 
 (defun collect-highlight-paths (form path)
