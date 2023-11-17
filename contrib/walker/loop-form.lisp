@@ -8,7 +8,10 @@
          :reader ast-body)))
 
 (defclass loop-form (ast)
-  ((named :initarg :named
+  ((simple-vars :initarg :simple-vars
+                :type (proper-list d-var)
+                :reader loop-form-simple-vars)
+   (named :initarg :named
           :type variable-symbol
           :reader loop-form-named)
    (with-clauses :initarg :with-clauses
@@ -17,17 +20,14 @@
    (initial-clauses :initarg :initial-clauses
                     :type (proper-list initial-clause)
                     :reader loop-form-initial-clauses)
-   (fianl-clauses :initarg :final-clauses
+   (final-clauses :initarg :final-clauses
                   :type (proper-list final-clause)
                   :reader loop-form-final-clauses)
    (for-as-clauses :initarg :for-as-clauses
                    :reader loop-form-for-as-clauses)
-   (doing-forms :initarg :doing-forms
-                :type (proper-list ast)
-                :reader loop-form-doing-forms)
-   (return-forms :initarg :return-forms
+   (main-clauses :initarg :main-clauses
                  :type (proper-list ast)
-                 :reader loop-form-return-forms)))
+                 :reader loop-form-main-clauses)))
 
 (defclass d-var (ast <with-binding-form>)
   ((binding :initarg :binding
@@ -43,12 +43,14 @@
 (defclass initial-clause (ast)
   ((forms :initarg :forms
           :type (proper-list ast)
-          :reader ast-forms)))
+          :reader ast-forms
+          :writer set-ast-forms)))
 
 (defclass final-clause (ast)
   ((forms :initarg :forms
           :type (proper-list ast)
-          :reader ast-forms)))
+          :reader ast-forms
+          :writer set-ast-forms)))
 
 (defclass it-form (ast)
   ())
@@ -108,6 +110,39 @@
    (package :initarg :package
             :reader ast-package)))
 
+(defclass accumulation-clause (ast)
+  ((keyword :initarg :keyword
+            :reader ast-keyword
+            :type (member :collect :collecting :append :appending :nconc :nconcing
+                          :count :counting :sum :summing :maximize :maximizing :minimize
+                          :minimizing))
+   (form :initarg :form
+         :reader ast-form)
+   (into :initarg :into
+         :reader ast-into)))
+
+(defclass conditional-clause (ast)
+  ((keyword :initarg :keyword
+            :reader ast-keyword
+            :type (member :if :when :unless))
+   (test-form :initarg :test-form
+              :reader ast-test-form
+              :type ast)
+   (then-forms :initarg :then-forms
+               :reader ast-then-forms
+               :type (proper-list ast))
+   (else-form :initarg :else-form
+              :reader ast-else-form
+              :type (or null ast))))
+
+(defclass doing-clause (ast)
+  ((forms :initarg :forms
+          :reader ast-forms)))
+
+(defclass return-clause (ast)
+  ((form :initarg :form
+         :reader ast-form)))
+
 (defun walk-d-var-spec (walker d-var-spec env path)
   (cond ((null d-var-spec)
          '())
@@ -164,8 +199,8 @@
         (initial-clauses '())
         (final-clauses '())
         (for-as-clauses '())
-        (doing-forms '())
-        (return-forms '()))
+        (main-clauses '())
+        (simple-vars '()))
     (labels ((lookahead ()
                (first exps))
              (current ()
@@ -189,6 +224,15 @@
              (d-var-spec (path)
                (let ((d-var-spec (next)))
                  (walk-d-var-spec walker d-var-spec env path)))
+             (simple-var ()
+               (let ((simple-var-pos (current))
+                     (simple-var (next)))
+                 (assert-type simple-var 'variable-symbol)
+                 (push (make-instance 'd-var
+                                      :path (cons simple-var-pos path)
+                                      :binding (make-instance 'lexical-variable-binding
+                                                              :name simple-var))
+                       simple-vars)))
              (walk-and-next ()
                (let ((pos (current)))
                  (walk walker
@@ -235,39 +279,80 @@
                      (setf with-clauses (append with-clauses clauses)))
                    t)))
              (main-clause ()
-               (or (unconditional)
-                   (accumulation)
-                   (conditional)
-                   (termination-test)
-                   (initial-final)))
+               (or (initial-final)
+                   (let ((clause (or (unconditional)
+                                     (accumulation)
+                                     (conditional)
+                                     (termination-test))))
+                     (when clause
+                       (push clause main-clauses)
+                       t))))
              (main-clause* ()
                (loop :while (main-clause)))
              (initial-final ()
                (cond ((accept :initially)
-                      (push (make-instance 'initial-clause :forms (compound-forms))
+                      (push (make-instance 'initial-clause :forms (compound-forms-with-lazy))
                             initial-clauses)
                       t)
                      ((accept :finally)
-                      (push (make-instance 'final-clause :forms (compound-forms))
+                      (push (make-instance 'final-clause :forms (compound-forms-with-lazy))
                             final-clauses)
                       t)))
              (unconditional ()
                (cond ((accept :do :doing)
-                      (setf doing-forms (append doing-forms (compound-forms))))
+                      (make-instance 'doing-clause :forms (compound-forms env)))
                      ((accept :return)
-                      (let ((pos pos))
-                        (if (accept :it)
-                            (push (make-instance 'it-form :path (cons pos path))
-                                  return-forms)
-                            (let ((form (next)))
-                              (push (walk walker form env (cons pos path))
-                                    return-forms)))))))
+                      (make-instance
+                       'return-clause
+                       :form (let ((return-pos (current)))
+                               (if (accept :it)
+                                   (make-instance 'it-form :path (cons return-pos path))
+                                   (let ((form (next)))
+                                     (walk walker form env (cons return-pos path)))))))))
              (accumulation ()
-               ;; TODO
-               )
+               (let* ((keyword (lookahead))
+                      (accumulation-pos (current))
+                      (list-accumulation-p
+                        (accept :collect :collecting :append :appending :nconc :nconcing))
+                      (numeric-accumulation-p
+                        (unless list-accumulation-p
+                          (accept :count :counting :sum :summing :maximize :maximizing :minimize
+                                  :minimizing))))
+                 (when (or list-accumulation-p numeric-accumulation-p)
+                   (let ((form (let ((pos (current)))
+                                 (if (accept :it)
+                                     (make-instance 'it-form :path (cons pos path))
+                                     (walk-and-next))))
+                         (into (when (accept :into)
+                                 (simple-var))))
+                     (when numeric-accumulation-p (type-spec))
+                     (make-instance 'accumulation-clause
+                                    :path (cons accumulation-pos path)
+                                    :keyword (intern (string keyword) :keyword)
+                                    :form form
+                                    :into into)))))
              (conditional ()
-               ;; TODO
-               )
+               (let ((keyword (lookahead)))
+                 (when (accept :if :when :unless)
+                   (let ((test-form (walk-and-next))
+                         (then-forms (selectable-clauses))
+                         (else-form (when (accept :else)
+                                      (selectable-clauses))))
+                     (accept :end)
+                     (make-instance 'conditional-clause
+                                    :keyword keyword
+                                    :test-form test-form
+                                    :then-forms then-forms
+                                    :else-form else-form)))))
+             (selectable-clauses ()
+               (cons (selectable-clause)
+                     (loop :while (accept :and)
+                           :collect (selectable-clause))))
+             (selectable-clause ()
+               (or (unconditional)
+                   (accumulation)
+                   (conditional)))
+
              (termination-test ()
                ;; TODO
                )
@@ -433,7 +518,7 @@
                           (error 'loop-conflicting-stepping-directions))))))
 
              (type-spec ()
-               (cond ((member (lookahead) '(t nil fixnum float))
+               (cond ((and exps (member (lookahead) '(t nil fixnum float)))
                       (next)
                       t)
                      ((accept :of-type)
@@ -441,7 +526,7 @@
                       t)
                      (t
                       nil)))
-             (compound-forms ()
+             (compound-forms (env)
                (let ((pos pos)
                      (exp (next)))
                  (walker-assert (consp exp))
@@ -449,18 +534,39 @@
                        (loop :for exp := (lookahead)
                              :while (consp exp)
                              :collect (walk walker exp env (cons pos path))
+                             :do (next)))))
+             (compound-forms-with-lazy ()
+               (let ((pos pos)
+                     (exp (next)))
+                 (walker-assert (consp exp))
+                 (cons (lazy-walk walker exp env (cons pos path))
+                       (loop :for exp := (lookahead)
+                             :while (consp exp)
+                             :collect (lazy-walk walker exp env (cons pos path))
                              :do (next))))))
       (name-clause)
       (variable-clause*)
       (main-clause*)
+
+      (let ((env (extend-env* env (mapcar #'ast-binding simple-vars))))
+        (dolist (clause initial-clauses)
+          (set-ast-forms (mapcar (lambda (form) (funcall form env))
+                                 (ast-forms clause))
+                         clause))
+
+        (dolist (clause final-clauses)
+          (set-ast-forms (mapcar (lambda (form) (funcall form env))
+                                 (ast-forms clause))
+                         clause)))
+
       (make-instance 'loop-form
+                     :simple-vars simple-vars
                      :named named-binding
                      :with-clauses with-clauses
                      :initial-clauses (nreverse initial-clauses)
                      :final-clauses (nreverse final-clauses)
                      :for-as-clauses for-as-clauses
-                     :doing-forms (nreverse doing-forms)
-                     :return-forms (nreverse return-forms)))))
+                     :main-clauses (nreverse main-clauses)))))
 
 (defmethod walk-form ((walker walker) (name (eql 'loop)) form env path)
   (with-walker-bindings (&body forms) (rest form)
@@ -475,12 +581,12 @@
   nil)
 
 (defmethod visit (visitor (ast loop-form))
+  (visit-foreach visitor (loop-form-simple-vars ast))
   (visit-foreach visitor (loop-form-with-clauses ast))
   (visit-foreach visitor (loop-form-initial-clauses ast))
   (visit-foreach visitor (loop-form-final-clauses ast))
   (visit-foreach visitor (loop-form-for-as-clauses ast))
-  (visit-foreach visitor (loop-form-doing-forms ast))
-  (visit-foreach visitor (loop-form-return-forms ast)))
+  (visit-foreach visitor (loop-form-main-clauses ast)))
 
 (defmethod visit (visitor (ast with-clause))
   (visit-foreach visitor (ast-d-vars ast))
@@ -524,6 +630,21 @@
   (visit-foreach visitor (ast-d-vars ast))
   (when (ast-package ast)
     (visit visitor (ast-package ast))))
+
+(defmethod visit (visitor (ast accumulation-clause))
+  (visit visitor (ast-form ast)))
+
+(defmethod visit (visitor (ast conditional-clause))
+  (visit visitor (ast-test-form ast))
+  (visit-foreach visitor (ast-then-forms ast))
+  (when (ast-else-form ast)
+    (visit visitor (ast-else-form ast))))
+
+(defmethod visit (visitor (ast doing-clause))
+  (visit-foreach visitor (ast-forms ast)))
+
+(defmethod visit (visitor (ast return-clause))
+  (visit visitor (ast-form ast)))
 
 (defmethod visit (visitor (ast simple-loop-form))
   (visit visitor (ast-body ast)))

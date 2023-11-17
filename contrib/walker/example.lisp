@@ -214,3 +214,31 @@
 
   (loop :for x :from start :downto end
         :do (print x)))
+
+(loop :for x :from 0 :to 10
+      :collect x)
+
+(loop :for x :from 0 :to 10
+      :collect (f x))
+
+(loop :for x :from 0 :to 10
+      :when (f x)
+      :count :it)
+
+(let ((x 1))
+  (loop :for x :from x :to 10
+        :collect x))
+
+(loop :for x :from 1 :to 10
+      :initially (print foo)
+      :collect x :into foo
+      :finally (print foo))
+
+(loop :for x :from 1 :to 10
+      :initially (print y)
+      :collect (* x 2) :into y
+      :finally (f x y))
+
+(loop :for x :from 1 :to 10
+      :if (f x)
+      :do (g x))
