@@ -143,6 +143,12 @@
   ((form :initarg :form
          :reader ast-form)))
 
+(defclass termination-test-clause (ast)
+  ((keyword :initarg :keyword
+            :reader ast-keyword)
+   (form :initarg :form
+         :reader ast-form)))
+
 (defun walk-d-var-spec (walker d-var-spec env path)
   (cond ((null d-var-spec)
          '())
@@ -239,7 +245,6 @@
                        (next)
                        env
                        (cons pos path))))
-
              (name-clause ()
                (when (accept :named)
                  (let ((named (next)))
@@ -352,11 +357,12 @@
                (or (unconditional)
                    (accumulation)
                    (conditional)))
-
              (termination-test ()
-               ;; TODO
-               )
-
+               (let ((keyword (lookahead)))
+                 (when (accept :while :until :repeat :always :never :thereis)
+                   (make-instance 'termination-test-clause
+                                  :keyword (intern (string keyword) :keyword)
+                                  :form (walk-and-next)))))
              (for-as-clause ()
                (when (accept :for :as)
                  (let ((part-for-as-clauses
@@ -419,7 +425,6 @@
                                 :path (cons for-pos path)
                                 :d-vars d-vars
                                 :across across)))
-
              (for-as-being-hash (for-pos d-vars other-var-keyword)
                (let* ((hash-table-pos (current))
                       (hash-table (walk walker (next) env (cons hash-table-pos path))))
@@ -516,7 +521,6 @@
                                                 :form3 nil))))
                          (t
                           (error 'loop-conflicting-stepping-directions))))))
-
              (type-spec ()
                (cond ((and exps (member (lookahead) '(t nil fixnum float)))
                       (next)
@@ -644,6 +648,9 @@
   (visit-foreach visitor (ast-forms ast)))
 
 (defmethod visit (visitor (ast return-clause))
+  (visit visitor (ast-form ast)))
+
+(defmethod visit (visitor (ast termination-test-clause))
   (visit visitor (ast-form ast)))
 
 (defmethod visit (visitor (ast simple-loop-form))
