@@ -246,3 +246,7 @@
 (loop :for x :from 1 :to 10
       :if (f x)
       :do (g x))
+
+(loop :for n :in list
+      :do (f n)
+          (g n))
