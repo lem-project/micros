@@ -225,6 +225,10 @@
       :when (f x)
       :count :it)
 
+(loop :for x :across "abc123"
+      :when (digit-char-p x)
+      :collect :it :and :collect :it)
+
 (let ((x 1))
   (loop :for x :from x :to 10
         :collect x))

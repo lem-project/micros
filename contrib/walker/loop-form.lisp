@@ -1,6 +1,10 @@
 (in-package :micros/walker)
 
+(defvar *it-binding* nil)
+
 (define-condition loop-conflicting-stepping-directions (simple-condition) ())
+
+(defclass it-binding (binding) ())
 
 (defclass simple-loop-form (ast)
   ((body :initarg :body
@@ -52,8 +56,10 @@
           :reader ast-forms
           :writer set-ast-forms)))
 
-(defclass it-form (ast)
-  ())
+(defclass it-form (ast <with-binding-form>)
+  ((binding :initarg :binding
+            :type it-binding
+            :reader ast-binding)))
 
 (defclass <for-as-arithmetic-clause> (ast)
   ((d-vars :initarg :d-vars
@@ -120,6 +126,12 @@
          :reader ast-form)
    (into :initarg :into
          :reader ast-into)))
+
+(defclass conditional-test-clause (ast <with-binding-form>)
+  ((binding :initarg :binding
+            :reader ast-binding)
+   (form :initarg :form
+         :reader ast-form)))
 
 (defclass conditional-clause (ast)
   ((keyword :initarg :keyword
@@ -206,7 +218,8 @@
         (final-clauses '())
         (for-as-clauses '())
         (main-clauses '())
-        (simple-vars '()))
+        (simple-vars '())
+        (*it-binding* nil))
     (labels ((lookahead ()
                (first exps))
              (current ()
@@ -311,7 +324,9 @@
                        'return-clause
                        :form (let ((return-pos (current)))
                                (if (accept :it)
-                                   (make-instance 'it-form :path (cons return-pos path))
+                                   (make-instance 'it-form
+                                                  :path (cons return-pos path)
+                                                  :binding *it-binding*)
                                    (let ((form (next)))
                                      (walk walker form env (cons return-pos path)))))))))
              (accumulation ()
@@ -326,7 +341,9 @@
                  (when (or list-accumulation-p numeric-accumulation-p)
                    (let ((form (let ((pos (current)))
                                  (if (accept :it)
-                                     (make-instance 'it-form :path (cons pos path))
+                                     (make-instance 'it-form
+                                                    :path (cons pos path)
+                                                    :binding *it-binding*)
                                      (walk-and-next))))
                          (into (when (accept :into)
                                  (simple-var))))
@@ -339,10 +356,18 @@
              (conditional ()
                (let ((keyword (lookahead)))
                  (when (accept :if :when :unless)
-                   (let ((test-form (walk-and-next))
-                         (then-forms (selectable-clauses))
-                         (else-form (when (accept :else)
-                                      (selectable-clauses))))
+                   (let* ((it-binding (make-instance 'it-binding))
+                          (test-form
+                            (make-instance 'conditional-test-clause
+                                           :path (cons (current) path)
+                                           :binding it-binding
+                                           :form (walk-and-next)))
+                          (then-forms (cons (let ((*it-binding* it-binding))
+                                              (selectable-clause))
+                                            (loop :while (accept :and)
+                                                  :collect (selectable-clause))))
+                          (else-form (when (accept :else)
+                                       (selectable-clauses))))
                      (accept :end)
                      (make-instance 'conditional-clause
                                     :keyword keyword
@@ -584,6 +609,9 @@
 (defmethod visit (visitor (ast d-var))
   nil)
 
+(defmethod visit (visitor (ast simple-loop-form))
+  (visit visitor (ast-body ast)))
+
 (defmethod visit (visitor (ast loop-form))
   (visit-foreach visitor (loop-form-simple-vars ast))
   (visit-foreach visitor (loop-form-with-clauses ast))
@@ -638,6 +666,9 @@
 (defmethod visit (visitor (ast accumulation-clause))
   (visit visitor (ast-form ast)))
 
+(defmethod visit (visitor (ast conditional-test-clause))
+  (visit visitor (ast-form ast)))
+
 (defmethod visit (visitor (ast conditional-clause))
   (visit visitor (ast-test-form ast))
   (visit-foreach visitor (ast-then-forms ast))
@@ -652,6 +683,3 @@
 
 (defmethod visit (visitor (ast termination-test-clause))
   (visit visitor (ast-form ast)))
-
-(defmethod visit (visitor (ast simple-loop-form))
-  (visit visitor (ast-body ast)))
