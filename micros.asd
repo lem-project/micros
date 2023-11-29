@@ -50,6 +50,7 @@
                              ;; (:file "sprof")
                              (:module "walker"
                               :components ((:file "package")
+                                           (:file "utils")
                                            (:file "types")
                                            (:file "walker")
                                            (:file "defun-form")

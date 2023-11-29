@@ -1,4 +1,4 @@
-(in-package #:micros/walker)
+(in-package :micros/walker)
 
 (define-condition unimplemented ()
   ((context :initarg :context
@@ -7,28 +7,6 @@
 (defun unimplemented (context &key form path)
   (cerror "continue" 'unimplemented :context context)
   (make-instance 'unknown-form :form form :path path))
-
-;; copy from alexandria:parse-body
-(defun parse-body (body &key documentation whole)
-  (let ((doc nil)
-        (decls nil)
-        (current nil))
-    (tagbody
-     :declarations
-      (setf current (car body))
-      (when (and documentation (stringp current) (cdr body))
-        (if doc
-            (error "Too many documentation strings in ~S." (or whole body))
-            (setf doc (pop body)))
-        (go :declarations))
-      (when (and (listp current) (eql (first current) 'declare))
-        (push (pop body) decls)
-        (go :declarations)))
-    (values body (nreverse decls) doc)))
-
-(defun string-prefix-p (prefix string)
-  (and (<= (length prefix) (length string))
-       (string= prefix string :end2 (length prefix))))
 
 (defmacro walker-assert (predicate)
   `(assert ,predicate))
@@ -1007,4 +985,6 @@
         (:no-error (paths)
           (list :ok paths))
         (unimplemented (c)
-          (list :error (format nil "unimplemented: ~A" (unimplemented-context c))))))))
+          (list :error (format nil "unimplemented: ~A" (unimplemented-context c))))
+        (error (c)
+          (list :error (format nil "ERROR: ~A" c)))))))
