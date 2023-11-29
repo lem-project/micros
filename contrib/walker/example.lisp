@@ -250,3 +250,8 @@
 (loop :for n :in list
       :do (f n)
           (g n))
+
+(loop :for x :from 1 :to 10
+      :initially (print foo)
+      :collect x :into foo
+      :finally (print foo))
