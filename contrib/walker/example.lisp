@@ -255,3 +255,8 @@
       :initially (print foo)
       :collect x :into foo
       :finally (print foo))
+
+(let ((a 0)
+      b)
+  a
+  b)

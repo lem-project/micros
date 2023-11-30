@@ -535,11 +535,14 @@
   (walk-lambda-form walker form env path))
 
 (defmethod walk-let-binding-form ((walker walker) binding-form env path)
-  (with-walker-bindings (var value) binding-form
+  (with-walker-bindings (var value)
+      (if (consp binding-form)
+          binding-form
+          (list binding-form nil))
     (assert-type var 'variable-symbol)
     (let ((value (walk walker value env (cons 1 path))))
       (make-instance 'let-binding-form
-                     :path (cons 0 path)
+                     :path (if (consp binding-form) (cons 0 path) path)
                      :binding (make-instance 'lexical-variable-binding
                                              :name var
                                              :value value)
