@@ -55,7 +55,8 @@
                                            (:file "walker")
                                            (:file "defun-form")
                                            (:file "defmethod-form")
-                                           (:file "loop-form")))))
+                                           (:file "loop-form")
+                                           (:file "data-and-control-flow")))))
                (:file "lsp-api")))
 
 (defsystem "micros/tests"
