@@ -260,3 +260,29 @@
       b)
   a
   b)
+
+;; TOOD
+(let (storage)
+  (flet (((setf storage) (value)
+           (setf storage value)))
+    (setf (storage) 100))
+  storage)
+
+(let ((x 0))
+  (setf (car x) 100))
+
+(let (a b c)
+  (or a b c))
+
+(let (x y z)
+  (when x
+    y
+    z)
+  )
+
+(loop :for x :from 1
+      :do (return x))
+
+(defvar x
+  (let ((foo 0))
+    foo))
