@@ -260,3 +260,13 @@
       b)
   a
   b)
+
+;; TOOD
+(let (storage)
+  (flet (((setf storage) (value)
+           (setf storage value)))
+    (setf (storage) 100))
+  storage)
+
+(let ((x 0))
+  (setf (car x) 100))

@@ -65,3 +65,60 @@
 (defmethod visit (visitor (ast check-type-form))
   (visit visitor (ast-place ast))
   (visit visitor (ast-type-string ast)))
+
+;; setf
+(defclass setf-form (ast)
+  ((forms :initarg :forms
+          :reader ast-forms)))
+
+(defclass setf-symbol-form (ast)
+  ((var :initarg :var
+        :type binding
+        :reader ast-var)
+   (value :initarg :value
+          :reader ast-value)))
+
+(defclass setf-complex-form (ast)
+  ((operator :initarg :operator
+             :type variable-symbol
+             :reader ast-operator)
+   (arguments :initarg :arguments
+              :reader ast-arguments)
+   (value :initarg :value
+          :reader ast-value)))
+
+;; TODO
+(defmethod walk-form ((walker walker) (name (eql 'setf)) form env path)
+  (make-instance
+   'setf-form
+   :path path
+   :forms (loop :for (place value) :on (rest form) :by #'cddr
+                :for n :from 1 :by 2
+                :for walked-value := (walk walker
+                                           value
+                                           env
+                                           (cons (1+ n) path))
+                :collect (if (symbolp place)
+                             (make-instance 'setf-symbol-form
+                                            :var (walk-variable walker place env (cons n path))
+                                            :value walked-value)
+                             (make-instance 'setf-complex-form
+                                            :operator (first place)
+                                            :arguments (loop :for m :from 1
+                                                             :for arg :in (rest place)
+                                                             :collect (walk walker
+                                                                            arg
+                                                                            env
+                                                                            (list* m n path)))
+                                            :value walked-value)))))
+
+(defmethod visit (visitor (ast setf-form))
+  (visit-foreach visitor (ast-forms ast)))
+
+(defmethod visit (visitor (ast setf-symbol-form))
+  (visit visitor (ast-var ast))
+  (visit visitor (ast-value ast)))
+
+(defmethod visit (visitor (ast setf-complex-form))
+  (visit-foreach visitor (ast-arguments ast))
+  (visit visitor (ast-value ast)))
