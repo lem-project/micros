@@ -350,7 +350,7 @@
                      (when numeric-accumulation-p (type-spec))
                      (make-instance 'accumulation-clause
                                     :path (cons accumulation-pos path)
-                                    :keyword (intern (string keyword) :keyword)
+                                    :keyword (make-keyword keyword)
                                     :form form
                                     :into into)))))
              (conditional ()
@@ -386,7 +386,7 @@
                (let ((keyword (lookahead)))
                  (when (accept :while :until :repeat :always :never :thereis)
                    (make-instance 'termination-test-clause
-                                  :keyword (intern (string keyword) :keyword)
+                                  :keyword (make-keyword keyword)
                                   :form (walk-and-next)))))
              (for-as-clause ()
                (when (accept :for :as)

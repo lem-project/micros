@@ -4,6 +4,9 @@
   (and (<= (length prefix) (length string))
        (string= prefix string :end2 (length prefix))))
 
+(defun make-keyword (x)
+  (intern (string x) :keyword))
+
 ;;; copy from alexandria
 (deftype string-designator ()
   "A string designator type. A string designator is either a string, a symbol,

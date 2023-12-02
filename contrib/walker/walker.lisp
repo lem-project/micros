@@ -29,7 +29,7 @@
     (prin1 (loop :for slot :in (micros/mop:class-slots (class-of object))
                  :for name := (micros/mop:slot-definition-name slot)
                  :when (slot-boundp object name)
-                 :collect (intern (string name) :keyword) :and
+                 :collect (make-keyword name) :and
                  :collect (slot-value object name))
            stream)))
 
