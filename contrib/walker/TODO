@@ -1,7 +1,7 @@
 - [ ] DEFINE-MODIFY-MACRO
 - [X] LOOP
 - [X] NTH-VALUE
-- [ ] CHECK-TYPE
+- [X] CHECK-TYPE
 - [ ] COND
 - [X] WITH-INPUT-FROM-STRING: with-single-binding-form
 - [ ] DEFCONSTANT

@@ -38,3 +38,22 @@
 (def-simple-walker or-form or n form)
 (def-simple-walker incf-form incf n form)
 (def-simple-walker decf-form decf n form)
+
+;; check-type
+(defclass check-type-form (ast)
+  ((place :initarg :place :reader ast-place)
+   (type :initarg :type :reader ast-type)
+   (type-string :initarg :type-string :reader ast-type-string)))
+
+(defmethod walk-form ((walker walker) (name (eql 'check-type)) form env path)
+  (with-walker-bindings (place type &optional type-string) (rest form)
+    (let ((place (walk walker place env (cons 1 path)))
+          (type-string (walk walker type-string env (cons 3 path))))
+      (make-instance 'check-type-form
+                     :place place
+                     :type type
+                     :type-string type-string))))
+
+(defmethod visit (visitor (ast check-type-form))
+  (visit visitor (ast-place ast))
+  (visit visitor (ast-type-string ast)))
