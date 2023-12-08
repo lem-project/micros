@@ -11,7 +11,7 @@
 - [X] UNLESS 581
 - [ ] DEFVAR 524
 - [X] RETURN 522
-- [ ] COND 446
+- [X] COND 446
 - [ ] DO 442
 - [X] IN-PACKAGE 379
 - [ ] DEFPACKAGE 272

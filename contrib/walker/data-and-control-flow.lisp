@@ -1,4 +1,4 @@
-(in-package #:micros/walker)
+(in-package :micros/walker)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct walker-lambda-list-spec
@@ -180,3 +180,29 @@
 (defmethod visit (visitor (ast setf-complex-form))
   (visit-foreach visitor (ast-arguments ast))
   (visit visitor (ast-value ast)))
+
+;; cond
+(defclass cond-form (ast)
+  ((clauses :initarg :clauses :reader ast-clauses)))
+
+(defclass cond-clause (ast)
+  ((test :initarg :test :reader ast-test)
+   (then :initarg :then :reader ast-then)))
+
+(defmethod walk-form ((walker walker) (name (eql 'cond)) form env path)
+  (make-instance
+   'cond-form
+   :clauses (loop :for clause :in (rest form)
+                  :for n :from 1
+                  :collect (with-walker-bindings (test &rest then) clause
+                             (make-instance
+                              'cond-clause
+                              :test (walk walker test env (list* 0 n path))
+                              :then (walk-forms walker then env (cons n path) 1))))))
+
+(defmethod visit (visitor (ast cond-form))
+  (visit-foreach visitor (ast-clauses ast)))
+
+(defmethod visit (visitor (ast cond-clause))
+  (visit visitor (ast-test ast))
+  (visit-foreach visitor (ast-then ast)))
