@@ -831,7 +831,7 @@
                       :binding (get-special-variable-binding walker symbol)
                       :path path)))))
 
-(defun walk (walker form env path)
+(defun walk (walker form &optional env path)
   (cond ((null form)
          (make-instance 'constant-form :value nil :path path))
         ((keywordp form)
