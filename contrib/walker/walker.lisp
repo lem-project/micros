@@ -300,8 +300,13 @@
 
 ;; walker
 (defclass walker ()
-  ((special-variable-table :initform (make-hash-table :test 'eq)
-                           :reader walker-special-variable-table)))
+  ((special-variable-table
+    :initform (make-hash-table :test 'eq)
+    :reader walker-special-variable-table)
+   (walking-without-expanding-unknown-macros
+    :initarg :walking-without-expanding-unknown-macros
+    :initform t
+    :reader walking-without-expanding-unknown-macros-p)))
 
 (defmethod get-special-variable-binding ((walker walker) symbol)
   (or (gethash symbol (walker-special-variable-table walker))
@@ -738,25 +743,27 @@
     (if macrolet-binding
         (walk-macro walker form path env (macrolet-binding-lambda-list macrolet-binding))
         (multiple-value-bind (expansion expanded) (macroexpand-1 form)
-          (declare (ignore expansion))
-          (if expanded
-              (walk-macro walker form path env (micros/backend:arglist (first form)))
-              (let ((name (first form)))
-                (if (consp name)
-                    (walk-lambda-call-form walker form env path)
-                    (let ((binding (lookup-function-binding env name))
-                          (arguments (loop :for arg :in (rest form)
-                                           :for n :from 1
-                                           :collect (walk walker arg env (cons n path)))))
-                      (if binding
-                          (make-instance 'call-local-function-form
-                                         :binding binding
-                                         :arguments arguments
-                                         :path (cons 0 path))
-                          (make-instance 'call-function-form
-                                         :operator name
-                                         :arguments arguments
-                                         :path (cons 0 path)))))))))))
+          (cond (expanded
+                 (if (walking-without-expanding-unknown-macros-p walker)
+                     (walk-macro walker form path env (micros/backend:arglist (first form)))
+                     (walk walker expansion env path)))
+                (t
+                 (let ((name (first form)))
+                   (if (consp name)
+                       (walk-lambda-call-form walker form env path)
+                       (let ((binding (lookup-function-binding env name))
+                             (arguments (loop :for arg :in (rest form)
+                                              :for n :from 1
+                                              :collect (walk walker arg env (cons n path)))))
+                         (if binding
+                             (make-instance 'call-local-function-form
+                                            :binding binding
+                                            :arguments arguments
+                                            :path (cons 0 path))
+                             (make-instance 'call-function-form
+                                            :operator name
+                                            :arguments arguments
+                                            :path (cons 0 path))))))))))))
 
 (defmethod walk-variable ((walker walker) symbol env path)
   ;; TODO
