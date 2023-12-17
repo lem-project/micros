@@ -1,3 +1,5 @@
 (defpackage :micros/walker
   (:use :cl)
-  (:export :collect-highlight-paths))
+  (:export :walker
+           :walk
+           :collect-highlight-paths))
