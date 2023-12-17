@@ -44,6 +44,7 @@
 (defclass special-variable-binding (binding) ())
 (defclass lexical-variable-binding (binding) ())
 (defclass lexical-function-binding (binding) ())
+(defclass tagbody-binding (binding) ())
 (defclass block-binding (binding) ())
 (defclass macrolet-binding (binding)
   ((lambda-list :initarg :lambda-list
@@ -70,6 +71,9 @@
 
 (defun lookup-macrolet-binding (env name)
   (lookup-binding env name 'macrolet-binding))
+
+(defun lookup-tagbody-binding (env name)
+  (lookup-binding env name 'tagbody-binding))
 
 (defun lookup-block-binding (env name)
   (lookup-binding env name 'block-binding))
@@ -217,6 +221,21 @@
          :reader ast-name)
    (value :initarg :value
           :reader ast-value)))
+
+(defclass tagbody-form (ast)
+  ((statements :type (proper-list (or ast tag))
+               :initarg :statements
+               :reader ast-statements)))
+
+(defclass tag (ast <with-binding-form>)
+  ((binding :type tagbody-binding
+            :initarg :binding
+            :reader ast-binding)))
+
+(defclass go-form (ast)
+  ((tag :type tag
+        :initarg :tag
+        :reader ast-tag)))
 
 (defclass the-form (ast)
   ((value-type :initarg :value-type
@@ -670,10 +689,30 @@
   (unimplemented name :form form :path path))
 
 (defmethod walk-form ((walker walker) (name (eql 'tagbody)) form env path)
-  (unimplemented name :form form :path path))
+  (with-walker-bindings (&rest statements) (rest form)
+    (let* ((bindings (mapcar (lambda (tag)
+                               (make-instance 'tagbody-binding :name tag))
+                             (remove-if-not #'symbolp statements)))
+           (env (extend-env* env bindings))
+           (statements
+             (loop :for statement :in statements
+                   :for n :from 1
+                   :collect (if (symbolp statement)
+                                (make-instance 'tag
+                                               :binding (lookup-tagbody-binding env statement)
+                                               :path (cons n path))
+                                (walk walker statement env (cons n path))))))
+      (make-instance 'tagbody-form
+                     :path (cons 0 path)
+                     :statements statements))))
 
 (defmethod walk-form ((walker walker) (name (eql 'go)) form env path)
-  (unimplemented name :form form :path path))
+  (with-walker-bindings (tag) (rest form)
+    (make-instance 'go-form
+                   :tag (make-instance 'tag
+                                       :binding (lookup-tagbody-binding env tag)
+                                       :path (cons 1 path))
+                   :path (cons 0 path))))
 
 (defmethod walk-form ((walker walker) (name (eql 'the)) form env path)
   (with-walker-bindings (value-type form) (rest form)
@@ -871,6 +910,18 @@
 (defmethod visit (visitor (ast unwind-protect-form))
   (visit visitor (ast-proctected-form ast))
   (visit-foreach visitor (ast-cleanup-forms ast)))
+
+(defmethod visit (visitor (ast tagbody-form))
+  (visit-foreach visitor (ast-statements ast)))
+
+(defmethod visit (visitor (ast tag))
+  (values))
+
+(defmethod visit (visitor (ast go-form))
+  (visit visitor (ast-tag ast)))
+
+(defmethod visit (visitor (ast return-from-form))
+  (values))
 
 (defmethod visit (visitor (ast block-name-form))
   (values))

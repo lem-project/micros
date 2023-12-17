@@ -286,3 +286,10 @@
 (defvar x
   (let ((foo 0))
     foo))
+
+(tagbody
+  (uiop:println 1)
+  (go foo)
+  (uiop:println 2)
+ foo
+  (uiop:println 3))
