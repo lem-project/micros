@@ -526,23 +526,32 @@
                            :path path)
             env)))
 
+(defun walk-lambda-list-and-body (walker lambda-list body env path)
+  (multiple-value-bind (body declare-forms documentation)
+      (parse-body body :documentation t)
+    (let ((declaration-spec (parse-declaration-specifiers declare-forms)))
+      (multiple-value-bind (lambda-list env)
+          (walk-lambda-list walker
+                            lambda-list
+                            env
+                            (cons 1 path)
+                            :declaration-spec declaration-spec)
+        (make-instance 'lambda-form
+                       :documentation documentation
+                       :lambda-list lambda-list
+                       :body (walk-forms walker body env path (+ 2 (length declare-forms)))
+                       :path (cons 0 path))))))
+
 (defmethod walk-lambda-form ((walker walker) form env path)
   (assert-type (first form) '(member lambda #+sbcl sb-int:named-lambda))
-  (with-walker-bindings (lambda-list &body body) (rest form)
-    (multiple-value-bind (body declare-forms documentation)
-        (parse-body body :documentation t)
-      (let ((declaration-spec (parse-declaration-specifiers declare-forms)))
-        (multiple-value-bind (lambda-list env)
-            (walk-lambda-list walker
-                              lambda-list
-                              env
-                              (cons 1 path)
-                              :declaration-spec declaration-spec)
-          (make-instance 'lambda-form
-                         :documentation documentation
-                         :lambda-list lambda-list
-                         :body (walk-forms walker body env path (+ 2 (length declare-forms)))
-                         :path (cons 0 path)))))))
+  (ecase (first form)
+    ((lambda)
+     (with-walker-bindings (lambda-list &body body) (rest form)
+       (walk-lambda-list-and-body walker lambda-list body env path)))
+    ((sb-int:named-lambda)
+     (with-walker-bindings (name lambda-list &body body) (rest form)
+       (declare (ignore name)) ; TODO
+       (walk-lambda-list-and-body walker lambda-list body env path)))))
 
 (defmethod walk-form ((walker walker) (name (eql 'function)) form env path)
   (with-walker-bindings (thing) (rest form)
