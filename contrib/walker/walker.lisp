@@ -507,6 +507,9 @@
                       (let* ((var-value (uiop:ensure-list arg))
                              (var (first var-value))
                              (value (second var-value)))
+                        (when (and (eq state '&key)
+                                   (consp var))
+                          (setf var (second var)))
                         (assert-type var 'variable-symbol)
                         (let ((initial-value
                                 (when value
