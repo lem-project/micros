@@ -293,3 +293,6 @@
   (uiop:println 2)
  foo
   (uiop:println 3))
+
+(defun foo ()
+  (return-from foo 100))
