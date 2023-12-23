@@ -1,7 +1,10 @@
 (in-package :micros/walker)
 
 (defclass defmethod-form (ast)
-  ((name :initarg :name
+  ((block-form :initarg :block-form
+               :reader ast-block-form
+               :type block-name-form)
+   (name :initarg :name
          :reader ast-name)
    (lambda-list :initarg :lambda-list
                 :reader ast-lambda-list)
@@ -34,7 +37,8 @@
                    (ecase state
                      ((&rest &body)
                       (assert-type arg 'variable-symbol)
-                      (add (make-instance 'lexical-variable-binding :name arg) ; TODO: special variable
+                      ;; TODO: special variable
+                      (add (make-instance 'lexical-variable-binding :name arg)
                            (cons n path)))
                      ((&key &optional &aux)
                       (let* ((var-value (uiop:ensure-list arg))
@@ -57,7 +61,8 @@
                           (if (consp arg) arg (list arg t))
                         (declare (ignore specializer))
                         (assert-type var 'variable-symbol)
-                        (add (make-instance 'lexical-variable-binding :name var) ; TODO: special variable
+                        ;; TODO: special variable
+                        (add (make-instance 'lexical-variable-binding :name var)
                              (if (consp arg)
                                  (list* 0 n path)
                                  (cons n path))))))))))
@@ -77,19 +82,25 @@
                                           specialized-lambda-list
                                           env
                                           (cons (+ 2 (length method-qualifiers)) path))
-          ;; TODO: declare
-          (make-instance 'defmethod-form
-                         :name name
-                         :path (cons 0 path)
-                         :lambda-list specialized-lambda-list
-                         :body (make-instance 'implict-progn-form
-                                              :forms (walk-forms walker
-                                                                 body
-                                                                 env
-                                                                 path
-                                                                 (+ 3 (length method-qualifiers)))
-                                              :path path)))))))
+          (let* ((block-binding (make-instance 'block-binding :name name))
+                 (env (extend-env env block-binding)))
+            ;; TODO: declare
+            (make-instance 'defmethod-form
+                           :block-form (make-instance 'block-name-form
+                                                      :binding block-binding
+                                                      :path (cons 1 path))
+                           :name name
+                           :path (cons 0 path)
+                           :lambda-list specialized-lambda-list
+                           :body (make-instance 'implict-progn-form
+                                                :forms (walk-forms walker
+                                                                   body
+                                                                   env
+                                                                   path
+                                                                   (+ 3 (length method-qualifiers)))
+                                                :path path))))))))
 
 (defmethod visit (visitor (ast defmethod-form))
+  (visit visitor (ast-block-form ast))
   (visit visitor (ast-lambda-list ast))
   (visit visitor (ast-body ast)))

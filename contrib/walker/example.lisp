@@ -296,3 +296,6 @@
 
 (defun foo ()
   (return-from foo 100))
+
+(defmethod foo ()
+  (return-from foo 100))
