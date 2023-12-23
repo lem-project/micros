@@ -141,6 +141,12 @@
    (lambda-list :initarg :lambda-list :reader ast-lambda-list)
    (body :initarg :body :reader ast-body)))
 
+(defclass named-lambda-form (ast)
+  ((name :initarg :name :reader ast-name)
+   (documentation :initarg :documentation :reader ast-documentation)
+   (lambda-list :initarg :lambda-list :reader ast-lambda-list)
+   (body :initarg :body :reader ast-body)))
+
 (defclass multiple-value-call-form (ast)
   ((function :initarg :function
              :reader ast-function)
@@ -529,7 +535,7 @@
                            :path path)
             env)))
 
-(defun walk-lambda-list-and-body (walker lambda-list body env path)
+(defun walk-lambda-list-and-body (walker lambda-list body env path &optional name)
   (multiple-value-bind (body declare-forms documentation)
       (parse-body body :documentation t)
     (let ((declaration-spec (parse-declaration-specifiers declare-forms)))
@@ -539,11 +545,25 @@
                             env
                             (cons 1 path)
                             :declaration-spec declaration-spec)
-        (make-instance 'lambda-form
-                       :documentation documentation
-                       :lambda-list lambda-list
-                       :body (walk-forms walker body env path (+ 2 (length declare-forms)))
-                       :path (cons 0 path))))))
+        (cond (name
+               (make-instance
+                'named-lambda-form
+                :name name
+                :documentation documentation
+                :lambda-list lambda-list
+                :body (walk-forms walker
+                                  body
+                                  (extend-env env (make-instance 'block-binding :name name))
+                                  path
+                                  (+ 2 (length declare-forms)))
+                :path (cons 0 path)))
+              (t
+               (make-instance
+                'lambda-form
+                :documentation documentation
+                :lambda-list lambda-list
+                :body (walk-forms walker body env path (+ 2 (length declare-forms)))
+                :path (cons 0 path))))))))
 
 (defmethod walk-lambda-form ((walker walker) form env path)
   (assert-type (first form) '(member lambda #+sbcl sb-int:named-lambda))
@@ -553,8 +573,7 @@
        (walk-lambda-list-and-body walker lambda-list body env path)))
     ((sb-int:named-lambda)
      (with-walker-bindings (name lambda-list &body body) (rest form)
-       (declare (ignore name)) ; TODO
-       (walk-lambda-list-and-body walker lambda-list body env path)))))
+       (walk-lambda-list-and-body walker lambda-list body env path name)))))
 
 (defmethod walk-form ((walker walker) (name (eql 'function)) form env path)
   (with-walker-bindings (thing) (rest form)
