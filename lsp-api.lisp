@@ -204,7 +204,16 @@
 
 ;;;
 (defun load-systems (system-names)
-  (ql:quickload system-names))
+  "Load SYSTEM-NAMES, preferring ocicl over quicklisp when available."
+  (let ((ocicl-dl (find-symbol* "*DOWNLOAD*" "OCICL-RUNTIME"))
+        (quicklisp-ql (find-symbol* "QUICKLOAD" "QL")))
+    (cond
+      ((ocicl-dl (eval `(let ((,ocicl-dl t))
+                          (dolist (s system-names)
+                            (asdf:load-system s))))))
+      ((quicklisp-ql (eval `(,quicklisp-ql system-names))))
+      (t (dolist (s system-names)
+           (asdf:load-system s))))))
 
 (defun compile-and-load-file (filename)
   (uiop:with-temporary-file (:pathname output-file :type "fasl")
