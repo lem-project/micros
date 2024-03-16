@@ -1,7 +1,7 @@
 (in-package :micros)
 
 (defun find-quicklisp-systems ()
-  "If Quicklisp is available, extract all system names from the current directory's systems.csv."
+  "If Quicklisp is available, extract all system names."
   (when (find-package '#:QUICKLISP)
     (mapcar (lambda (dist)
               (uiop:symbol-call '#:ql-dist '#:name dist))
