@@ -203,9 +203,6 @@
                                             :kind (when symbol (symbol-kind symbol))))))
 
 ;;;
-(defun load-systems (system-names)
-  (ql:quickload system-names))
-
 (defun compile-and-load-file (filename)
   (uiop:with-temporary-file (:pathname output-file :type "fasl")
     (let* ((stream (make-broadcast-stream))
