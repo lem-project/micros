@@ -2,6 +2,8 @@
   :depends-on ()
   :version "0.0.0"
   :serial t
+  :perform (load-op :after (o c)
+                    (uiop:symbol-call :micros :before-init))
   :components ((:file "packages")
                (:module "sbcl"
                 :pathname "backend"

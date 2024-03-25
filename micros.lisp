@@ -83,6 +83,10 @@ include some arbitrary initial value like NIL."
 ;;; simple indirection. The interface is more CLish than the Emacs
 ;;; Lisp one.
 
+(defun before-init ()
+  "Is run when the system is loaded, see micros.asd"
+  (pushnew :micros *features*))
+
 (defmacro add-hook (place function)
   "Add FUNCTION to the list of values on PLACE."
   `(pushnew ,function ,place))
