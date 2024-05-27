@@ -59,7 +59,8 @@
                                            (:file "defmethod-form")
                                            (:file "loop-form")
                                            (:file "data-and-control-flow")))))
-               (:file "lsp-api")))
+               (:file "lsp-api")
+               (:file "lsp-api-load-systems")))
 
 (defsystem "micros/tests"
   :depends-on ("rove" "micros")
