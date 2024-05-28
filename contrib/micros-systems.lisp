@@ -8,14 +8,9 @@
             (uiop:symbol-call '#:quicklisp '#:system-list))))
 
 (defun find-ocicl-systems ()
-  "If the Ocicl runtime is available, extract all system names from the current directory's systems.csv."
+  "If the Ocicl runtime is available, extra all system names."
   (when (find-package '#:OCICL-RUNTIME)
-    (with-open-file (in-stream (merge-pathnames (uiop:getcwd) "systems.csv") :direction :input)
-      (unwind-protect
-           (loop :for line = (read-line in-stream nil)
-                 :while line
-                 :collect (subseq line 0 (position #\, line)))
-        (close in-stream)))))
+    (uiop:symbol-call '#:ocicl-runtime '#:system-list)))
 
 (defun find-asdf-systems ()
   "If ASDF is available, extract system names by collecting all keys from the *source-registry* hash lists."
