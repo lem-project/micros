@@ -838,7 +838,7 @@ if the file doesn't exist; otherwise the first line of the file."
 
 (defun simple-announce-function (port)
   (when *swank-debug-p*
-    (format *log-output* "~&;; Swank started at port: ~D.~%" port)
+    (format *log-output* "~&;; Micros started at port: ~D.~%" port)
     (force-output *log-output*)))
 
 
