@@ -1481,7 +1481,10 @@ VERSION: the protocol version"
       :modules ,*modules*
       :package (:name ,(package-name *package*)
                :prompt ,(package-string-for-prompt *package*))
-      :version ,(version))))
+      :version ,(version)
+      :system-file-patterns ,(mapcar #'namestring
+                                     (mapcar #'second
+                                             (logical-pathname-translations "SYS"))))))
 
 (defun debug-on-swank-error ()
   (assert (eq *debug-on-swank-protocol-error* *debug-swank-backend*))
