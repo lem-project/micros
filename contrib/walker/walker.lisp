@@ -566,12 +566,12 @@
                 :path (cons 0 path))))))))
 
 (defmethod walk-lambda-form ((walker walker) form env path)
-  (assert-type (first form) '(member lambda #+sbcl sb-int:named-lambda))
+  (assert-type (first form) '(member lambda #+:sbcl  sb-int:named-lambda))
   (ecase (first form)
     ((lambda)
      (with-walker-bindings (lambda-list &body body) (rest form)
        (walk-lambda-list-and-body walker lambda-list body env path)))
-    ((sb-int:named-lambda)
+    #+:sbcl ((sb-int:named-lambda)
      (with-walker-bindings (name lambda-list &body body) (rest form)
        (walk-lambda-list-and-body walker lambda-list body env path name)))))
 
