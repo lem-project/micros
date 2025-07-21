@@ -8,10 +8,10 @@
 ;;; are disclaimed.
 ;;;
 
-(defpackage swank/lispworks
-  (:use cl swank/backend))
+(defpackage micros/lispworks
+  (:use cl micros/backend))
 
-(in-package swank/lispworks)
+(in-package micros/lispworks)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "comm"))
@@ -27,34 +27,34 @@
                                   :eql-specializer-object
                                   :compute-applicable-methods-using-classes))
 
-(defun swank-mop:slot-definition-documentation (slot)
+(defun micros/mop:slot-definition-documentation (slot)
   (documentation slot t))
 
-(defun swank-mop:slot-boundp-using-class (class object slotd)
+(defun micros/mop:slot-boundp-using-class (class object slotd)
   (clos:slot-boundp-using-class class object
                                 (clos:slot-definition-name slotd)))
 
-(defun swank-mop:slot-value-using-class (class object slotd)
+(defun micros/mop:slot-value-using-class (class object slotd)
   (clos:slot-value-using-class class object
                                (clos:slot-definition-name slotd)))
 
-(defun (setf swank-mop:slot-value-using-class) (value class object slotd)
+(defun (setf micros/mop:slot-value-using-class) (value class object slotd)
   (setf (clos:slot-value-using-class class object
                                      (clos:slot-definition-name slotd))
         value))
 
-(defun swank-mop:slot-makunbound-using-class (class object slotd)
+(defun micros/mop:slot-makunbound-using-class (class object slotd)
   (clos:slot-makunbound-using-class class object
                                     (clos:slot-definition-name slotd)))
 
-(defun swank-mop:compute-applicable-methods-using-classes (gf classes)
+(defun micros/mop:compute-applicable-methods-using-classes (gf classes)
   (clos::compute-applicable-methods-from-classes gf classes))
 
 ;; lispworks doesn't have the eql-specializer class, it represents
 ;; them as a list of `(EQL ,OBJECT)
-(deftype swank-mop:eql-specializer () 'cons)
+(deftype micros/mop:eql-specializer () 'cons)
 
-(defun swank-mop:eql-specializer-object (eql-spec)
+(defun micros/mop:eql-specializer-object (eql-spec)
   (second eql-spec))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
@@ -167,6 +167,9 @@
                   *external-format-to-coding-system*)))
 
 ;;; Unix signals
+
+#-win32
+(defconstant +sigint+ 2)
 
 (defun sigint-handler ()
   (with-simple-restart  (continue "Continue from SIGINT handler.")
@@ -321,13 +324,13 @@ Return NIL if the symbol is unbound."
 (defmethod env-internals:environment-display-notifier 
     ((env slime-env) &key restarts condition)
   (declare (ignore restarts condition))
-  (swank:swank-debugger-hook condition *debugger-hook*))
+  (micros::swank-debugger-hook condition *debugger-hook*))
 
 (defmethod env-internals:environment-display-debugger ((env slime-env))
   *debug-io*)
 
 (defmethod env-internals:confirm-p ((e slime-env) &optional msg &rest args)
-  (apply #'swank:y-or-n-p-in-emacs msg args))
+  (apply #'micros::y-or-n-p-in-emacs msg args))
 
 (defimplementation call-with-debugger-hook (hook fun)
   (let ((*debugger-hook* hook))
@@ -375,7 +378,7 @@ Return NIL if the symbol is unbound."
                              name)))
                 (nth-next-frame frame 1)))))
     (or (find-named-frame 'invoke-debugger)
-        (find-named-frame 'swank::safe-backtrace)
+        (find-named-frame 'micros::safe-backtrace)
         ;; if we can't find a likely top frame, take any old frame
         ;; at the top
         (dbg::debugger-stack-current-frame dbg::*debugger-stack*))))

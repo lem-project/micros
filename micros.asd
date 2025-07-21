@@ -20,6 +20,8 @@
                              (:file "ccl")
                              #+ecl
                              (:file "ecl")
+                             #+lispworks
+                             (:file "lispworks")
                              (:file "gray")
                              (:file "match")
                              (:file "rpc")))
