@@ -2469,10 +2469,13 @@ The time is measured in seconds."
                         (lambda (c) (push (make-compiler-note c) notes))))
           (measure-time-interval
            (lambda ()
-             ;; To report location of error-signaling toplevel forms
-             ;; for errors in EVAL-WHEN or during macroexpansion.
-             (restart-case (multiple-value-list (funcall function))
-               (abort () :report "Abort compilation." (list nil))))))
+             (handler-case
+                 ;; To report location of error-signaling toplevel forms
+                 ;; for errors in EVAL-WHEN or during macroexpansion.
+                 (restart-case (multiple-value-list (funcall function))
+                   (abort () :report "Abort compilation." (list nil)))
+               (error ()
+                 (list nil))))))
       (destructuring-bind (successp &optional loadp faslfile) result
         (let ((faslfile (etypecase faslfile
                           (null nil)
