@@ -42,6 +42,7 @@
                              (:file "micros-trace-dialog")
                              (:file "micros-macrostep")
                              (:file "micros-systems")
+                             (:file "micros-call-graph")
                              (:file "micros-pretty-eval")
                              (:file "micros-trace")
                              (:file "micros-test-runner")
