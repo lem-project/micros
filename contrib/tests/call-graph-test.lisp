@@ -227,5 +227,9 @@
     (ok (micros::line-defines-symbol-p "(defun foo ()" "FOO"))
     (ok (micros::line-defines-symbol-p "(defmacro bar (&body body)" "BAR"))
     (ok (micros::line-defines-symbol-p "(define-command my-command () ()" "MY-COMMAND"))
+    ;; Package-qualified definitions
+    (ok (micros::line-defines-symbol-p "(lem:define-command living-canvas () ()" "LIVING-CANVAS"))
+    (ok (micros::line-defines-symbol-p "(lem:define-minor-mode my-mode" "MY-MODE"))
+    ;; Negative cases
     (ok (not (micros::line-defines-symbol-p "(let ((foo 1))" "FOO")))
     (ok (not (micros::line-defines-symbol-p "(defun bar ())" "FOO")))))

@@ -63,11 +63,18 @@
               :when (line-defines-symbol-p line symbol-name)
                 :return line-number)))))
 
+(defparameter *definition-prefixes*
+  '("(defun " "(defmacro " "(defgeneric " "(defmethod "
+    "(define-command " "(define-major-mode " "(define-minor-mode "
+    ;; Package-qualified versions (lem:define-command etc.)
+    "(lem:define-command " "(lem:define-major-mode " "(lem:define-minor-mode "
+    "(lem:define-key " "(lem:define-attribute ")
+  "Prefixes for definition forms used in line detection.")
+
 (defun line-defines-symbol-p (line symbol-name)
   "Check if a line defines the given symbol."
   (let ((trimmed (string-left-trim '(#\Space #\Tab) line)))
-    (dolist (prefix '("(defun " "(defmacro " "(defgeneric " "(defmethod "
-                      "(define-command " "(define-major-mode " "(define-minor-mode "))
+    (dolist (prefix *definition-prefixes*)
       (let ((prefix-len (length prefix)))
         (when (and (>= (length trimmed) prefix-len)
                    (string-equal prefix (subseq trimmed 0 prefix-len)))
