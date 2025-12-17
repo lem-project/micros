@@ -277,10 +277,11 @@
 ;;; Analysis Functions
 
 (defslimefun call-graph-analyze-package (package-designator)
-  "Analyze a package and return call graph as plist."
+  "Analyze a package and return call graph as plist.
+Returns nil if package not found."
   (let ((package (find-package package-designator)))
     (unless package
-      (error "Package ~A not found" package-designator))
+      (return-from call-graph-analyze-package nil))
     (let ((nodes '())
           (edges '())
           (symbols '()))
@@ -354,10 +355,11 @@
           :edges (remove-duplicate-edges edges))))
 
 (defun get-system-source-files (system-designator)
-  "Get all Lisp source files from an ASDF system."
+  "Get all Lisp source files from an ASDF system.
+Returns nil if system not found."
   (let ((system (asdf:find-system system-designator nil)))
     (unless system
-      (error "System ~A not found" system-designator))
+      (return-from get-system-source-files nil))
     (let ((files '()))
       (labels ((collect-files (component)
                  (typecase component
@@ -376,46 +378,47 @@
       (nreverse files))))
 
 (defslimefun call-graph-analyze-system (system-designator)
-  "Analyze an ASDF system and return call graph as plist."
-  (let ((files (get-system-source-files system-designator))
-        (nodes '())
-        (edges '())
-        (all-symbols '())
-        (symbol-set (make-hash-table :test 'eq))
-        (node-ids (make-hash-table :test 'equal)))
+  "Analyze an ASDF system and return call graph as plist.
+Returns nil if system not found or has no source files."
+  (let ((files (get-system-source-files system-designator)))
     (unless files
-      (error "No source files found in system ~A" system-designator))
-    ;; Collect all definitions from all files
-    (dolist (file files)
-      (let ((definitions (extract-definitions-from-file file)))
-        (dolist (def definitions)
-          (let* ((sym (car def))
-                 (form-head (cdr def))
-                 (node-id (symbol-to-node-id sym)))
-            (unless (gethash node-id node-ids)
-              (push sym all-symbols)
-              (setf (gethash sym symbol-set) t)
-              (setf (gethash node-id node-ids) t)
-              (push (make-node-plist sym form-head file) nodes))))))
-    ;; Create edges using sb-introspect
-    (dolist (sym all-symbols)
-      (handler-case
-          (let ((fn (fdefinition sym)))
-            (when fn
-              #+sbcl
-              (let ((callees (sb-introspect:find-function-callees fn)))
-                (dolist (callee callees)
-                  (let ((callee-sym (function-to-symbol callee)))
-                    (when (and callee-sym
-                               (not (eq callee-sym sym))
-                               (gethash callee-sym symbol-set))
-                      (push (make-edge-plist sym callee-sym) edges)))))))
-        (error () nil)))
-    ;; Source-based call detection
-    (dolist (file files)
-      (let ((source-calls (extract-source-calls file symbol-set)))
-        (dolist (call source-calls)
-          (push (make-edge-plist (car call) (cdr call)) edges))))
-    ;; Remove duplicates and return
-    (list :nodes (nreverse nodes)
-          :edges (remove-duplicate-edges edges))))
+      (return-from call-graph-analyze-system nil))
+    (let ((nodes '())
+          (edges '())
+          (all-symbols '())
+          (symbol-set (make-hash-table :test 'eq))
+          (node-ids (make-hash-table :test 'equal)))
+      ;; Collect all definitions from all files
+      (dolist (file files)
+        (let ((definitions (extract-definitions-from-file file)))
+          (dolist (def definitions)
+            (let* ((sym (car def))
+                   (form-head (cdr def))
+                   (node-id (symbol-to-node-id sym)))
+              (unless (gethash node-id node-ids)
+                (push sym all-symbols)
+                (setf (gethash sym symbol-set) t)
+                (setf (gethash node-id node-ids) t)
+                (push (make-node-plist sym form-head file) nodes))))))
+      ;; Create edges using sb-introspect
+      (dolist (sym all-symbols)
+        (handler-case
+            (let ((fn (fdefinition sym)))
+              (when fn
+                #+sbcl
+                (let ((callees (sb-introspect:find-function-callees fn)))
+                  (dolist (callee callees)
+                    (let ((callee-sym (function-to-symbol callee)))
+                      (when (and callee-sym
+                                 (not (eq callee-sym sym))
+                                 (gethash callee-sym symbol-set))
+                        (push (make-edge-plist sym callee-sym) edges)))))))
+          (error () nil)))
+      ;; Source-based call detection
+      (dolist (file files)
+        (let ((source-calls (extract-source-calls file symbol-set)))
+          (dolist (call source-calls)
+            (push (make-edge-plist (car call) (cdr call)) edges))))
+      ;; Remove duplicates and return
+      (list :nodes (nreverse nodes)
+            :edges (remove-duplicate-edges edges)))))
