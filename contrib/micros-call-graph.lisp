@@ -63,31 +63,46 @@
               :when (line-defines-symbol-p line symbol-name)
                 :return line-number)))))
 
-(defparameter *definition-prefixes*
-  '("(defun " "(defmacro " "(defgeneric " "(defmethod "
-    "(define-command " "(define-major-mode " "(define-minor-mode "
-    ;; Package-qualified versions (lem:define-command etc.)
-    "(lem:define-command " "(lem:define-major-mode " "(lem:define-minor-mode "
-    "(lem:define-key " "(lem:define-attribute ")
-  "Prefixes for definition forms used in line detection.")
+(defun definition-form-prefix-p (line)
+  "Check if LINE starts with a definition form like (def... or (define-...
+Returns the position after the prefix if found, nil otherwise."
+  (let ((trimmed (string-left-trim '(#\Space #\Tab) line)))
+    (when (and (> (length trimmed) 1)
+               (char= (char trimmed 0) #\())
+      (let* ((rest (subseq trimmed 1))
+             ;; Skip optional package prefix (e.g., "lem:")
+             (colon-pos (position #\: rest))
+             (after-pkg (if (and colon-pos (< colon-pos 20))
+                            (subseq rest (1+ colon-pos))
+                            rest)))
+        (cond
+          ;; (def... forms: defun, defmacro, defgeneric, defmethod, etc.
+          ((and (>= (length after-pkg) 3)
+                (string-equal "def" (subseq after-pkg 0 3)))
+           (+ 1 (length trimmed) (- (length trimmed) (length rest))
+              (if (and colon-pos (< colon-pos 20)) (1+ colon-pos) 0)))
+          ;; (define-... forms: define-command, define-major-mode, etc.
+          ((and (>= (length after-pkg) 7)
+                (string-equal "define-" (subseq after-pkg 0 7)))
+           (+ 1 (length trimmed) (- (length trimmed) (length rest))
+              (if (and colon-pos (< colon-pos 20)) (1+ colon-pos) 0)))
+          (t nil))))))
 
 (defun line-defines-symbol-p (line symbol-name)
   "Check if a line defines the given symbol."
-  (let ((trimmed (string-left-trim '(#\Space #\Tab) line)))
-    (dolist (prefix *definition-prefixes*)
-      (let ((prefix-len (length prefix)))
-        (when (and (>= (length trimmed) prefix-len)
-                   (string-equal prefix (subseq trimmed 0 prefix-len)))
-          (let* ((rest (subseq trimmed prefix-len))
-                 (rest-trimmed (string-left-trim '(#\Space #\Tab #\() rest))
-                 (space-pos (position #\Space rest-trimmed))
-                 (paren-pos (position #\( rest-trimmed))
-                 (close-paren-pos (position #\) rest-trimmed))
-                 (end-pos (or space-pos paren-pos close-paren-pos (length rest-trimmed)))
-                 (name (subseq rest-trimmed 0 end-pos)))
-            (when (string-equal name symbol-name)
-              (return-from line-defines-symbol-p t))))))
-    nil))
+  (when (definition-form-prefix-p line)
+    (let* ((trimmed (string-left-trim '(#\Space #\Tab) line))
+           ;; Find the symbol name after the definition form
+           (space-pos (position #\Space trimmed))
+           (rest (when space-pos (subseq trimmed (1+ space-pos))))
+           (rest-trimmed (when rest (string-left-trim '(#\Space #\Tab #\() rest))))
+      (when rest-trimmed
+        (let* ((space-pos (position #\Space rest-trimmed))
+               (paren-pos (position #\( rest-trimmed))
+               (close-paren-pos (position #\) rest-trimmed))
+               (end-pos (or space-pos paren-pos close-paren-pos (length rest-trimmed)))
+               (name (subseq rest-trimmed 0 end-pos)))
+          (string-equal name symbol-name))))))
 
 ;;; Introspection Helpers
 
