@@ -68,5 +68,10 @@
 (defsystem "micros/tests"
   :depends-on ("rove" "micros")
   :serial t
-  :pathname "contrib/walker/tests/"
-  :components ((:file "tests")))
+  :pathname "contrib/"
+  :components ((:module "walker/tests"
+                :components ((:file "tests")))
+               (:module "tests"
+                :components ((:file "call-graph-test"))))
+  :perform (test-op (op c)
+                    (symbol-call :rove :run c)))
